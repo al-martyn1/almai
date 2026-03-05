@@ -1,0 +1,13 @@
+https://chat.z.ai/ - отвечает без регистрации, но не даёт расшарить диалог
+https://chat.qwen.ai/ - начинает отвечать, но потом требует регистрацию
+https://chat.deepseek.com/ - не знаю, как тут, сразу зарегался
+https://claude.ai/ - не пробовал
+https://arena.ai/ - не пробовал
+
+Оркестраторы
+
+https://github.com/github/spec-kit - 
+https://ai.pydantic.dev/
+https://github.com/gsd-build/get-shit-done
+
+Об использовании GSD - https://chat.deepseek.com/share/19vlf5cyuuie82siw3

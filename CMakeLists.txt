@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21.0)
-project(umba-template VERSION 0.1.0 LANGUAGES C CXX)
+project(almai VERSION 0.1.0 LANGUAGES C CXX)
 
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
@@ -13,7 +13,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 
 set(UMBA_STATIC_RUNTIME ON)
-set(UMBA_USE_BOOST      ON)
+set(UMBA_USE_BOOST      OFF)
 
 include(${CMAKE_CURRENT_LIST_DIR}/.umba.cmake/umba.cmake)
 
@@ -21,16 +21,17 @@ include(${CMAKE_CURRENT_LIST_DIR}/.umba.cmake/umba.cmake)
 include_directories(${LIB_ROOT})
 
 # Import libraries here
-# add_subdirectory(${LIB_ROOT}/encoding)
-# add_subdirectory(${LIB_ROOT}/marty_cpp)
+add_subdirectory(${LIB_ROOT}/encoding)
+add_subdirectory(${LIB_ROOT}/marty_cpp)
 # add_subdirectory(${LIB_ROOT}/marty_pugixml)
 # add_subdirectory(${LIB_ROOT}/marty_tr)
-# add_subdirectory(${LIB_ROOT}/marty_yaml_toml_json)
-# add_subdirectory(${LIB_ROOT}/nlohmann)    # https://json.nlohmann.me/integration/cmake/#external
+add_subdirectory(${LIB_ROOT}/marty_yaml_toml_json)
+add_subdirectory(${LIB_ROOT}/nlohmann)    # https://json.nlohmann.me/integration/cmake/#external
 # add_subdirectory(${LIB_ROOT}/pugixml)
-# add_subdirectory(${LIB_ROOT}/sfmt)
-# add_subdirectory(${LIB_ROOT}/umba)
-# add_subdirectory(${LIB_ROOT}/yaml-cpp)
+add_subdirectory(${LIB_ROOT}/sfmt)
+add_subdirectory(${LIB_ROOT}/umba)
+add_subdirectory(${LIB_ROOT}/umba_tokenizer)
+add_subdirectory(${LIB_ROOT}/yaml-cpp)
 
 # umba_configure_boost("STATIC_LIBS" "MULTITHREADED" "${STATIC_RUNTIME}")
 
@@ -42,11 +43,14 @@ include_directories(${LIB_ROOT})
 
 # Configure libraries here
 set(COMMON_LIBS 
-#    encoding::encoding
-#    marty::cpp
-#    sfmt::sfmt
-#    umba::umba
-#    umba::tokenizer
+    encoding::encoding
+    marty::cpp
+    marty::yaml_toml_json
+    sfmt::sfmt
+    umba::umba
+    umba::tokenizer
+    nlohmann_json::nlohmann_json
+    yaml-cpp::yaml-cpp
    )
 # set(PUGIXML_LIB pugixml::pugixml marty_pugixml::marty_pugixml)
 # set(JSON_YAML_LIB nlohmann_json::nlohmann_json yaml-cpp::yaml-cpp)
@@ -67,8 +71,13 @@ endif()
 set(COMMON_UMBA_OPTIONS "BIGOBJ" "UTF8" "PEDANTIC" "WERR") # "PEDANTIC"/"WALL" "WERR"
 
 
-set(TARGET umba-template)
-add_executable(${TARGET} "${SRC_ROOT}/umba-template/umba-template.cpp" "${headers}")
+set(TARGET almai)
+add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" "${headers}")
+umba_add_target_options(${TARGET} ${COMMON_UMBA_OPTIONS} "CONSOLE") 
+target_link_libraries(${TARGET} PRIVATE "${PLATFORM_LIBS}" "${COMMON_LIBS}")
+
+set(TARGET almai-md-split)
+add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" "${headers}")
 umba_add_target_options(${TARGET} ${COMMON_UMBA_OPTIONS} "CONSOLE") 
 target_link_libraries(${TARGET} PRIVATE "${PLATFORM_LIBS}" "${COMMON_LIBS}")
 

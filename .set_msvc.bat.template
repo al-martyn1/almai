@@ -1,0 +1,7 @@
+@rem set MSVC=2017
+@set MSVC=2019
+@rem set MSVC=2022
+@rem set MSVC=2026
+@rem 
+@rem set MSVC_ARCH=x86
+@set MSVC_ARCH=x64

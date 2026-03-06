@@ -81,7 +81,7 @@ bool bOverwrite         = false;
 //
 #include "log.h"
 //
-#include "MdsAppConfig.h.h"
+#include "MdsAppConfig.h"
 
 AppConfig appConfig;
 

@@ -4,7 +4,7 @@ call "%~dp0\.find_test_exe.bat" %TEST_NAME%
 @set FOUND_EXE=%FOUND_EXE:"=%
 @if "%FOUND_EXE%"=="" @goto NOT_FOUND
 @set TEST_EXE="%FOUND_EXE%"
-%TEST_EXE% "%~dp0\%TEST_NAME%.txt"  > %TEST_NAME%-01.log 2>&1
+%TEST_EXE%
 
 
 exit /B 0

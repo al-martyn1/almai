@@ -8,6 +8,10 @@
 #include "umba/string_plus.h"
 //
 
+#include <iterator>
+#include <string>
+#include <vector>
+#include <algorithm>
 //----------------------------------------------------------------------------
 
 
@@ -47,10 +51,22 @@ const char* getInvalidFileNameChars()
 
 //----------------------------------------------------------------------------
 inline
+const char* getPossiblePathNameChars()
+{
+    static char chars[] = 
+    { '.', '/', '\\'
+    , 0x00
+    };
+
+    return &chars[0];
+}
+
+//----------------------------------------------------------------------------
+inline
 bool isValidPathName(const std::string &pathName)
 {
     auto pos = pathName.find_first_of(getInvalidPathNameChars());
-    return pos==pathName.npos; // Если недопустимых символов не найдено, то это хорош
+    return pos==pathName.npos; // Если недопустимых символов не найдено, то это хорошо
 }
 
 //----------------------------------------------------------------------------
@@ -58,7 +74,15 @@ inline
 bool isValidPathPart(const std::string &pathName)
 {
     auto pos = pathName.find_first_of(getInvalidFileNameChars());
-    return pos==pathName.npos; // Если недопустимых символов не найдено, то это хорош
+    return pos==pathName.npos; // Если недопустимых символов не найдено, то это хорошо
+}
+
+//----------------------------------------------------------------------------
+inline
+bool isPossiblePath(const std::string &pathName)
+{
+    auto pos = pathName.find_first_of(getPossiblePathNameChars());
+    return pos!=pathName.npos; // Если подходящих символов не найдено, то это хорошо
 }
 
 //----------------------------------------------------------------------------
@@ -200,31 +224,212 @@ const std::vector<std::string>& getAllowedFilenameEdgings()
 
 //----------------------------------------------------------------------------
 inline
-bool stripFilenameEdging(std::string &name) // Возвращает true, если было обрезно обрамление
+std::size_t stripFilenameEdging(std::string &name) // Возвращает true, если было обрезано обрамление
 {
     umba::string::trim(name);
 
     const auto& edgings = getAllowedFilenameEdgings();
 
-    bool unedged = false;
-
-    for(const auto &e : edgings)
+    for(auto i=0u; i!=edgings.size(); ++i)
     {
+        const auto &e = edgings[i];
+
         if (umba::string::starts_with(name, e) && umba::string::ends_with(name, e))
         {
             umba::string::starts_with_and_strip(name, e);
             umba::string::ends_with_and_strip(name, e);
-
-            unedged = true;
-
-            break;
+            umba::string::trim(name);
+            return i;
         }
     }
 
+    return std::size_t(-1);
+}
+
+//----------------------------------------------------------------------------
+inline
+std::size_t testFilenameEdging(std::string name) // Возвращает true, если было есть обрамление
+{
     umba::string::trim(name);
 
-    return unedged;
+    const auto& edgings = getAllowedFilenameEdgings();
+
+    for(auto i=0u; i!=edgings.size(); ++i)
+    {
+        const auto &e = edgings[i];
+
+        if (umba::string::starts_with(name, e) && umba::string::ends_with(name, e))
+        {
+            return i;
+        }
+    }
+
+    return std::size_t(-1);
+
 }
+
+//----------------------------------------------------------------------------
+// возвращает true, если найдено обрамление, иначе false
+inline
+bool findListingFilenames( std::vector<std::string>::const_iterator b
+                         , std::vector<std::string>::const_iterator e
+                         , std::vector<std::string> &resNames
+                         ) 
+{
+/*
+    Непустые строки перед листингом надо проверить, являются ли они именами файлов.
+    Получаем в прямом порядке, отсекать надо начало, так как после текста может по ошибке 
+    без разрыва вставлено имя файла, а затем листинг.
+
+    Для всех элементов получим тип эджинга. Начиная с конца, если эджинг был, выцепляем
+    элементы с одинаковым эджингом.
+
+    Если эджинга не было, выцепляем строки, которые:
+    - не содержат запрещённых символов
+    - похожи на имя файла (содержат точку или разделители пути)
+
+    Если таких строк нет вообще, считаем последнюю строку не именем файла, а описанием (но это делаем на уровне выше).
+*/
+
+    resNames.clear();
+
+    if (b==e)
+        return false;
+
+
+    std::vector<std::size_t> edgings;
+
+    for(auto it=b; it!=e; ++it)
+    {
+        std::string str = *it;
+        edgings.emplace_back(stripFilenameEdging(str));
+        resNames.emplace_back(str);
+    }
+
+    // лень возится с обратным порядком, поэтому обратим порядок
+    std::reverse(resNames.begin(), resNames.end());
+    std::reverse(edgings.begin() , edgings.end() );
+
+    std::size_t edgingType = edgings[0];
+
+    // Ловим количество одинаковых обрамлений
+    std::size_t numEqualEdgings = 0;
+    for(; numEqualEdgings!=edgings.size(); ++numEqualEdgings)
+    {
+        if (edgingType!=edgings[numEqualEdgings])
+            break;
+    }
+
+    if (edgingType==std::size_t(-1))
+    {
+        // Обрамления нет
+
+        // Надо проверить валидность имен (если это имена)
+        // и надо проверить на вероятность тго, что это путь ()
+
+        std::size_t i = 0;
+
+        for(; i!=numEqualEdgings; ++i)
+        {
+            if (!isValidPathName(resNames[i]))
+                break;
+            if (!isPossiblePath(resNames[i]))
+                break;
+        }
+
+        numEqualEdgings = i;
+    }
+
+    resNames.erase( resNames.begin(), std::next(resNames.begin(), std::ptrdiff_t(numEqualEdgings)) );
+
+    // Реверсим обратно
+    std::reverse(resNames.begin(), resNames.end());
+
+    return edgingType!=std::size_t(-1);
+}
+
+//----------------------------------------------------------------------------
+inline
+std::size_t geNumberOfFirstSameChars(const std::string &str)
+{
+    if (str.empty())
+        return 0;
+
+    char ch = str[0];
+
+    std::size_t i = 0;
+    for(; i!=str.size(); ++i)
+    {
+        if (ch!=str[i])
+            break;
+    }
+
+    return i;
+}
+
+//----------------------------------------------------------------------------
+
+
+
+//----------------------------------------------------------------------------
+enum class MdLineType
+{
+    emptyLine   = 0,
+    regularLine
+    headerArx                 // # - Atx - word processor on Amiga, min 1 char
+    headerSetext              // ---- / ==== Setext (Structure Enhanced Text), min 1 char
+    codeTilda
+    codeBacktick
+    codeIndentTab
+    codeIndentSpace
+    quotation                 // >
+
+}; // enum class MdLineType
+
+//----------------------------------------------------------------------------
+
+
+
+//----------------------------------------------------------------------------
+inline
+MdLineType detectMarkdownLineType(const std::string &str, char *pChar=0, std::size_t *pNumChars=0)
+{
+    if (str.empty() || umba::string::trim_copy(str).empty())
+        return MdLineType::emptyLine;
+        
+    std::size_t nChars = geNumberOfFirstSameChars(str);
+
+    if (*pNumChars)
+       *pNumChars = nChars;
+
+    char ch = str[0];
+
+    if (pChar)
+       *pChar = ch;
+
+    switch(ch)
+    {
+        case '#' : return MdLineType::headerArx;
+        case '-' : return MdLineType::headerSetext;
+        case '=' : return MdLineType::headerSetext;
+        case '~' : nChars>=3 ? MdLineType::codeTilda       ? MdLineType::regularLine;
+        case '`' : nChars>=3 ? MdLineType::codeBacktick    ? MdLineType::regularLine;
+        case '\t': nChars>=1 ? MdLineType::codeIndentTab   ? MdLineType::regularLine;
+        case ' ' : nChars>=4 ? MdLineType::codeIndentSpace ? MdLineType::regularLine;
+        case '>' : nChars>=1 ? MdLineType::quotation       ? MdLineType::regularLine;
+        default  : MdLineType::regularLine;
+    }
+
+
+}
+
+
+
+
+
+//----------------------------------------------------------------------------
+
+
 
 //----------------------------------------------------------------------------
 

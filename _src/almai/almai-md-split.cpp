@@ -20,8 +20,35 @@
 #include "umba/char_writers.h"
 //#+sort
 
+#include "umba/filename.h"
+#include "umba/filesys.h"
+//
 #include "umba/debug_helpers.h"
+#include "umba/string_plus.h"
+#include "umba/program_location.h"
+#include "umba/scope_exec.h"
+#include "umba/macro_helpers.h"
+#include "umba/macros.h"
+#include "umba/scanners.h"
+#include "umba/relops.h"
+#include "umba/debug_helpers.h"
+#include "umba/rule_of_five.h"
+//
+#include "marty_cpp/marty_cpp.h"
+#include "marty_cpp/marty_enum.h"
+#include "marty_cpp/marty_flags.h"
+#include "marty_cpp/sort_includes.h"
+#include "marty_cpp/enums.h"
+#include "marty_cpp/src_normalization.h"
+#include "marty_cpp/marty_ns.h"
+#include "marty_cpp/marty_enum_impl_helpers.h"
+//
+#include "encoding/encoding.h"
+#include "umba/cli_tool_helpers.h"
+#include "umba/time_service.h"
+#include "umba/shellapi.h"
 
+//
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -35,31 +62,9 @@
 #include <exception>
 #include <stdexcept>
 
-#include "umba/debug_helpers.h"
-#include "umba/string_plus.h"
-#include "umba/program_location.h"
-#include "umba/scope_exec.h"
-#include "umba/macro_helpers.h"
-#include "umba/macros.h"
-#include "umba/scanners.h"
-#include "umba/relops.h"
-#include "umba/debug_helpers.h"
-#include "umba/rule_of_five.h"
 
-#include "marty_cpp/marty_cpp.h"
-#include "marty_cpp/marty_enum.h"
-#include "marty_cpp/marty_flags.h"
-#include "marty_cpp/sort_includes.h"
-#include "marty_cpp/enums.h"
-#include "marty_cpp/src_normalization.h"
-#include "marty_cpp/marty_ns.h"
-#include "marty_cpp/marty_enum_impl_helpers.h"
 
-#include "encoding/encoding.h"
-#include "umba/cli_tool_helpers.h"
-#include "umba/time_service.h"
-#include "umba/shellapi.h"
-
+//----------------------------------------------------------------------------
 //
 // #include "utils.h"
 //
@@ -85,12 +90,157 @@ bool bOverwrite         = false;
 
 AppConfig appConfig;
 
+std::string curFile;
+unsigned lineNo = 0;
+
 #include "MdsArgParser.h"
 
+//----------------------------------------------------------------------------
 
 
+
+//----------------------------------------------------------------------------
+inline
+std::string extractCodeLangFromFencedCodeBlockMarker(std::string line)
+{
+    char markerChar = 0;
+    std::size_t markerLen = 0;
+    MdLineType mdLineType = almai::detectMarkdownLineType(line, &markerChar, &markerLen);
+    if (mdLineType==MdLineType::codeTilda || mdLineType==MdLineType::codeBacktick)
+    {
+        line.erase(0, markerLen);
+        umba::string::trim(line);
+        return line;
+    }
+
+    return std::string();
+}
+
+//----------------------------------------------------------------------------
+inline
+bool splitFileAndSaveContent(const std::string &fileName)
+{
+    std::string inputFileText;
+
+    if (!appConfig.readInputFile(fileName, inputFileText))
+    {
+        LOG_ERR << "failed to read input file: '" << fileName << "'" << "\n";
+        return false;
+    }
+
+    curFile = fileName;
+
+    auto mdLines = marty_cpp::splitToLinesSimple(inputFileText);
+
+    std::vector<std::string> lastSignificantLines;
+
+    bool readingCode = false;
+    char codeMarkerChar = 0;
+    std::size_t codeMarkerLen = 0;
+    std::string codeLang;
+
+    using almai::MdLineType;
+
+    lineNo = 0;
+    for(const auto &line : mdLines)
+    {
+        lineNo++;
+
+        char markerChar = 0;
+        std::size_t markerLen = 0;
+
+        MdLineType mdLineType = almai::detectMarkdownLineType(line, &markerChar, &markerLen);
+
+        if (readingCode)
+        {
+            if ((mdLineType==MdLineType::codeTilda || mdLineType==MdLineType::codeBacktick) && codeMarkerChar==markerChar && codeMarkerLen==markerLen)
+            {
+                if (codeLang.empty())
+                {
+                    codeLang = extractCodeLangFromFencedCodeBlockMarker(line);
+                }
+
+                // Остальная обработка финализации листинга
+    
+                // 
+                readingCode = false;
+                lastSignificantLines.clear();
+            }
+            else
+            {
+                // листинг, да не тот - продолжаем чтение листинга
+            }
+        }
+
+        else // обычный 
+        {
+
+        }
+
+
+        if ( mdLineType==MdLineType::emptyLine
+          || mdLineType==MdLineType::regularLine
+          || mdLineType==MdLineType::headerArx
+          || mdLineType==MdLineType::headerSetext
+          || mdLineType==MdLineType::quotation
+           )
+        {
+            lastSignificantLines = 
+        }
+
+
+    // emptyLine   = 0,
+    // regularLine
+    // headerArx                 // # - Atx - word processor on Amiga, min 1 char
+    // headerSetext              // ---- / ==== Setext (Structure Enhanced Text), min 1 char
+    // codeTilda
+    // codeBacktick
+    // codeIndentTab
+    // codeIndentSpace
+    // quotation                 // >
+
+
+
+    }
+
+
+            // auto dictFileLines = marty_cpp::splitToLinesSimple(dictFileText);
+            //  
+            // std::size_t lineNum = 0;
+            // for(const auto &l : dictFileLines)
+            // {
+            //     lineNum++;
+            //  
+            //     auto line = l;
+            //     umba::string::trim(line);
+            //     if (line.empty())
+            //         continue;
+            //  
+            //     if (line[0]=='#')
+            //         continue;
+            //  
+            //     if (!appConfig.addLangExtention(line))
+            //     {
+            //         curFile = dictFile;
+            //         lineNo = (unsigned)lineNum;
+            //         LOG_ERR_INPUT << "failed to add extention for language\n";
+            //         return -1;
+            //     }
+            //  
+            // }
+
+
+
+
+    return true;
+}
+
+//----------------------------------------------------------------------------
+
+
+
+//----------------------------------------------------------------------------
 int unsafeMain(int argc, char* argv[]);
-
 
 UMBA_APP_MAIN()
 {
@@ -111,8 +261,7 @@ UMBA_APP_MAIN()
 
 }
 
-
-
+//----------------------------------------------------------------------------
 int unsafeMain(int argc, char* argv[])
 {
 
@@ -139,6 +288,9 @@ int unsafeMain(int argc, char* argv[])
         std::string rootPath = umba::shellapi::getDebugAppRootFolder(&cwd);
         std::cout << "App Root Path: " << rootPath << "\n";
         std::cout << "Working Dir  : " << cwd << "\n";
+
+        argsParser.args.push_back("-o=" + rootPath + "\\tests\\almai-md-split");
+        argsParser.args.push_back(rootPath + "\\tests\\almai-md-split.md");
 
     } // if (umba::isDebuggerPresent())
 
@@ -195,6 +347,30 @@ int unsafeMain(int argc, char* argv[])
         //LOG_MSG<<"\n";
         umba::cli_tool_helpers::printNameVersion(umbaLogStreamMsg);
     }
+
+
+    if (appConfig.inputFiles.empty())
+    {
+        LOG_ERR << "no input files taken" << "\n";
+        return 1;
+    }
+
+    if (appConfig.outputDir.empty())
+    {
+        appConfig.outputDir = umba::filesys::getCurrentDirectory();
+    }
+
+    if (!umba::filename::isAbsPath(appConfig.outputDir))
+    {
+        appConfig.outputDir = umba::filename::appendPath(appConfig.outputDir, appConfig.outputDir);
+    }
+
+
+    for(const auto &inputFileName : appConfig.inputFiles)
+    {
+        splitFileAndSaveContent(inputFileName);
+    }
+    // std::vector<std::string>                         inputFiles;
 
 
 

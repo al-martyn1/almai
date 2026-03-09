@@ -48,6 +48,8 @@ tz-split-tool.md
 
     https://chat.deepseek.com/share/wdkw1l10iuub6i4634
 
+  Опции командной строки - https://chat.deepseek.com/share/86us6fejxsatvvoi75
+
 
 Доработка ТЗ
 ----------

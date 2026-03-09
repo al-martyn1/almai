@@ -1,4 +1,4 @@
-std::string appFullName   = "AlmAi";
+std::string appFullName   = "al-martyn1 AI tool";
 
 std::string appVersion    = "1.0";
 std::string appCommitHash;  //UNDONE

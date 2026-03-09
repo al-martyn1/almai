@@ -7,6 +7,9 @@
 #include "umba/cli_tool_helpers.h"
 #include "umba/shellapi.h"
 #include "umba/string_plus.h"
+//
+#include "marty_cpp/marty_cpp.h"
+//
 #include "MdsAppVerConfig.h"
 
 //
@@ -78,60 +81,6 @@ int operator()( const StringType                                &a           //!
             argsParser.quet = true;
             //appConfig.setOptQuet(true);
         }
-
-        #if 1
-        else if ( opt.setParam("info-type1[,+info-type2,-info-type]",umba::command_line::OptionType::optString)
-               || opt.isOption("info")
-               // || opt.setParam("VAL",true)
-               || opt.setDescription("Make info messages enabled/disabled, '+' (or nothing) - enable message, '-' - disable it. Type is one of: " + umba::log::makeAllWarnInfoLogOptionsString(getInfoOptsSet())
-                                    )
-                )
-        {
-            if (argsParser.hasHelpOption) return 0;
-        
-            if (!opt.getParamValue(strVal,errMsg))
-            {
-                LOG_ERR<<errMsg<<"\n";
-                return -1;
-            }
-
-            std::string unknownOpt;
-            if (!umba::log::addRemoveInfoOptions(getInfoOptsSet(), strVal, unknownOpt))
-            {
-                LOG_ERR<<"Unknown info type: '" << unknownOpt << "' (--info)\n";
-                return -1;
-            }
-
-            return 0;
-        }
-        #endif
-
-        #if 1
-        else if ( opt.setParam("warn-type1[,+warn-type2,-warn-type]",umba::command_line::OptionType::optString)
-               || opt.isOption("warning")
-               // || opt.setParam("VAL",true)
-               || opt.setDescription("Make warning messages enabled/disabled, '+' (or nothing) - enable message, '-' - disable it. Type is one of: " + umba::log::makeAllWarnInfoLogOptionsString(getWarnOptsSet())
-                                    )
-                )
-        {
-            if (argsParser.hasHelpOption) return 0;
-        
-            if (!opt.getParamValue(strVal,errMsg))
-            {
-                LOG_ERR<<errMsg<<"\n";
-                return -1;
-            }
-
-            std::string unknownOpt;
-            if (!umba::log::addRemoveWarningOptions(getWarnOptsSet(), strVal, unknownOpt))
-            {
-                LOG_ERR<<"Unknown warning type: '" << unknownOpt << "' (--warning)\n";
-                return -1;
-            }
-
-            return 0;
-        }
-        #endif
 
         else if (opt.isOption("home") || opt.setDescription("Open homepage"))
         {
@@ -240,103 +189,6 @@ int operator()( const StringType                                &a           //!
             return 0;
         }
 
-        #if 0
-        else if ( opt.setParam("?MODE",true)
-               || opt.isOption("verbose")
-               // || opt.setParam("VAL",true)
-               || opt.setDescription("Verbose mode on/off."))
-        {
-            if (argsParser.hasHelpOption) return 0;
-
-            if (!opt.getParamValue(boolVal,errMsg))
-            {
-                LOG_ERR<<errMsg<<"\n";
-                return -1;
-            }
-
-            argsParser.quet       = !boolVal;
-            appConfig.verboseMode =  boolVal;
-            return 0;
-        }
-        #endif
-
-        #if 0
-        else if ( opt.setParam("?MODE",true)
-               || opt.isOption("overwrite") || opt.isOption('Y')
-               // || opt.setParam("VAL",true)
-               || opt.setDescription("Allow overwrite existing file."))
-        {
-            if (argsParser.hasHelpOption) return 0;
-
-            if (!opt.getParamValue(boolVal,errMsg))
-            {
-                LOG_ERR<<errMsg<<"\n";
-                return -1;
-            }
-
-            bOverwrite = boolVal;
-            return 0;
-        }
-        #endif
-
-        #if 0
-        else if ( opt.setParam("LINEFEED",umba::command_line::OptionType::optString)
-               || opt.isOption("linefeed") || opt.isOption("LF") || opt.isOption('L')
-               // || opt.setParam("VAL",true)
-               || opt.setDescription("Output linefeed. LINEFEED is one of: `CR`/`LF`/`CRLF`/`LFCR`/`DETECT`."
-                                     #if defined(WIN32) || defined(_WIN32)
-                                     "Default is `CRLF`."
-                                     #else
-                                     "Default is `LF`."
-                                     #endif
-                                    )
-                )
-        {
-            if (argsParser.hasHelpOption) return 0;
-
-            if (!opt.getParamValue(strVal,errMsg))
-            {
-                LOG_ERR<<errMsg<<"\n";
-                return -1;
-            }
-
-            marty_cpp::ELinefeedType tmp = marty_cpp::enum_deserialize( strVal, marty_cpp::ELinefeedType::invalid );
-            if (tmp== marty_cpp::ELinefeedType::invalid)
-            {
-                LOG_ERR<<"Invalid linefeed option value: "<<strVal<<"\n";
-                return -1;
-            }
-
-            appConfig.outputLinefeed = tmp;
-
-            return 0;
-        }
-        #endif
-
-        #if 0
-        else if ( opt.setParam("VAR:VAL")
-               || opt.isOption("set-var") || opt.isOption("set-condition-var") || opt.isOption('C')
-               || opt.setDescription("Set variable valie for conditions and substitutions"))
-        {
-            if (argsParser.hasHelpOption) return 0;
-
-            if (!opt.hasArg())
-            {
-                LOG_ERR<<"Setting condition variable requires argument (--set-condition-var)\n";
-                return -1;
-            }
-
-            auto optArg = opt.optArg;
-            if (!appConfig.addConditionVar(optArg))
-            {
-                LOG_ERR<<"Setting condition variable failed, invalid argument: '" << optArg << "' (--set-condition-var)\n";
-                return -1;
-            }
-
-            return 0;
-        }
-        #endif
-
         else if ( opt.isOption("gcc")
                || opt.setDescription("GCC messages format instead of MSVC format")
                 )
@@ -376,9 +228,146 @@ int operator()( const StringType                                &a           //!
             return umba::command_line::autocompletionInstaller( pCol, opt, pCol->getPrintHelpStyle(), false, [&]( bool bErr ) -> decltype(auto) { return bErr ? LOG_ERR : LOG_MSG; } );
         }
 
+
+        if ( opt.setParam("?MODE",true)
+          || opt.isOption("overwrite") || opt.isOption('Y')
+          // || opt.setParam("VAL",true)
+          || opt.setDescription("Allow overwrite existing files.")
+           )
+        {
+            if (argsParser.hasHelpOption) return 0;
+
+            if (!opt.getParamValue(boolVal,errMsg))
+            {
+                LOG_ERR << errMsg << "\n";
+                return -1;
+            }
+
+            appConfig.overwrite = boolVal;
+            return 0;
+        }
+
+
+        if ( opt.setParam("?MODE",true)
+          || opt.isOption("list") || opt.isOption('L')
+          // || opt.setParam("VAL",true)
+          || opt.setDescription("Only list embedded files.")
+           )
+        {
+            if (argsParser.hasHelpOption) return 0;
+
+            if (!opt.getParamValue(boolVal,errMsg))
+            {
+                LOG_ERR << errMsg << "\n";
+                return -1;
+            }
+
+            appConfig.listOnly = boolVal;
+            return 0;
+        }
+
+
+        else if (   opt.setParam("PATH", umba::command_line::OptionType::optString)
+            || opt.isOption("output-dir") || opt.isOption('o')
+            || opt.setDescription("Set output root path to save files.")
+           )
+        {
+            if (argsParser.hasHelpOption) return 0;
+
+            if (!opt.getParamValue(strVal,errMsg))
+            {
+                LOG_ERR<<errMsg<<"\n";
+                return -1;
+            }
+
+            auto path = argsParser.makeAbsPath(strVal);
+
+            appConfig.outputDir = path;
+
+            return 0;
+        }
+
+
+        else if (   opt.setParam("DICT_FILE", umba::command_line::OptionType::optString)
+            || opt.isOption("dict") || opt.isOption('d')
+            || opt.setDescription("Add language dictionary entry.")
+           )
+        {
+            if (argsParser.hasHelpOption) return 0;
+
+            if (!opt.getParamValue(strVal,errMsg))
+            {
+                LOG_ERR<<errMsg<<"\n";
+                return -1;
+            }
+
+            if (!appConfig.addLangExtention(strVal))
+            {
+                LOG_ERR << "failed to add extention for language\n";
+                return -1;
+            }
+
+            return 0;
+        }
+
+
+        else if (   opt.setParam("DICT_FILE", umba::command_line::OptionType::optString)
+            || opt.isOption("dict-file") || opt.isOption('D')
+            || opt.setDescription("Read language dictionary file.")
+           )
+        {
+            if (argsParser.hasHelpOption) return 0;
+
+            if (!opt.getParamValue(strVal,errMsg))
+            {
+                LOG_ERR<<errMsg<<"\n";
+                return -1;
+            }
+
+            auto dictFile = argsParser.makeAbsPath(strVal);
+
+            std::string dictFileText;
+            if (!appConfig.readInputFile(dictFile, dictFileText))
+            {
+                LOG_ERR << "failed to read langiage dictionary file: " << dictFile << "\n";
+                return -1;
+            }
+
+            dictFileText       = marty_cpp::normalizeCrLfToLf(dictFileText);
+            auto dictFileLines = marty_cpp::splitToLinesSimple(dictFileText);
+
+            std::size_t lineNum = 0;
+            for(const auto &l : dictFileLines)
+            {
+                lineNum++;
+
+                auto line = l;
+                umba::string::trim(line);
+                if (line.empty())
+                    continue;
+
+                if (line[0]=='#')
+                    continue;
+
+                if (!appConfig.addLangExtention(line))
+                {
+                    curFile = dictFile;
+                    lineNo = (unsigned)lineNum;
+                    LOG_ERR_INPUT << "failed to add extention for language\n";
+                    return -1;
+                }
+
+            }
+
+
+            return 0;
+        }
+
+
         else if (opt.isHelpStyleOption())
         {
             // Job is done in isHelpStyleOption
+            // return 0; // !!!
         }
 
         else if (opt.isHelpOption()) // if (opt.infoIgnore() || opt.isOption("help") || opt.isOption('h') || opt.isOption('?') || opt.setDescription(""))
@@ -467,16 +456,7 @@ int operator()( const StringType                                &a           //!
 
     // Process non-option args here
 
-    #if 0
-    if (inputFilename.empty())
-    {
-        inputFilename = argsParser.makeAbsPath(a);
-    }
-    else
-    {
-        outputFilename = argsParser.makeAbsPath(a);
-    }
-    #endif
+    appConfig.inputFiles.push_back(argsParser.makeAbsPath(a));
 
     return 0;
 

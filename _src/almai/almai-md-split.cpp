@@ -101,28 +101,11 @@ unsigned lineNo = 0;
 
 //----------------------------------------------------------------------------
 inline
-std::string extractCodeLangFromFencedCodeBlockMarker(std::string line)
-{
-    char markerChar = 0;
-    std::size_t markerLen = 0;
-    MdLineType mdLineType = almai::detectMarkdownLineType(line, &markerChar, &markerLen);
-    if (mdLineType==MdLineType::codeTilda || mdLineType==MdLineType::codeBacktick)
-    {
-        line.erase(0, markerLen);
-        umba::string::trim(line);
-        return line;
-    }
-
-    return std::string();
-}
-
-//----------------------------------------------------------------------------
-inline
 bool splitFileAndSaveContent(const std::string &fileName)
 {
-    std::string inputFileText;
+    std::vector<std::string> mdLines;
 
-    if (!appConfig.readInputFile(fileName, inputFileText))
+    if (!appConfig.readFile(fileName, mdLines))
     {
         LOG_ERR << "failed to read input file: '" << fileName << "'" << "\n";
         return false;
@@ -130,16 +113,19 @@ bool splitFileAndSaveContent(const std::string &fileName)
 
     curFile = fileName;
 
-    auto mdLines = marty_cpp::splitToLinesSimple(inputFileText);
-
     std::vector<std::string> lastSignificantLines;
 
     bool readingCode = false;
     char codeMarkerChar = 0;
     std::size_t codeMarkerLen = 0;
     std::string codeLang;
+    std::vector<std::string> codeLines;
+
+    std::vector<almai::ListingInfo> foundListings;
 
     using almai::MdLineType;
+
+    almai::MdLineType listingType = almai::MdLineType::emptyLine;
 
     lineNo = 0;
     for(const auto &line : mdLines)
@@ -153,86 +139,178 @@ bool splitFileAndSaveContent(const std::string &fileName)
 
         if (readingCode)
         {
-            if ((mdLineType==MdLineType::codeTilda || mdLineType==MdLineType::codeBacktick) && codeMarkerChar==markerChar && codeMarkerLen==markerLen)
+            // listingType = mdLineType;
+            if (listingType==MdLineType::codeIndentTab || listingType==MdLineType::codeIndentSpace)
+            {
+                if (listingType==mdLineType)
+                {
+                    // Продолжается чтение листинга с отступом
+                    codeLines.push_back(line);
+                }
+                else
+                {
+                    // Может начаться backtick или tilda листинг
+                    if (mdLineType==MdLineType::codeTilda || mdLineType==MdLineType::codeBacktick)
+                    {
+                        listingType = mdLineType;
+                        readingCode = true;
+                        codeMarkerChar = markerChar;
+                        codeMarkerLen  = markerLen ;
+                        codeLines.clear();
+                        codeLang = almai::extractCodeLangFromFencedCodeBlockMarker(line);
+                    }
+                    else
+                    {
+                        // листинг с отступом закончился
+                        readingCode = false;
+                        lastSignificantLines.clear();
+                        codeLines.clear();
+                    }
+                }
+            }
+
+            else if ((listingType==MdLineType::codeTilda || listingType==MdLineType::codeBacktick) && listingType==mdLineType && codeMarkerChar==markerChar && codeMarkerLen==markerLen)
             {
                 if (codeLang.empty())
                 {
-                    codeLang = extractCodeLangFromFencedCodeBlockMarker(line);
+                    codeLang = almai::extractCodeLangFromFencedCodeBlockMarker(line);
                 }
 
                 // Остальная обработка финализации листинга
+                almai::ListingInfo listingInfo;
+                listingInfo.listingCodeLines = codeLines;
+                listingInfo.foundLangName    = codeLang;
+
+                std::vector<std::string> filenames;
+                bool hasEdging = almai::findListingFilenames(lastSignificantLines, filenames);
+
+                for(auto &name : filenames)
+                {
+                    name = almai::replaceInvalidPathNameChars(name, !hasEdging);
+                    name = almai::makeNormalizedRelativePath(name);
+                    listingInfo.listingFilenames.emplace_back(name);
+                }
+
+                foundListings.emplace_back(listingInfo);
     
-                // 
                 readingCode = false;
                 lastSignificantLines.clear();
+                codeLines.clear();
             }
             else
             {
-                // листинг, да не тот - продолжаем чтение листинга
+                // продолжаем чтение листинга
+                codeLines.push_back(line);
             }
         }
 
-        else // обычный 
+        else // обычный режим
         {
-
+            if ( mdLineType==MdLineType::emptyLine
+              || mdLineType==MdLineType::headerArx
+              || mdLineType==MdLineType::headerSetext
+              || mdLineType==MdLineType::quotation
+               )
+            {
+                lastSignificantLines.clear();
+            }
+            else if (mdLineType==MdLineType::regularLine)
+            {
+                lastSignificantLines.push_back(line);
+            }
+            else if (mdLineType==MdLineType::codeTilda || mdLineType==MdLineType::codeBacktick)
+            {
+                listingType = mdLineType;
+                readingCode = true;
+                codeMarkerChar = markerChar;
+                codeMarkerLen  = markerLen ;
+                codeLines.clear();
+                codeLang = almai::extractCodeLangFromFencedCodeBlockMarker(line);
+            }
+            else if (mdLineType==MdLineType::codeIndentTab || mdLineType==MdLineType::codeIndentSpace)
+            {
+                LOG_WARN_INPUT("unsup-code-block-type") << (mdLineType==MdLineType::codeIndentTab ? "tab" : "space") << " indent code blocks not supported\n";
+                listingType = mdLineType;
+                readingCode = true;
+                codeMarkerChar = markerChar;
+                codeMarkerLen  = markerLen ;
+                codeLines.clear();
+                codeLang.clear();
+            }
+            else
+            {
+                LOG_WARN_INPUT("unk-line-type") << "unknown line type found\n";
+            }
         }
-
-
-        if ( mdLineType==MdLineType::emptyLine
-          || mdLineType==MdLineType::regularLine
-          || mdLineType==MdLineType::headerArx
-          || mdLineType==MdLineType::headerSetext
-          || mdLineType==MdLineType::quotation
-           )
-        {
-            lastSignificantLines = 
-        }
-
-
-    // emptyLine   = 0,
-    // regularLine
-    // headerArx                 // # - Atx - word processor on Amiga, min 1 char
-    // headerSetext              // ---- / ==== Setext (Structure Enhanced Text), min 1 char
-    // codeTilda
-    // codeBacktick
-    // codeIndentTab
-    // codeIndentSpace
-    // quotation                 // >
-
-
 
     }
 
+    std::unordered_map<std::string, std::size_t>  filenameCounters;
 
-            // auto dictFileLines = marty_cpp::splitToLinesSimple(dictFileText);
-            //  
-            // std::size_t lineNum = 0;
-            // for(const auto &l : dictFileLines)
-            // {
-            //     lineNum++;
-            //  
-            //     auto line = l;
-            //     umba::string::trim(line);
-            //     if (line.empty())
-            //         continue;
-            //  
-            //     if (line[0]=='#')
-            //         continue;
-            //  
-            //     if (!appConfig.addLangExtention(line))
-            //     {
-            //         curFile = dictFile;
-            //         lineNo = (unsigned)lineNum;
-            //         LOG_ERR_INPUT << "failed to add extention for language\n";
-            //         return -1;
-            //     }
-            //  
-            // }
+    for(auto &listingInfo : foundListings)
+    {
+        auto ext = appConfig.findLangExtention(listingInfo.foundLangName);
+        if (ext.empty())
+            ext = "txt";
 
+        if (listingInfo.listingFilenames.empty())
+            listingInfo.listingFilenames.emplace_back("autosave");
+        
+        listingInfo.checkAddExtention(ext);
+        listingInfo.checkAutoEnumerate(filenameCounters);
+    }
 
+    if (appConfig.listOnly)
+    {
+        // std::cout 
+        UMBA_LOG_MSG << "\nFound listings:\n";
 
+        for(const auto &listingInfo : foundListings)
+        {
+            for(const auto &name : listingInfo.listingFilenames)
+            {
+                // std::cout 
+                UMBA_LOG_MSG << "  " << name << "\n";
+            }
 
-    return true;
+            std::size_t printLines = listingInfo.listingCodeLines.size();
+            if (printLines>appConfig.listLines)
+                printLines = appConfig.listLines;
+
+            for(std::size_t i=0u; i!=printLines; ++i)
+            {
+                //std::cout 
+                UMBA_LOG_MSG << "    >" << listingInfo.listingCodeLines[i] << "\n";
+            }
+
+            // std::cout 
+            UMBA_LOG_MSG << "\n";
+        }
+
+        return true;
+    }
+
+    bool hasErrors = false;
+
+    for(const auto &listingInfo : foundListings)
+    {
+        for(const auto &name : listingInfo.listingFilenames)
+        {
+            auto fullName = umba::filename::makeAbsPath(name, appConfig.outputDir);
+
+            auto dir = umba::filename::getPath(fullName);
+            if (!dir.empty())
+                umba::filesys::createDirectoryEx(dir, true /* forceCreatePath */ );
+
+            if (!appConfig.writeFile(fullName, listingInfo.listingCodeLines))
+            {
+                 hasErrors = true;
+                 LOG_ERR << "failed to write file: '" << fullName << "'\n";
+            }
+        }
+    }
+
+    return !hasErrors;
 }
 
 //----------------------------------------------------------------------------
@@ -289,6 +367,7 @@ int unsafeMain(int argc, char* argv[])
         std::cout << "App Root Path: " << rootPath << "\n";
         std::cout << "Working Dir  : " << cwd << "\n";
 
+        argsParser.args.push_back("--list");
         argsParser.args.push_back("-o=" + rootPath + "\\tests\\almai-md-split");
         argsParser.args.push_back(rootPath + "\\tests\\almai-md-split.md");
 
@@ -366,13 +445,16 @@ int unsafeMain(int argc, char* argv[])
     }
 
 
+    bool hasErrors = false;
+
     for(const auto &inputFileName : appConfig.inputFiles)
     {
-        splitFileAndSaveContent(inputFileName);
+        if (!splitFileAndSaveContent(inputFileName))
+        {
+            hasErrors = true;
+        }
     }
-    // std::vector<std::string>                         inputFiles;
 
-
-
-    return 0;
+    return hasErrors ? 1 : 0;
 }
+

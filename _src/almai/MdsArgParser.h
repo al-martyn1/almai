@@ -62,10 +62,10 @@ int operator()( const StringType                                &a           //!
     {
         std::string errMsg;
         std::string strVal;
-        //int intVal;
-        //unsigned uintVal;
-        std::size_t szVal;
-        bool boolVal;
+        int intVal = 0;
+        //unsigned uintVal = 0;
+        std::size_t szVal = 0;
+        bool boolVal = false;
 
         UMBA_USED(szVal);
         UMBA_USED(boolVal);
@@ -247,22 +247,23 @@ int operator()( const StringType                                &a           //!
             return 0;
         }
 
-
-        if ( opt.setParam("?MODE",true)
+        if ( opt.setParam("?NUM_LINES", 5 /* defVal */, 0 /* minVal */ , 32 /* maxVal */ )
           || opt.isOption("list") || opt.isOption('L')
           // || opt.setParam("VAL",true)
-          || opt.setDescription("Only list embedded files.")
+          || opt.setDescription("Only list embedded files. NUM_LINES specifies the number of lines of file listing to be pronted")
            )
         {
             if (argsParser.hasHelpOption) return 0;
 
-            if (!opt.getParamValue(boolVal,errMsg))
+            if (!opt.getParamValue(intVal,errMsg))
             {
                 LOG_ERR << errMsg << "\n";
                 return -1;
             }
 
-            appConfig.listOnly = boolVal;
+            appConfig.listOnly = true;
+            appConfig.listLines = std::size_t(intVal);
+
             return 0;
         }
 
@@ -327,7 +328,7 @@ int operator()( const StringType                                &a           //!
             auto dictFile = argsParser.makeAbsPath(strVal);
 
             std::string dictFileText;
-            if (!appConfig.readInputFile(dictFile, dictFileText))
+            if (!appConfig.readFile(dictFile, dictFileText))
             {
                 LOG_ERR << "failed to read langiage dictionary file: " << dictFile << "\n";
                 return -1;

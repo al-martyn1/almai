@@ -9,6 +9,7 @@
 #include "umba/filename.h"
 #include "umba/filesys.h"
 //
+#include "utils.h"
 
 //
 #include <map>
@@ -29,6 +30,7 @@ struct AppConfig
 
     bool overwrite = false;
     bool listOnly  = false; // list files, but don't save them
+    std::size_t listLines = 5;
 
 
     static
@@ -44,7 +46,7 @@ struct AppConfig
     }
 
     static
-    bool readInputFile(const std::string &inputFilename, std::string &inputFileText)
+    bool readFile(const std::string &inputFilename, std::string &inputFileText)
     {
         std::string inputFileTextOrg;
 
@@ -58,6 +60,34 @@ struct AppConfig
 
         return true;
     }
+
+    static
+    bool readFile(const std::string &inputFilename, std::vector<std::string> &inputFileLines)
+    {
+        std::string text;
+        if (!readFile(inputFilename, text))
+             return false;
+
+        inputFileLines = marty_cpp::splitToLinesSimple(text);
+
+        return true;
+    }
+
+    bool writeFile(const std::string &filename, const std::string &filedata) const
+    {
+        return umba::filesys::writeFile(filename, filedata, overwrite);
+    }
+
+    bool writeFile(const std::string &filename, const std::vector<std::string> &lines) const
+    {
+        bool addTrailingNewLine = true;
+        if (lines.empty() || !lines.back().empty())
+            addTrailingNewLine = false;
+
+        std::string text = marty_cpp::mergeLines(lines, marty_cpp::ELinefeedType::systemDefault,  /* true */ addTrailingNewLine);
+        return writeFile(filename, text);
+    }
+
 
     bool addLangExtention(std::string langName, std::string langExtention)
     {
@@ -100,12 +130,30 @@ struct AppConfig
         umba::string::trim(langName);
         umba::string::tolower(langName);
 
-        std::unordered_map<std::string, std::string> it = langExtentionDict.find(langName);
+        std::unordered_map<std::string, std::string>::const_iterator it = langExtentionDict.find(langName);
         if (it==langExtentionDict.end())
-            return std::string();
+        {
+            return almai::replaceInvalidFileNameChars(langName, true /* replaceSpaceAlso */ );
+        }
 
         return it->second;
     }
+
+
+// StringType mergeLines(const std::vector<StringType> &v, ELinefeedType lfType, bool addTrailingNewLine=false)
+// {
+//     StringType resText; resText.reserve(v.size()*16u);
+//  
+//     StringType lfStr;
+//  
+//     switch(lfType)
+//     {
+//         case ELinefeedType::lf             :  lfStr = make_string<StringType>("\n"  ); break;
+//         case ELinefeedType::cr             :  lfStr = make_string<StringType>("\r"  ); break;
+//         case ELinefeedType::lfcr           :  lfStr = make_string<StringType>("\n\r"); break;
+//         case ELinefeedType::crlf           :  lfStr = make_string<StringType>("\r\n"); break;
+//         case ELinefeedType::linefeedRemove :  lfStr = make_string<StringType>(""    ); break;
+
 
 
 

@@ -10,6 +10,7 @@
 
 #include <iterator>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <algorithm>
 //----------------------------------------------------------------------------
@@ -116,33 +117,6 @@ std::string stripLeadingPathSeps(const std::string &name)
 
 //----------------------------------------------------------------------------
 inline
-std::string makeNormalizedRelativePath(std::string name)
-{
-    name = normalizePathSeps(name);
-
-    using umba::string::starts_with_and_strip;
-    // umba::string::starts_with_and_strip(name, std::string("//?/UNC/")); // "\\?\UNC\"
-    starts_with_and_strip(name, std::string("//?/"));
-    name = stripLeadingChar(name, '~');
-    name = stripLeadingChar(name, '/');
-
-    auto pos = name.find_first_of("/:");
-    if (pos!=name.npos && name[pos]==':')
-    {
-        pos = name.find_first_of("/");
-        if (pos==name.npos) // У нас тут путь вида C:
-            name.clear();
-        else
-            name.erase(0, pos);
-    }
-    
-    name = stripLeadingChar(name, '/');
-
-    return name;
-}
-
-//----------------------------------------------------------------------------
-inline
 std::vector<std::string> splitNormalizedPath(const std::string &p)
 {
     return umba::string::split(p, '/', true /* skipEmpty */ );
@@ -176,7 +150,39 @@ std::vector<std::string> reducePath(const std::vector<std::string> &pathParts)
 inline
 std::string mergePath(const std::vector<std::string> &pathParts)
 {
-     umba::string::merge<std::string>(pathParts.begin(), pathParts.end(), std::string("/"), [](const auto &s){ return s; });
+     return umba::string::merge<std::string>(pathParts.begin(), pathParts.end(), std::string("/"), [](const auto &s){ return s; });
+}
+
+//----------------------------------------------------------------------------
+inline
+std::string makeNormalizedRelativePath(std::string name)
+{
+    name = normalizePathSeps(name);
+
+    using umba::string::starts_with_and_strip;
+    // umba::string::starts_with_and_strip(name, std::string("//?/UNC/")); // "\\?\UNC\"
+    starts_with_and_strip(name, std::string("//?/"));
+    name = stripLeadingChar(name, '~');
+    name = stripLeadingChar(name, '/');
+
+    auto pos = name.find_first_of("/:");
+    if (pos!=name.npos && name[pos]==':')
+    {
+        pos = name.find_first_of("/");
+        if (pos==name.npos) // У нас тут путь вида C:
+            name.clear();
+        else
+            name.erase(0, pos);
+    }
+    
+    name = stripLeadingChar(name, '/');
+
+    auto 
+    parts = splitNormalizedPath(name);
+    parts = reducePath(parts);
+    name  = mergePath(parts);
+
+    return name;
 }
 
 //----------------------------------------------------------------------------
@@ -203,6 +209,75 @@ std::string replaceInvalidFileNameChars(std::string name, bool replaceSpaceAlso)
     return name;
 
 }
+
+//----------------------------------------------------------------------------
+inline
+std::string replaceInvalidPathNameChars(std::string name, bool replaceSpaceAlso)
+{
+    auto pos = name.find_first_of(getInvalidPathNameChars());
+    while(pos!=name.npos)
+    {
+        name[pos] = '_';
+        pos = name.find_first_of(getInvalidPathNameChars(), pos+1);
+    }
+
+    if (replaceSpaceAlso)
+    {
+        pos = name.find(' ');
+        while(pos!=name.npos)
+        {
+            name[pos] = '_';
+            pos = name.find(' ', pos+1);
+        }
+    }
+
+    return name;
+
+}
+
+//----------------------------------------------------------------------------
+inline
+std::string insertCounterIntoFilename(std::string name, std::size_t cnt, std::size_t numDigits=3)
+{
+    //std::ostringstream oss;
+    auto cntStr = std::to_string(cnt);
+    if (cntStr.size()<numDigits)
+    {
+        cntStr = std::string(numDigits-cntStr.size(), '0') + cntStr;
+    }
+
+    cntStr = "_" + cntStr;
+
+    static std::string seps = "./";
+    auto pos = name.find_last_of(seps);
+    if (pos!=name.npos && name[pos]=='.')
+        name.insert(pos, cntStr);
+    else
+        name += cntStr;
+
+    return name;
+}
+
+    // void checkAddExtention(std::string ext)
+    // {
+    //     static std::string seps = "./";
+    //  
+    //     if (ext.empty())
+    //         ext = "txt";
+    //  
+    //     for(auto &name : listingFilenames)
+    //     {
+    //         auto pos = name.find_last_of(seps);
+    //         if (pos!=name.npos && name[pos]=='/')
+    //             continue;
+    //  
+    //         if (pos==name.npos)
+    //             name += ".";
+    //  
+    //         name += ext;
+    //     }
+    // }
+
 
 //----------------------------------------------------------------------------
 inline
@@ -325,7 +400,7 @@ bool findListingFilenames( std::vector<std::string>::const_iterator b
         // Обрамления нет
 
         // Надо проверить валидность имен (если это имена)
-        // и надо проверить на вероятность тго, что это путь ()
+        // и надо проверить на вероятность того, что это путь ()
 
         std::size_t i = 0;
 
@@ -340,12 +415,24 @@ bool findListingFilenames( std::vector<std::string>::const_iterator b
         numEqualEdgings = i;
     }
 
-    resNames.erase( resNames.begin(), std::next(resNames.begin(), std::ptrdiff_t(numEqualEdgings)) );
+    if (!numEqualEdgings)
+        numEqualEdgings = 1;
+
+    resNames.erase( std::next(resNames.begin(), std::ptrdiff_t(numEqualEdgings)), resNames.end() );
 
     // Реверсим обратно
     std::reverse(resNames.begin(), resNames.end());
 
     return edgingType!=std::size_t(-1);
+}
+
+//----------------------------------------------------------------------------
+inline
+bool findListingFilenames( std::vector<std::string> textLines
+                         , std::vector<std::string> &resNames
+                         ) 
+{
+    return findListingFilenames(textLines.begin(), textLines.end(), resNames);
 }
 
 //----------------------------------------------------------------------------
@@ -375,13 +462,13 @@ std::size_t geNumberOfFirstSameChars(const std::string &str)
 enum class MdLineType
 {
     emptyLine   = 0,
-    regularLine
-    headerArx                 // # - Atx - word processor on Amiga, min 1 char
-    headerSetext              // ---- / ==== Setext (Structure Enhanced Text), min 1 char
-    codeTilda
-    codeBacktick
-    codeIndentTab
-    codeIndentSpace
+    regularLine    ,
+    headerArx      ,           // # - Atx - word processor on Amiga, min 1 char
+    headerSetext   ,           // ---- / ==== Setext (Structure Enhanced Text), min 1 char
+    codeTilda      ,
+    codeBacktick   ,
+    codeIndentTab  ,
+    codeIndentSpace,
     quotation                 // >
 
 }; // enum class MdLineType
@@ -399,7 +486,7 @@ MdLineType detectMarkdownLineType(const std::string &str, char *pChar=0, std::si
         
     std::size_t nChars = geNumberOfFirstSameChars(str);
 
-    if (*pNumChars)
+    if (pNumChars)
        *pNumChars = nChars;
 
     char ch = str[0];
@@ -412,18 +499,91 @@ MdLineType detectMarkdownLineType(const std::string &str, char *pChar=0, std::si
         case '#' : return MdLineType::headerArx;
         case '-' : return MdLineType::headerSetext;
         case '=' : return MdLineType::headerSetext;
-        case '~' : nChars>=3 ? MdLineType::codeTilda       ? MdLineType::regularLine;
-        case '`' : nChars>=3 ? MdLineType::codeBacktick    ? MdLineType::regularLine;
-        case '\t': nChars>=1 ? MdLineType::codeIndentTab   ? MdLineType::regularLine;
-        case ' ' : nChars>=4 ? MdLineType::codeIndentSpace ? MdLineType::regularLine;
-        case '>' : nChars>=1 ? MdLineType::quotation       ? MdLineType::regularLine;
-        default  : MdLineType::regularLine;
+        case '~' : return nChars>=3 ? MdLineType::codeTilda       : MdLineType::regularLine;
+        case '`' : return nChars>=3 ? MdLineType::codeBacktick    : MdLineType::regularLine;
+        case '\t': return nChars>=1 ? MdLineType::codeIndentTab   : MdLineType::regularLine;
+        case ' ' : return nChars>=4 ? MdLineType::codeIndentSpace : MdLineType::regularLine;
+        case '>' : return nChars>=1 ? MdLineType::quotation       : MdLineType::regularLine;
+        default  : return MdLineType::regularLine;
+    }
+}
+
+//----------------------------------------------------------------------------
+inline
+std::string extractCodeLangFromFencedCodeBlockMarker(std::string line)
+{
+    char markerChar = 0;
+    std::size_t markerLen = 0;
+    MdLineType mdLineType = almai::detectMarkdownLineType(line, &markerChar, &markerLen);
+    if (mdLineType==MdLineType::codeTilda || mdLineType==MdLineType::codeBacktick)
+    {
+        line.erase(0, markerLen);
+        umba::string::trim(line);
+        return line;
+    }
+
+    return std::string();
+}
+
+//----------------------------------------------------------------------------
+
+
+
+//----------------------------------------------------------------------------
+struct ListingInfo
+{
+    std::vector<std::string>  listingFilenames;
+    std::vector<std::string>  listingCodeLines;
+    std::string               foundLangName   ;
+
+    void checkAddExtention(std::string ext)
+    {
+        static std::string seps = "./";
+
+        if (ext.empty())
+            ext = "txt";
+
+        for(auto &name : listingFilenames)
+        {
+            auto pos = name.find_last_of(seps);
+
+            if (pos==name.npos || name[pos]=='/')
+            {
+                name += ".";
+                name += ext;
+            }
+
+            // if (pos!=name.npos && name[pos]=='/')
+            //     continue;
+            //  
+            // if (pos==name.npos)
+            //     name += ".";
+            //  
+            // name += ext;
+        }
+    }
+
+    void checkAutoEnumerate(std::unordered_map<std::string, std::size_t> &filenameCounters)
+    {
+        for(auto &name : listingFilenames)
+        {
+            auto lowerCaseName = umba::string::tolower_copy(name);
+            std::size_t counter = filenameCounters[lowerCaseName];
+            if (!counter)
+            {
+                filenameCounters[lowerCaseName] = 1;
+            }
+            else
+            {
+                name = insertCounterIntoFilename(name, counter);
+                ++filenameCounters[lowerCaseName];
+            }
+        }
+
     }
 
 
-}
-
-
+}; // struct ListingInfo
 
 
 

@@ -13,9 +13,6 @@ call "%~dp0\.find_test_exe.bat" %TEST_NAME%
 %TEST_EXE%              -o=almai-md-split-ai-result almai-md-split-ai-result.md
 %TEST_EXE% --overwrite  -o=almai-md-split-ai-result almai-md-split-ai-result.md
 
-
-
-
 exit /B 0
 :NOT_FOUND
 @echo Test executable not found

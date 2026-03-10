@@ -94,7 +94,7 @@ struct AppConfigBase
         if (!dir.empty())
             umba::filesys::createDirectoryEx(dir, true /* forceCreatePath */ );
 
-        return umba::filesys::writeFile(filename, filedata, overwrite);
+        return umba::filesys::writeFile(fullName, filedata, overwrite);
     }
 
     bool writeFile(const std::string &filename, const std::string &filedata) const

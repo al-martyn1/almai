@@ -296,13 +296,8 @@ bool splitFileAndSaveContent(const std::string &fileName)
     {
         for(const auto &name : listingInfo.listingFilenames)
         {
-            auto fullName = umba::filename::makeAbsPath(name, appConfig.outputDir);
-
-            auto dir = umba::filename::getPath(fullName);
-            if (!dir.empty())
-                umba::filesys::createDirectoryEx(dir, true /* forceCreatePath */ );
-
-            if (!appConfig.writeFile(fullName, listingInfo.listingCodeLines))
+            std::string fullName;
+            if (!appConfig.writeFile(name, listingInfo.listingCodeLines, fullName))
             {
                  hasErrors = true;
                  LOG_ERR << "failed to write file: '" << fullName << "'\n";
@@ -434,15 +429,7 @@ int unsafeMain(int argc, char* argv[])
         return 1;
     }
 
-    if (appConfig.outputDir.empty())
-    {
-        appConfig.outputDir = umba::filesys::getCurrentDirectory();
-    }
-
-    if (!umba::filename::isAbsPath(appConfig.outputDir))
-    {
-        appConfig.outputDir = umba::filename::appendPath(appConfig.outputDir, appConfig.outputDir);
-    }
+    appConfig.checkUpdateOutputDir();
 
 
     bool hasErrors = false;

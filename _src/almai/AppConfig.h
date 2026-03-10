@@ -3,6 +3,8 @@
 
 #include "umba/umba.h"
 //
+#include "AppConfigBase.h"
+//
 #include "umba/string_plus.h"
 
 //
@@ -11,7 +13,7 @@
 #include <unordered_set>
 
 
-struct AppConfig
+struct AppConfig : public AppConfigBase
 {
 
 }; // struct AppConfig

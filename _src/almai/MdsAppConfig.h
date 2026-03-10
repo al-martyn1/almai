@@ -81,8 +81,15 @@ struct AppConfig
     bool writeFile(const std::string &filename, const std::vector<std::string> &lines) const
     {
         bool addTrailingNewLine = true;
-        if (lines.empty() || !lines.back().empty())
+        if (lines.empty())
+        {
             addTrailingNewLine = false;
+        }
+        else
+        {
+            if (lines.back().empty())
+                addTrailingNewLine = false;
+        }
 
         std::string text = marty_cpp::mergeLines(lines, marty_cpp::ELinefeedType::systemDefault,  /* true */ addTrailingNewLine);
         return writeFile(filename, text);

@@ -1,2 +1,14 @@
-pas Pascal
-py Python
+cpp  C++
+hpp  C++ Header
+h    C Header
+h    C/C++ Header
+
+pas  Pascal
+
+py   Python
+py2  Python2
+py2  Python 2
+py3  Python3
+py3  Python 3
+
+md   Markdown

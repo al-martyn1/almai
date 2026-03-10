@@ -8,11 +8,12 @@
 #include "umba/string_plus.h"
 //
 
+#include <algorithm>
 #include <iterator>
 #include <string>
 #include <sstream>
 #include <vector>
-#include <algorithm>
+#include <unordered_map>
 //----------------------------------------------------------------------------
 
 

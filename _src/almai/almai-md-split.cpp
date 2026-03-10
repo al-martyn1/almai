@@ -367,7 +367,7 @@ int unsafeMain(int argc, char* argv[])
         std::cout << "App Root Path: " << rootPath << "\n";
         std::cout << "Working Dir  : " << cwd << "\n";
 
-        argsParser.args.push_back("--list");
+        // argsParser.args.push_back("--list");
         argsParser.args.push_back("-o=" + rootPath + "\\tests\\almai-md-split");
         argsParser.args.push_back(rootPath + "\\tests\\almai-md-split.md");
 
@@ -420,12 +420,12 @@ int unsafeMain(int argc, char* argv[])
     //     return -1;
     // }
 
-    if (!argsParser.quet  /* && !hasHelpOption */ )
-    {
-        //printNameVersion();
-        //LOG_MSG<<"\n";
-        umba::cli_tool_helpers::printNameVersion(umbaLogStreamMsg);
-    }
+    // if (!argsParser.quet  /* && !hasHelpOption */ )
+    // {
+    //     //printNameVersion();
+    //     //LOG_MSG<<"\n";
+    //     umba::cli_tool_helpers::printNameVersion(umbaLogStreamMsg);
+    // }
 
 
     if (appConfig.inputFiles.empty())

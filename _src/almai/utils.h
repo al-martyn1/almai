@@ -1,7 +1,7 @@
 /*! \file
     \brief Утилитарные функции проекта
  */
-
+#pragma once
 
 #include "umba/umba.h"
 //

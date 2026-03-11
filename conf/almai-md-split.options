@@ -1,2 +1,2 @@
 --dict=.cpp:C++
---dict-file=almai-md-split-ext-dict.txt
+--dict-file=lang-ext-dict.txt

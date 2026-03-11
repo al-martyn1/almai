@@ -1,6 +1,12 @@
+# Maps a file extension to a language name and vice versa.
+
+# When mapping LANGUAGE -> EXTENSION, the last extension registered for that language is used.
+# When mapping EXTENSION -> LANGUAGE, the last language name associated with that extension is used.
+
 c      C
 cxx    C++
 cpp    C++
+hxx    C++ Header
 hpp    C++ Header
 h      C Header
 h      C/C++ Header

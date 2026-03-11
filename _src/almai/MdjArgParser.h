@@ -10,7 +10,7 @@
 //
 #include "marty_cpp/marty_cpp.h"
 //
-#include "MdsAppVerConfig.h"
+#include "MdjAppVerConfig.h"
 
 //
 #include "marty_cpp/src_normalization.h"
@@ -78,9 +78,9 @@ int operator()( const StringType                                &a           //!
 
 #include "parse_opt/basic_options.h"
 #include "parse_opt/overwrite.h"
-#include "parse_opt/list.h"
+// #include "parse_opt/list.h"
 #include "parse_opt/dict.h"
-#include "parse_opt/output-dir.h"
+// #include "parse_opt/output-dir.h"
 
         if (opt.isHelpStyleOption())
         {

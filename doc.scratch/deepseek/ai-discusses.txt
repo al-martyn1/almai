@@ -27,6 +27,11 @@
   https://chat.deepseek.com/share/n6glh9309jc5s2s52d
   https://chat.deepseek.com/share/don1ge92ymyz0wup6o
 
+Структурированное ТЗ на основную утилиту
+  https://chat.deepseek.com/share/vbc2bnuvkp2gw3mjz6
+
+Дискас об almaimd-join
+  https://chat.deepseek.com/share/op1v3tuqot8d53m4p5
 
 tz-split-tool.md
   Обсуждение ТЗ

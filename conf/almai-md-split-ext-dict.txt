@@ -1,14 +1,79 @@
-cpp  C++
-hpp  C++ Header
-h    C Header
-h    C/C++ Header
+c      C
+cxx    C++
+cpp    C++
+hpp    C++ Header
+h      C Header
+h      C/C++ Header
 
-pas  Pascal
+pas    Pascal
 
-py   Python
-py2  Python2
-py2  Python 2
-py3  Python3
-py3  Python 3
+py     Python
+py2    Python2
+py2    Python 2
+py3    Python3
+py3    Python 3
 
-md   Markdown
+md     Markdown
+
+java   Java
+js     JavaScript
+ts     TypeScript
+html   HTML
+htm    HTML
+css    CSS
+rb     Ruby
+php    PHP
+rs     Rust
+go     Go
+swift  Swift
+kts    Kotlin
+kt     Kotlin
+scala  Scala
+
+mm     Objective-C++
+m      Objective-C
+
+pm     Perl
+pl     Perl
+
+bash   Bash
+sh     Bash
+zsh    Z shell
+
+fish   Fish
+
+psm1   PowerShell
+psd1   PowerShell
+ps     PowerShell
+ps1    PowerShell
+
+cmd    Batch
+bat    Batch
+
+sql    SQL
+xml    XML
+json   JSON
+yaml   YAML
+yml    YAML
+
+rst    reStructuredText
+tex    LaTeX
+
+lua    Lua
+r      R
+jl     Julia
+dart   Dart
+
+fsi    F#
+fsx    F#
+fsscript F#
+fs     F#
+
+hrl    Erlang
+erl    Erlang
+
+eex    Elixir
+leex   Elixir
+heex   Elixir
+ex     Elixir
+exs    Elixir

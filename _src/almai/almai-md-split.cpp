@@ -139,6 +139,28 @@ bool splitFileAndSaveContent(const std::string &fileName)
 
         if (readingCode)
         {
+            bool unexpectedEndOfListing = false;
+
+            if (listingType==MdLineType::codeTilda || listingType==MdLineType::codeBacktick)
+            {
+                // ИИ может глючить (не хватать токенов), и он может продалбываться
+                // Иногда он может добавить маркер конца листинга в конец строки
+                // потеряв часть содержимого листинга.
+                // Надо просекать такие ситуации
+
+                // !!! Не нужно. Просто был кривоватый документ, в нем были листинги на питоне, и внутри них были 
+                // маркдаун маркеры блоков кода
+
+                // auto blockMarker = std::string(codeMarkerLen, codeMarkerChar);
+                //  
+                // if (line!=blockMarker && umba::string::ends_with(line, blockMarker))
+                // {
+                //     unexpectedEndOfListing = true;
+                //     LOG_WARN_INPUT("unexp-code-block-end") << "found unexpected code block end\n";
+                // }
+                
+            }
+
             // listingType = mdLineType;
             if (listingType==MdLineType::codeIndentTab || listingType==MdLineType::codeIndentSpace)
             {
@@ -169,7 +191,7 @@ bool splitFileAndSaveContent(const std::string &fileName)
                 }
             }
 
-            else if ((listingType==MdLineType::codeTilda || listingType==MdLineType::codeBacktick) && listingType==mdLineType && codeMarkerChar==markerChar && codeMarkerLen==markerLen)
+            else if (unexpectedEndOfListing || (listingType==MdLineType::codeTilda || listingType==MdLineType::codeBacktick) && listingType==mdLineType && codeMarkerChar==markerChar && codeMarkerLen==markerLen)
             {
                 if (codeLang.empty())
                 {

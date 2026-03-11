@@ -9,9 +9,9 @@ call "%~dp0\.find_test_exe.bat" %TEST_NAME%
 %TEST_EXE%              -o=almai-md-split-test01    almai-md-split.md
 %TEST_EXE% --overwrite  -o=almai-md-split-test01    almai-md-split.md
 
-%TEST_EXE% --list       -o=almai-md-split-ai-result almai-md-split-ai-result.md
-%TEST_EXE%              -o=almai-md-split-ai-result almai-md-split-ai-result.md
-%TEST_EXE% --overwrite  -o=almai-md-split-ai-result almai-md-split-ai-result.md
+%TEST_EXE% --list       -o=almai-md-split-ai-result2 almai-md-split-ai-result2.md
+%TEST_EXE%              -o=almai-md-split-ai-result2 almai-md-split-ai-result2.md
+%TEST_EXE% --overwrite  -o=almai-md-split-ai-result2 almai-md-split-ai-result2.md
 
 exit /B 0
 :NOT_FOUND

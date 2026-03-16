@@ -68,6 +68,7 @@ public:
     static
     FileSystemScanInfo parse( const std::string &fullName
                             , const std::string &rootPath = umba::filesys::internal::getCurrentDirectory<std::string>()
+                            , const std::string &dotPath  = umba::filesys::internal::getCurrentDirectory<std::string>()
                             )
     {
         using namespace umba::filename;
@@ -121,7 +122,11 @@ public:
                 scanInfo.includeMaskList.emplace_back("*.*");
         }
 
-        scanInfo.path = makeAbsPath(scanInfo.path, rootPath);
+        if (!scanInfo.path.empty() && scanInfo.path[0]=='.') // '..' or '.'
+            scanInfo.path = makeAbsPath(scanInfo.path, dotPath);
+        else
+            scanInfo.path = makeAbsPath(scanInfo.path, rootPath);
+        
         scanInfo.path = makeCanonical(scanInfo.path);
 
         return scanInfo;

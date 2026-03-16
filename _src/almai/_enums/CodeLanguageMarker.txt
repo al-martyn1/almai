@@ -1,0 +1,5 @@
+invalid,unknown=-1
+
+none
+name,langName
+ext,fileExt

@@ -1,6 +1,6 @@
-        if (   opt.setParam("PATH", umba::command_line::OptionType::optString)
-            || opt.isOption("output-dir") || opt.isOption('o')
-            || opt.setDescription("Set output root path to save files.")
+        if (   opt.setParam("NAME", umba::command_line::OptionType::optString)
+            || opt.isOption("output") || opt.isOption('o')
+            || opt.setDescription("Set output file name. If output file name not taken, STDOUT used.")
            )
         {
             if (argsParser.hasHelpOption) return 0;

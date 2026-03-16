@@ -3,6 +3,8 @@
  */
 #pragma once
 
+#include "enums.h"
+//
 #include "umba/umba.h"
 //
 #include "umba/string.h"
@@ -530,6 +532,64 @@ std::string extractCodeLangFromFencedCodeBlockMarker(std::string line)
 }
 
 //----------------------------------------------------------------------------
+std::string generateFence(FenceStyle fenseStyle, const std::vector<std::string> &fileLines) const
+{
+    std::unordered_set<std::size_t> foundBackticks;
+    std::unordered_set<std::size_t> foundTildes;
+
+    for(const auto &l : fileLines)
+    {
+        char mdChar = 0
+        std::size_t mdNum = 0;
+        MdLineType mdLineType = detectMarkdownLineType(l, &mdChar, &mdNum);
+
+        if (mdLineType==MdLineType::codeBacktick)
+        {
+            foundBackticks.insert(mdNum);
+        }
+        else if (mdLineType==MdLineType::codeTilda)
+        {
+            foundTildes.insert(mdNum);
+        }
+
+    } // for(const auto &l : fileLines)
+
+    std::size_t fenceLen = 0;
+
+    if (fenseStyle==FenceStyle::auto_)
+    {
+        for(std::size_t i=3; i!=(std::size_t)-1; ++i)
+        {
+            if (foundTildes.find(i)==foundTildes.end())
+            {
+                fenceLen = i;
+                fenseStyle = FenceStyle::tildes;
+                break;
+            }
+            else if (foundBackticks.find(i)==foundBackticks.end())
+            {
+                fenceLen = i;
+                fenseStyle = FenceStyle::backticks;
+                break;
+            }
+        }
+    }
+    else
+    {
+        const std::unordered_set<std::size_t> &foundCounters = fenseStyle==FenceStyle::backticks ? foundBackticks : foundTildes;
+        for(std::size_t i=3; i!=(std::size_t)-1; ++i)
+        {
+            if (foundCounters.find(i)==foundCounters.end())
+            {
+                fenceLen = i;
+                break;
+            }
+        }
+    }
+
+    return std::string(fenceLen fenseStyle==FenceStyle::backticks ? '`' : '~');
+
+}
 
 
 

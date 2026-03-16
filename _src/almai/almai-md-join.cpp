@@ -215,11 +215,77 @@ int unsafeMain(int argc, char* argv[])
     // }
 
 
-    // if (appConfig.inputFiles.empty())
-    // {
-    //     LOG_ERR << "no input files taken" << "\n";
-    //     return 1;
-    // }
+    if (appConfig.scanInfos.empty())
+    {
+        LOG_ERR << "no input files/masks taken" << "\n";
+        return 1;
+    }
+
+    std::vector<std::string> foundFiles;
+    for(const auto &s : appConfig.scanInfos)
+    {
+        std::vector<std::string> tmp;
+        s.scanForFiles(tmp);
+        foundFiles.insert(foundFiles.end(), tmp.begin(), tmp.end());
+    }
+
+    if (foundFiles.empty())
+    {
+        LOG_ERR << "no files found" << "\n";
+        return 1;
+    }
+
+    for( auto &&f: foundFiles)
+    {
+        // cout << "  " << f << "\n";
+        foundFileInfos.emplace_back(f);
+    }
+
+    for( auto &ffi: foundFileInfos)
+    {
+        ffi.stripPrefix.(appConfig.stripPrefixes);
+    }
+
+    //------------------------------
+    // В главной тулзе это не нужно будет, там будет использоваться для стрипа каталог проекта
+    std::string commonPrefix = almai::findMostCommonPathPrefix(foundFileInfos.begin(), foundFileInfos.end());
+    commonPrefix = almai::checkCorrectMostCommonPathPrefixIsPath(commonPrefix);
+    if (!commonPrefix.empty())
+    {
+        for(auto &ffi: appConfig.foundFileInfos)
+        {
+            ffi.stripPrefix(commonPrefix);
+        }
+    }
+    //------------------------------
+
+    for(const auto &ffi: appConfig.foundFileInfos)
+    {
+        if (!ffi.isPrefixStripped())
+        {
+            LOG_ERR << "prefixes stripped not for all files, file: '" << ffi.fullName << "'" << "\n";
+            return 1;
+        }
+    }
+
+    almai::sortFoundFileInfos(appConfig.foundFileInfos);
+
+    for(auto &ffi: appConfig.foundFileInfos)
+    {
+        if (!appConfig.readFile(ffi.fullName, ffi.fileLines))
+        {
+            LOG_WARN("read-failed") << "failed to read file: '" << ffi.fullName << "'";
+        }
+    }
+
+    // Теперь надо для каждого файла найти fence
+    // Вывести в в конечный документ и записать результат
+    
+
+
+    //bool stripPrefix(const std::vector<std::string> &stripPrefixes)
+
+
     //  
     // appConfig.checkUpdateOutputDir();
     //  

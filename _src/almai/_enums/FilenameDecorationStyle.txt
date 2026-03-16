@@ -1,0 +1,11 @@
+invalid,unknown=-1
+
+none = 0
+quot                        // use quotation mark
+apos                        // use apos mark
+bold                        // bold using **
+underscore_bold,ubold       // bold using __
+strikeout                   // ~~
+italic                      // italic using *
+underscore_italic,uitalic   // italic using _
+

@@ -5,6 +5,7 @@
 
 #include "utils.h"
 #include "FileSystemScanInfo.h"
+#include "FoundFileInfo.h"
 //
 
 #include <iostream>
@@ -59,6 +60,8 @@ int main(int argc, char* argv[])
         {
             cout << "  " << s.toString() << "\n";
         }
+
+        cout << "\n";
     }
 
     std::vector<std::string> foundFiles;
@@ -68,6 +71,9 @@ int main(int argc, char* argv[])
         s.scanForFiles(tmp);
         foundFiles.insert(foundFiles.end(), tmp.begin(), tmp.end());
     }
+
+
+    std::vector<FoundFileInfo>  foundFileInfos;
 
     if (foundFiles.empty())
     {
@@ -79,7 +85,49 @@ int main(int argc, char* argv[])
         for( auto &&f: foundFiles)
         {
             cout << "  " << f << "\n";
+            foundFileInfos.emplace_back(f);
         }
+
+        cout << "\n";
+
+        std::string commonPrefix = findMostCommonPathPrefix(foundFileInfos.begin(), foundFileInfos.end());
+        commonPrefix = checkCorrectMostCommonPathPrefixIsPath(commonPrefix);
+
+        if (commonPrefix.empty())
+        {
+            cout << "Common prefix not found\n";
+            cout << "\n";
+        }
+        else
+        {
+            cout << "Found Common prefix: " << commonPrefix << "\n\n";
+
+            for(auto &ffi: foundFileInfos)
+            {
+                ffi.stripPrefix(commonPrefix);
+            }
+
+        }
+
+        cout << "Found files (stripped prefix):\n";
+        for(auto &ffi: foundFileInfos)
+        {
+            cout << "  " << ffi.displayName << "\n";
+        }
+
+        cout << "\n";
+
+        sortFoundFileInfos(foundFileInfos);
+
+        cout << "Found files (sorted):\n";
+        for(auto &ffi: foundFileInfos)
+        {
+            cout << "  " << ffi.displayName << "\n";
+        }
+
+        cout << "\n";
+
+        // sortFoundFileInfos
     }
 
 

@@ -31,22 +31,27 @@ struct AppConfigBase
     //------------------------------
     using ELinefeedType = marty_cpp::ELinefeedType;
 
-    std::string     outputDir;
+    std::string     output;
     ELinefeedType   outputLinefeedType = ELinefeedType::systemDefault;
 
 
     void checkUpdateOutputDir()
     {
-        if (outputDir.empty())
+        if (output.empty())
         {
-            outputDir = umba::filesys::getCurrentDirectory();
+            output = umba::filesys::getCurrentDirectory();
         }
     
-        outputDir = umba::filename::makeAbsPath(outputDir);
-        // if (!umba::filename::isAbsPath(outputDir))
-        // {
-        //     outputDir = umba::filename::appendPath(appConfig.outputDir /*, cwd*/);
-        // }
+        output = umba::filename::makeAbsPath(output);
+    }
+
+    void checkUpdateOutput()
+    {
+        if (!output.empty())
+        {
+            // output = umba::filesys::getCurrentDirectory();
+            output = umba::filename::makeAbsPath(output);
+        }
     }
 
 
@@ -92,7 +97,7 @@ struct AppConfigBase
 
     bool writeFile(const std::string &filename, const std::string &filedata, std::string &fullName) const
     {
-        fullName = umba::filename::makeAbsPath(filename, outputDir);
+        fullName = umba::filename::makeAbsPath(filename, output);
 
         auto dir = umba::filename::getPath(fullName);
         if (!dir.empty())

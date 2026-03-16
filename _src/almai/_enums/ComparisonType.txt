@@ -1,0 +1,7 @@
+invalid,unknown=-1
+
+none = 0
+name           // Compare by name part, ignore extention
+nameExt        // Compare by name part first, than ext part
+fullName,full  // Compare by name and extention as single string
+ext,extName    // Compare extention part first, than name part

@@ -76,11 +76,19 @@ int operator()( const StringType                                &a           //!
 #include "umba/warnings/pop.h"
 
 
+
 #include "parse_opt/basic_options.h"
 #include "parse_opt/overwrite.h"
 // #include "parse_opt/list.h"
 #include "parse_opt/dict.h"
-// #include "parse_opt/output-dir.h"
+#include "parse_opt/output.h"
+#include "parse_opt/filename_decoration.h"
+#include "parse_opt/filename_title_level.h"
+#include "parse_opt/sort.h"
+#include "parse_opt/fence_style.h"
+#include "parse_opt/strip_prefix.h"
+#include "parse_opt/lang_marker.h"
+
 
         if (opt.isHelpStyleOption())
         {
@@ -109,8 +117,7 @@ int operator()( const StringType                                &a           //!
                     //argsParser.printHelpPage( std::cout, "[OPTIONS] input_file [output_file]", "If output_file not taken, STDOUT used", helpText );
                     auto helpText = opt.getHelpOptionsString();
                     std::cout << "Usage: " << argsParser.programLocationInfo.exeName
-                              << " [OPTIONS] input_file [output_file]\n"
-                              << "  If output_file not taken, STDOUT used\n"
+                              << " [OPTIONS] PATTERN [PATTERN]\n"
                               << "\nOptions:\n\n"
                               << helpText;
                               //<< " [OPTIONS] input_file [output_file]\n\nOptions:\n\n"<<helpText;
@@ -174,7 +181,8 @@ int operator()( const StringType                                &a           //!
 
     // Process non-option args here
 
-    appConfig.inputFiles.push_back(argsParser.makeAbsPath(a));
+    // appConfig.inputFiles.push_back(argsParser.makeAbsPath(a));
+    appConfig.scanInfos.emplace_back(argsParser.makeAbsPath(a));
 
     return 0;
 

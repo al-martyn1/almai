@@ -4,7 +4,7 @@ call "%~dp0\.find_test_exe.bat" %TEST_NAME%
 @set FOUND_EXE=%FOUND_EXE:"=%
 @if "%FOUND_EXE%"=="" @goto NOT_FOUND
 @set TEST_EXE="%FOUND_EXE%"
-%TEST_EXE% ..\doc.scratch\**\-*.txt
+%TEST_EXE% ..\doc.scratch\**\-*.txt ..\conf\**\*.*
 
 exit /B 0
 :NOT_FOUND

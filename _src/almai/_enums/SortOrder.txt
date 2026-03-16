@@ -1,0 +1,4 @@
+invalid,unknown=-1
+
+asc,ascending = 0
+desc,descending

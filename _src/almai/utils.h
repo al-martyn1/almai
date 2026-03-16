@@ -5,7 +5,10 @@
 
 #include "umba/umba.h"
 //
-#include "umba/string_plus.h"
+#include "umba/string.h"
+#include "umba/filename.h"
+#include "umba/filesys.h"
+
 //
 
 #include <algorithm>
@@ -528,112 +531,6 @@ std::string extractCodeLangFromFencedCodeBlockMarker(std::string line)
 
 //----------------------------------------------------------------------------
 
-
-
-//----------------------------------------------------------------------------
-struct ListingInfo
-{
-    std::vector<std::string>  listingFilenames;
-    std::vector<std::string>  listingCodeLines;
-    std::string               foundLangName   ;
-
-    void checkAddExtention(std::string ext)
-    {
-        static std::string seps = "./";
-
-        if (ext.empty())
-            ext = "txt";
-
-        for(auto &name : listingFilenames)
-        {
-            auto pos = name.find_last_of(seps);
-
-            if (pos==name.npos || name[pos]=='/')
-            {
-                name += ".";
-                name += ext;
-            }
-
-            // if (pos!=name.npos && name[pos]=='/')
-            //     continue;
-            //  
-            // if (pos==name.npos)
-            //     name += ".";
-            //  
-            // name += ext;
-        }
-    }
-
-    void checkAutoEnumerate(std::unordered_map<std::string, std::size_t> &filenameCounters)
-    {
-        for(auto &name : listingFilenames)
-        {
-            auto lowerCaseName = umba::string::tolower_copy(name);
-            std::size_t counter = filenameCounters[lowerCaseName];
-            if (!counter)
-            {
-                filenameCounters[lowerCaseName] = 1;
-            }
-            else
-            {
-                name = insertCounterIntoFilename(name, counter);
-                ++filenameCounters[lowerCaseName];
-            }
-        }
-
-    }
-
-
-}; // struct ListingInfo
-
-//----------------------------------------------------------------------------
-
-
-
-//----------------------------------------------------------------------------
-struct FilesystemScanInfo
-{
-
-
-}; // struct FilesystemScanInfo
-
-//----------------------------------------------------------------------------
-
-// umba-2c
-// umba-brief-scanner
-
-    // // appConfig.scanPaths = inputs;
-    // std::vector<std::string> foundFiles, excludedFiles;
-    // std::set<std::string>    foundExtentions;
-    // //umba::scanners::scanFolders( appConfig, argsParser.quet ? umbaLogStreamNul : umbaLogStreamMsg, foundFiles, excludedFiles, foundExtentions);
-    // umba::scanners::scanFolders( appConfig, umbaLogStreamNul, foundFiles, excludedFiles, foundExtentions);
-    //  
-    // unsigned errCount = 0;
-    //  
-    // std::vector< std::basic_regex<char> > binFilesMaskListRegexes       = umba::scanners::fromSimpleMaskToRegexVector(appConfig.binaryFilesMaskList    , true /* useAnchoring */, true /* allowRawRegexes */);
-    // std::vector< std::basic_regex<char> > textFilesMaskListRegexes      = umba::scanners::fromSimpleMaskToRegexVector(appConfig.textFilesMaskList      , true /* useAnchoring */, true /* allowRawRegexes */);
-    // std::vector< std::basic_regex<char> > removeLinefeedMaskListRegexes = umba::scanners::fromSimpleMaskToRegexVector(appConfig.removeLinefeedMaskList , true /* useAnchoring */, true /* allowRawRegexes */);
-    //  
-    // for(auto foundFile : foundFiles)
-    // {
-    //     std::size_t binMatchIndex  = 0;
-    //     std::size_t textMatchIndex = 0;
-    //     auto normalizedFoundFile = umba::filename::normalizePathSeparators(foundFile,'/');
-    //     bool binMatched  = umba::regex_helpers::regexMatch(normalizedFoundFile, binFilesMaskListRegexes , &binMatchIndex  );
-    //     bool textMatched = umba::regex_helpers::regexMatch(normalizedFoundFile, textFilesMaskListRegexes, &textMatchIndex );
-    //  
-    //     if (binMatched && textMatched)
-    //     {
-    //         ++errCount;
-    //  
-    //         LOG_ERR_OPT << umba::formatMessage("'$(fileName)' mathed both bin and text masks. Bin mask matched: '$(binMask)', text mask matched: '$(textMask)'")
-    //                                           .arg("fileName", normalizedFoundFile)
-    //                                           .arg("binMask" , appConfig.binaryFilesMaskList[binMatchIndex ])
-    //                                           .arg("textMask", appConfig.textFilesMaskList  [textMatchIndex])
-    //                                           .toString()
-    //                                           << "\n";
-    //     }
-    // }
 
 
 //----------------------------------------------------------------------------

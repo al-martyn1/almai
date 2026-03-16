@@ -56,9 +56,9 @@
                                   case 2 : return almai::FilenameDecorationStyle::underscoreBold;
                                   case 3 : return almai::FilenameDecorationStyle::italic;
                                   case 4 : return almai::FilenameDecorationStyle::underscoreItalic;
-                                  case 5 : return almai::FilenameDecorationStyle::strikeout
-                                  case 6 : return almai::FilenameDecorationStyle::quot
-                                  case 7 : return almai::FilenameDecorationStyle::apos
+                                  case 5 : return almai::FilenameDecorationStyle::strikeout;
+                                  case 6 : return almai::FilenameDecorationStyle::quot;
+                                  case 7 : return almai::FilenameDecorationStyle::apos;
                                   default: return almai::FilenameDecorationStyle::invalid;
                               };
                           };

@@ -532,14 +532,14 @@ std::string extractCodeLangFromFencedCodeBlockMarker(std::string line)
 }
 
 //----------------------------------------------------------------------------
-std::string generateFence(FenceStyle fenseStyle, const std::vector<std::string> &fileLines) const
+std::string generateFence(FenceStyle fenseStyle, const std::vector<std::string> &fileLines)
 {
     std::unordered_set<std::size_t> foundBackticks;
     std::unordered_set<std::size_t> foundTildes;
 
     for(const auto &l : fileLines)
     {
-        char mdChar = 0
+        char mdChar = 0;
         std::size_t mdNum = 0;
         MdLineType mdLineType = detectMarkdownLineType(l, &mdChar, &mdNum);
 
@@ -587,7 +587,7 @@ std::string generateFence(FenceStyle fenseStyle, const std::vector<std::string> 
         }
     }
 
-    return std::string(fenceLen fenseStyle==FenceStyle::backticks ? '`' : '~');
+    return std::string(fenceLen, fenseStyle==FenceStyle::backticks ? '`' : '~');
 
 }
 

@@ -1,9 +1,10 @@
 #pragma once
 
 //----------------------------------------------------------------------------
-#include "enum.h"
+#include "enums.h"
 #include "utils.h"
-
+#include "FileSystemScanInfo.h"
+#include "FoundFileInfo.h"
 //
 #include "umba/umba.h"
 //
@@ -18,6 +19,7 @@
 //
 
 #include <iostream>
+#include <iterator>
 #include <map>
 #include <unordered_map>
 #include <unordered_set>
@@ -29,18 +31,18 @@
 //----------------------------------------------------------------------------
 struct AppConfig : public AppConfigBase
 {
-    std::vector<FileSystemScanInfo>      scanInfos;
-    std::vector<FoundFileInfo>           foundFileInfos;
-    std::vector<std::string>             stripPrefixes;
+    std::vector<almai::FileSystemScanInfo>    scanInfos;
+    std::vector<almai::FoundFileInfo>         foundFileInfos;
+    std::vector<std::string>                  stripPrefixes;
 
 
-    almai::FilenameDecorationType        filenameDecorationType  = almai::FilenameDecorationType::text;
-    almai::FilenameDecorationStyle       filenameDecorationStyle = almai::FilenameDecorationStyle::bold;
-    std::size_t                          filenameTitleLevel = 6;
-    almai::ComparisonType                sortCriteria = ComparisonType::nameExt;
-    almai::SortOrder                     sortOrder    = almai::SortOrder::ascending;
-    almai::FenceStyle                    fenceStyle   = FenceStyle::auto_;
-    almai::CodeLanguageMarker            langMarker   = almai::CodeLanguageMarker::langName;
+    almai::FilenameDecorationType             filenameDecorationType  = almai::FilenameDecorationType::text;
+    almai::FilenameDecorationStyle            filenameDecorationStyle = almai::FilenameDecorationStyle::bold;
+    std::size_t                               filenameTitleLevel = 6;
+    almai::ComparisonType                     sortCriteria = almai::ComparisonType::nameExt;
+    almai::SortOrder                          sortOrder    = almai::SortOrder::ascending;
+    almai::FenceStyle                         fenceStyle   = almai::FenceStyle::auto_;
+    almai::CodeLanguageMarker                 langMarker   = almai::CodeLanguageMarker::langName;
 
     std::string makeFilenameTitlePrefix() const
     {
@@ -58,7 +60,7 @@ struct AppConfig : public AppConfigBase
 
     std::string makeLangMarker(const std::string &fileName) const
     {
-        auto ext = umba::filename::getExt(displayFileName);
+        auto ext = umba::filename::getExt(fileName);
 
         if (langMarker==almai::CodeLanguageMarker::langName)
         {
@@ -76,15 +78,16 @@ struct AppConfig : public AppConfigBase
     {
         switch(filenameDecorationStyle)
         {
-            case FilenameDecorationStyle::quot:             return "\"";
-            case FilenameDecorationStyle::apos:             return "\'";
-            case FilenameDecorationStyle::bold:             return "**";
-            case FilenameDecorationStyle::underscoreBold:   return "__";
-            case FilenameDecorationStyle::italic:           return "*";
-            case FilenameDecorationStyle::underscoreItalic: return "_";
-            case FilenameDecorationStyle::strikeout:        return "~~";
-            case FilenameDecorationStyle::none:             return "";
-            case FilenameDecorationStyle::invalid:          return "";
+            case almai::FilenameDecorationStyle::quot:             return "\"";
+            case almai::FilenameDecorationStyle::apos:             return "\'";
+            case almai::FilenameDecorationStyle::bold:             return "**";
+            case almai::FilenameDecorationStyle::underscoreBold:   return "__";
+            case almai::FilenameDecorationStyle::italic:           return "*" ;
+            case almai::FilenameDecorationStyle::underscoreItalic: return "_" ;
+            case almai::FilenameDecorationStyle::strikeout:        return "~~";
+            case almai::FilenameDecorationStyle::none:             return ""  ;
+            case almai::FilenameDecorationStyle::invalid:          return ""  ;
+            default: return "";
         }
     }
 
@@ -95,61 +98,67 @@ struct AppConfig : public AppConfigBase
     }
 
 
-    void generateListing(std::ostream &oss, const std::string &displayFileName, const std::vector<std::string> &fileLines) const
+    void generateMarkdownListing(std::ostream &oss, const std::string &displayFileName, const std::vector<std::string> &fileLines) const
     {
+        if (filenameDecorationType==almai::FilenameDecorationType::title)
+        {
+            oss << makeFilenameTitle(displayFileName) << "\n\n";
+        }
+        else if (filenameDecorationType==almai::FilenameDecorationType::text)
+        {
+            oss << makeFilenameTextDecorated(displayFileName) << "\n";
+        }
 
-        almai::FilenameDecorationType        filenameDecorationType  = almai::FilenameDecorationType::text;
-        almai::FilenameDecorationStyle       filenameDecorationStyle = almai::FilenameDecorationStyle::bold;
-        almai::FenceStyle                    fenceStyle   = FenceStyle::auto_;
-        almai::CodeLanguageMarker            langMarker   = almai::CodeLanguageMarker::langName;
+        std::string fence = almai::generateFence(fenceStyle, fileLines);
+
+        oss << fence << makeLangMarker(displayFileName);
+
+        if (filenameDecorationType==almai::FilenameDecorationType::attr)
+        {
+            oss << " {filename=\"" << displayFileName << "\"}";
+        }
+
+        oss << "\n";
+
+        // Нужно, чтобы itBegin указывал на первую не пустую строку
+        // Нужно, чтобы itEnd указывал на пустую строку, следующую за последней не пустой
+
+        std::vector<std::string>::const_iterator it = fileLines.begin();
+        std::vector<std::string>::const_iterator itBegin = it;
+        for(; it != fileLines.end(); ++it)
+        {
+            auto line = *it;
+            umba::string::rtrim(line);
+            if (!line.empty())
+            {
+                itBegin = it;
+                break;
+            }
+        }
+
+        it = itBegin;
+        std::vector<std::string>::const_iterator itEnd = fileLines.end();
+        for(; it != fileLines.end(); ++it)
+        {
+            auto line = *it;
+            umba::string::rtrim(line);
+            if (!line.empty())
+            {
+                itEnd = std::next(it /* , std::ptrdiff_t(1) */ );
+            }
+        }
+
+        it = itBegin;
+        for(; it != itEnd; ++it)
+        {
+            auto line = *it;
+            umba::string::rtrim(line);
+            oss << line << "\n";
+        }
+
+        oss << fence << "\n\n";
 
     }
-
-// std::string generateFence(FenceStyle fenseStyle, const std::vector<std::string> &fileLines) const
-
-// enum class CodeLanguageMarker : std::uint32_t
-// {
-//     none       = 0x0000 /*!<  */,
-//     langName   = 0x0001 /*!<  */,
-//     fileExt    = 0x0002 /*!<  */
-//  
-// }; // enum 
-
-// enum class FenceStyle : std::uint32_t
-// {
-//     auto_       = 0x0000 /*!<  */,
-//     backticks   = 0x0001 /*!<  */,
-//     tildes      = 0x0002 /*!<  */,
-//  
-// }; // enum 
-
-// enum class FilenameDecorationStyle : std::uint32_t
-// {
-//     none               = 0x0000 /*!<  */,
-//     quot               = 0x0001 /*!< use quotation mark */,
-//     apos               = 0x0002 /*!< use apos mark */,
-//     bold               = 0x0003 /*!< bold using ** */,
-//     underscoreBold     = 0x0004 /*!< bold using __ */,
-//     strikeout          = 0x0005 /*!< ~~ */,
-//     italic             = 0x0006 /*!< italic using * */,
-//     underscoreItalic   = 0x0007 /*!< italic using _ */,
-//  
-// }; // enum 
-
-
-// enum class FilenameDecorationType : std::uint32_t
-// {
-//     none      = 0x0000 /*!<  */,
-//     text      = 0x0001 /*!<  */,
-//     title     = 0x0002 /*!<  */,
-//     attr      = 0x0003 /*!<  */
-//  
-// }; // enum 
-
-
-
-
-
 
 
 }; // struct AppConfig

@@ -12,7 +12,7 @@
             }
 
             auto stripPrefix = argsParser.makeAbsPath(strVal);
-            appConfig.stripPrefixes.emlace_back(umba::filename::makeCanonical(stripPrefix))
+            appConfig.stripPrefixes.emplace_back(umba::filename::makeCanonical(stripPrefix));
 
             return 0;
         }

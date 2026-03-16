@@ -34,24 +34,24 @@ enum class CodeLanguageMarker : std::uint32_t
 MARTY_CPP_MAKE_ENUM_IS_FLAGS_FOR_NON_FLAGS_ENUM(CodeLanguageMarker)
 
 MARTY_CPP_ENUM_CLASS_SERIALIZE_BEGIN( CodeLanguageMarker, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( CodeLanguageMarker::ext       , "Ext"     );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( CodeLanguageMarker::name      , "Name"    );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( CodeLanguageMarker::none      , "None"    );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( CodeLanguageMarker::invalid   , "Invalid" );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( CodeLanguageMarker::none      , "None"    );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( CodeLanguageMarker::name      , "Name"    );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( CodeLanguageMarker::ext       , "Ext"     );
 MARTY_CPP_ENUM_CLASS_SERIALIZE_END( CodeLanguageMarker, std::map, 1 )
 
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_BEGIN( CodeLanguageMarker, std::map, 1 )
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::invalid   , "invalid"   );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::invalid   , "unknown"   );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::none      , "none"      );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::name      , "langname"  );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::name      , "name"      );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::name      , "lang-name" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::name      , "lang_name" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::ext       , "ext"       );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::ext       , "file-ext"  );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::ext       , "file_ext"  );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::ext       , "fileext"   );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::ext       , "ext"       );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::name      , "lang-name" );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::name      , "langname"  );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::name      , "lang_name" );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::name      , "name"      );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::none      , "none"      );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::invalid   , "unknown"   );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::invalid   , "invalid"   );
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_END( CodeLanguageMarker, std::map, 1 )
 
 
@@ -74,30 +74,30 @@ enum class ComparisonType : std::uint32_t
 MARTY_CPP_MAKE_ENUM_IS_FLAGS_FOR_NON_FLAGS_ENUM(ComparisonType)
 
 MARTY_CPP_ENUM_CLASS_SERIALIZE_BEGIN( ComparisonType, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::ext        , "Ext"      );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::fullName   , "FullName" );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::name       , "Name"     );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::none       , "None"     );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::nameExt    , "NameExt"  );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::invalid    , "Invalid"  );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::none       , "None"     );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::name       , "Name"     );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::nameExt    , "NameExt"  );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::fullName   , "FullName" );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::ext        , "Ext"      );
 MARTY_CPP_ENUM_CLASS_SERIALIZE_END( ComparisonType, std::map, 1 )
 
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_BEGIN( ComparisonType, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::ext        , "ext-name"  );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::ext        , "ext_name"  );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::ext        , "extname"   );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::ext        , "ext"       );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::fullName   , "full"      );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::fullName   , "full-name" );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::fullName   , "full_name" );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::fullName   , "fullname"  );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::name       , "name"      );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::invalid    , "invalid"   );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::invalid    , "unknown"   );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::none       , "none"      );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::name       , "name"      );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::nameExt    , "name-ext"  );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::nameExt    , "name_ext"  );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::nameExt    , "nameext"   );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::invalid    , "unknown"   );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::invalid    , "invalid"   );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::fullName   , "full-name" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::fullName   , "full_name" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::fullName   , "fullname"  );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::fullName   , "full"      );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::ext        , "ext"       );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::ext        , "ext-name"  );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::ext        , "ext_name"  );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::ext        , "extname"   );
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_END( ComparisonType, std::map, 1 )
 
 
@@ -118,20 +118,20 @@ enum class FenceStyle : std::uint32_t
 MARTY_CPP_MAKE_ENUM_IS_FLAGS_FOR_NON_FLAGS_ENUM(FenceStyle)
 
 MARTY_CPP_ENUM_CLASS_SERIALIZE_BEGIN( FenceStyle, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FenceStyle::tildes      , "Tildes"    );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FenceStyle::backticks   , "Backticks" );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FenceStyle::auto_       , "Auto"      );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FenceStyle::invalid     , "Invalid"   );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FenceStyle::auto_       , "Auto"      );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FenceStyle::backticks   , "Backticks" );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FenceStyle::tildes      , "Tildes"    );
 MARTY_CPP_ENUM_CLASS_SERIALIZE_END( FenceStyle, std::map, 1 )
 
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_BEGIN( FenceStyle, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::tildes      , "tilde"     );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::tildes      , "tildes"    );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::backticks   , "backtick"  );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::backticks   , "backticks" );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::auto_       , "auto"      );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::invalid     , "unknown"   );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::invalid     , "invalid"   );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::invalid     , "unknown"   );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::auto_       , "auto"      );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::backticks   , "backticks" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::backticks   , "backtick"  );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::tildes      , "tildes"    );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::tildes      , "tilde"     );
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_END( FenceStyle, std::map, 1 )
 
 
@@ -157,34 +157,34 @@ enum class FilenameDecorationStyle : std::uint32_t
 MARTY_CPP_MAKE_ENUM_IS_FLAGS_FOR_NON_FLAGS_ENUM(FilenameDecorationStyle)
 
 MARTY_CPP_ENUM_CLASS_SERIALIZE_BEGIN( FilenameDecorationStyle, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::underscoreItalic   , "UnderscoreItalic" );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::italic             , "Italic"           );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::quot               , "Quot"             );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::invalid            , "Invalid"          );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::none               , "None"             );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::underscoreBold     , "UnderscoreBold"   );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::bold               , "Bold"             );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::strikeout          , "Strikeout"        );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::apos               , "Apos"             );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::quot               , "Quot"             );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::none               , "None"             );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::invalid            , "Invalid"          );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::strikeout          , "Strikeout"        );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::italic             , "Italic"           );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::underscoreItalic   , "UnderscoreItalic" );
 MARTY_CPP_ENUM_CLASS_SERIALIZE_END( FilenameDecorationStyle, std::map, 1 )
 
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_BEGIN( FilenameDecorationStyle, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreItalic   , "underscore-italic" );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreItalic   , "uitalic"           );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreItalic   , "underscore_italic" );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreItalic   , "underscoreitalic"  );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::italic             , "italic"            );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::quot               , "quot"              );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::invalid            , "invalid"           );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::invalid            , "unknown"           );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::none               , "none"              );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreBold     , "ubold"             );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreBold     , "underscore-bold"   );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreBold     , "underscore_bold"   );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreBold     , "underscorebold"    );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::bold               , "bold"              );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::strikeout          , "strikeout"         );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::apos               , "apos"              );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::quot               , "quot"              );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::none               , "none"              );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::invalid            , "unknown"           );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::invalid            , "invalid"           );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::strikeout          , "strikeout"         );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::italic             , "italic"            );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreItalic   , "uitalic"           );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreItalic   , "underscore-italic" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreItalic   , "underscore_italic" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreItalic   , "underscoreitalic"  );
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_END( FilenameDecorationStyle, std::map, 1 )
 
 
@@ -204,20 +204,20 @@ enum class FilenameDecorationType : std::uint32_t
 MARTY_CPP_MAKE_ENUM_IS_FLAGS_FOR_NON_FLAGS_ENUM(FilenameDecorationType)
 
 MARTY_CPP_ENUM_CLASS_SERIALIZE_BEGIN( FilenameDecorationType, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationType::attr      , "Attr"    );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationType::invalid   , "Invalid" );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationType::none      , "None"    );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationType::text      , "Text"    );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationType::title     , "Title"   );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationType::none      , "None"    );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationType::invalid   , "Invalid" );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationType::attr      , "Attr"    );
 MARTY_CPP_ENUM_CLASS_SERIALIZE_END( FilenameDecorationType, std::map, 1 )
 
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_BEGIN( FilenameDecorationType, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationType::attr      , "attr"    );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationType::invalid   , "invalid" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationType::invalid   , "unknown" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationType::none      , "none"    );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationType::text      , "text"    );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationType::title     , "title"   );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationType::none      , "none"    );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationType::invalid   , "unknown" );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationType::invalid   , "invalid" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationType::attr      , "attr"    );
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_END( FilenameDecorationType, std::map, 1 )
 
 
@@ -238,17 +238,17 @@ MARTY_CPP_MAKE_ENUM_IS_FLAGS_FOR_NON_FLAGS_ENUM(SortOrder)
 
 MARTY_CPP_ENUM_CLASS_SERIALIZE_BEGIN( SortOrder, std::map, 1 )
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( SortOrder::desc      , "Desc"    );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( SortOrder::asc       , "Asc"     );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( SortOrder::invalid   , "Invalid" );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( SortOrder::asc       , "Asc"     );
 MARTY_CPP_ENUM_CLASS_SERIALIZE_END( SortOrder, std::map, 1 )
 
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_BEGIN( SortOrder, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( SortOrder::desc      , "descending" );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( SortOrder::desc      , "desc"       );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( SortOrder::asc       , "ascending"  );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( SortOrder::asc       , "asc"        );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( SortOrder::invalid   , "unknown"    );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( SortOrder::desc      , "descending" );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( SortOrder::invalid   , "invalid"    );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( SortOrder::invalid   , "unknown"    );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( SortOrder::asc       , "asc"        );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( SortOrder::asc       , "ascending"  );
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_END( SortOrder, std::map, 1 )
 
 } // namespace almai

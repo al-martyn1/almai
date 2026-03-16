@@ -23,7 +23,7 @@
                                   case 0 : return almai::CodeLanguageMarker::none;
                                   case 1 : return almai::CodeLanguageMarker::langName;
                                   case 2 : return almai::CodeLanguageMarker::fileExt;
-                                  default: return almai::FenceStyle::invalid;
+                                  default: return almai::CodeLanguageMarker::invalid;
                               };
                           };
             if (!opt.getParamValue( res, errMsg, mapper ) )

@@ -184,7 +184,7 @@ struct AppConfigBase
         return addLangExtention(lang, ext);
     }
 
-    std::string findLangExtention(std::string langName)
+    std::string findLangExtention(std::string langName) const
     {
         umba::string::trim(langName);
         umba::string::tolower(langName);
@@ -198,7 +198,7 @@ struct AppConfigBase
         return it->second;
     }
 
-    std::string findExtentionLang(std::string ext)
+    std::string findExtentionLang(std::string ext) const
     {
         umba::string::trim(ext);
         umba::string::tolower(ext);

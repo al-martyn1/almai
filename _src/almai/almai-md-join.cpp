@@ -238,17 +238,17 @@ int unsafeMain(int argc, char* argv[])
     for( auto &&f: foundFiles)
     {
         // cout << "  " << f << "\n";
-        foundFileInfos.emplace_back(f);
+        appConfig.foundFileInfos.emplace_back(f);
     }
 
-    for( auto &ffi: foundFileInfos)
+    for( auto &ffi: appConfig.foundFileInfos)
     {
-        ffi.stripPrefix.(appConfig.stripPrefixes);
+        ffi.stripPrefix(appConfig.stripPrefixes);
     }
 
     //------------------------------
     // В главной тулзе это не нужно будет, там будет использоваться для стрипа каталог проекта
-    std::string commonPrefix = almai::findMostCommonPathPrefix(foundFileInfos.begin(), foundFileInfos.end());
+    std::string commonPrefix = almai::findMostCommonPathPrefix(appConfig.foundFileInfos.begin(), appConfig.foundFileInfos.end());
     commonPrefix = almai::checkCorrectMostCommonPathPrefixIsPath(commonPrefix);
     if (!commonPrefix.empty())
     {
@@ -279,29 +279,32 @@ int unsafeMain(int argc, char* argv[])
     }
 
     // Теперь надо для каждого файла найти fence
-    // Вывести в в конечный документ и записать результат
-    
+    // Вывести в конечный документ и записать результат
 
+    std::stringstream oss;
 
-    //bool stripPrefix(const std::vector<std::string> &stripPrefixes)
+    for(auto &ffi: appConfig.foundFileInfos)
+    {
+        appConfig.generateMarkdownListing(oss, ffi.displayName, ffi.fileLines);
+    }
 
+    if (appConfig.output.empty())
+    {
+        std::cout << oss.str() << "\n";
+        return 0;
+    }
 
-    //  
-    // appConfig.checkUpdateOutputDir();
-    //  
-    //  
-    // bool hasErrors = false;
-    //  
-    // for(const auto &inputFileName : appConfig.inputFiles)
-    // {
-    //     if (!splitFileAndSaveContent(inputFileName))
-    //     {
-    //         hasErrors = true;
-    //     }
-    // }
-    //  
-    // return hasErrors ? 1 : 0;
+    auto mdLines = marty_cpp::splitToLinesSimple(oss.str());
+
+    std::string fullName;
+
+    if (!appConfig.writeFile(appConfig.output, mdLines, fullName))
+    {
+        LOG_ERR << "failed to write file: '" << fullName << "'\n";
+        return 1;
+    }
 
     return 0;
+
 }
 

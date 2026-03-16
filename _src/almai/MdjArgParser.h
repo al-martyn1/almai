@@ -182,7 +182,7 @@ int operator()( const StringType                                &a           //!
     // Process non-option args here
 
     // appConfig.inputFiles.push_back(argsParser.makeAbsPath(a));
-    appConfig.scanInfos.emplace_back(argsParser.makeAbsPath(a));
+    appConfig.scanInfos.emplace_back(almai::FileSystemScanInfo::parse(argsParser.makeAbsPath(a)));
 
     return 0;
 

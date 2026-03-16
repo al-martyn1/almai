@@ -14,9 +14,9 @@
             std::string strCriteria;
             std::string strOrder;
 
-            if (umba::string::split_to_pair(strVal, strCriteria, strOrder))
+            if (umba::string::split_to_pair(strVal, strCriteria, strOrder, ':'))
             {
-                auto tmpOrder = marty_cpp::enum_deserialize( strOrder, almai::SortOrder::invalid );
+                auto tmpOrder = enum_deserialize( strOrder, almai::SortOrder::invalid );
                 if (tmpOrder==almai::SortOrder::invalid)
                 {
                     LOG_ERR<<"Invalid sort order value: "<<strOrder<<"\n";
@@ -26,7 +26,7 @@
                 appConfig.sortOrder = tmpOrder;
             }
 
-            auto tmpComparisonType = marty_cpp::enum_deserialize( strCriteria, almai::ComparisonType::invalid );
+            auto tmpComparisonType = enum_deserialize( strCriteria, almai::ComparisonType::invalid );
             if (tmpComparisonType==almai::ComparisonType::invalid)
             {
                 LOG_ERR<<"Invalid comparison type (sort criteria) value: "<<strCriteria<<"\n";

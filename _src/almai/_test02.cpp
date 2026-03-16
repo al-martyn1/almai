@@ -41,24 +41,47 @@ int main(int argc, char* argv[])
     UMBA_USED(argc);
     UMBA_USED(argv);
 
-    std::vector<FileSystemScanInfo> scanInfo;
+    std::vector<FileSystemScanInfo> scanInfos;
 
     for(int i=1; i<argc; ++i)
     {
-        scanInfo.emplace_back(FileSystemScanInfo::parse(argv[i]));
+        scanInfos.emplace_back(FileSystemScanInfo::parse(argv[i]));
     }
 
-    if (scanInfo.empty())
+    if (scanInfos.empty())
     {
         cout << "Nothing to scan\n";
     }
     else
     {
-        for(auto &&s : scanInfo)
+        cout << "Scan paths & masks:\n";
+        for(auto &&s : scanInfos)
         {
-            cout << s.toString() << "\n";
+            cout << "  " << s.toString() << "\n";
         }
     }
+
+    std::vector<std::string> foundFiles;
+    for(const auto &s : scanInfos)
+    {
+        std::vector<std::string> tmp;
+        s.scanForFiles(tmp);
+        foundFiles.insert(foundFiles.end(), tmp.begin(), tmp.end());
+    }
+
+    if (foundFiles.empty())
+    {
+        cout << "Files not found\n";
+    }
+    else
+    {
+        cout << "Found files:\n";
+        for( auto &&f: foundFiles)
+        {
+            cout << "  " << f << "\n";
+        }
+    }
+
 
     return 0;
 }

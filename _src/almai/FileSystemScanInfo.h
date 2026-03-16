@@ -45,7 +45,7 @@ protected:
         LogDummy& operator<<(const T &t)
         {
             UMBA_USED(t);
-            return this;
+            return *this;
         }
     };
 
@@ -127,7 +127,7 @@ public:
         return scanInfo;
     }
 
-    void scanForFiles(std::vector<std::string> &foundFiles)
+    void scanForFiles(std::vector<std::string> &foundFiles) const
     {
         using namespace umba::filesys::scanners;
 
@@ -145,7 +145,7 @@ public:
                                             , foundFiles
                                             , excludedFiles
                                             , foundExtentions
-                                            , 0 // pFoundFilesRootFolders
+                                            , (std::vector<std::string>*)0 // pFoundFilesRootFolders
                                             , excludeFoldersExact
                                             , recursive
                                             , false // logFoundHeader

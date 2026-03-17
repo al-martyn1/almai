@@ -76,11 +76,11 @@ int operator()( const StringType                                &a           //!
 #include "umba/warnings/pop.h"
 
 
-#include "parse_opt/basic_options.h"
-#include "parse_opt/overwrite.h"
-#include "parse_opt/list.h"
-#include "parse_opt/dict.h"
-#include "parse_opt/output-dir.h"
+#include "cli_opt_parsers/basic_options.h"
+#include "cli_opt_parsers/overwrite.h"
+#include "cli_opt_parsers/list.h"
+#include "cli_opt_parsers/dict.h"
+#include "cli_opt_parsers/output-dir.h"
 
         if (opt.isHelpStyleOption())
         {

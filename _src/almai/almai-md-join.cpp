@@ -156,7 +156,8 @@ int unsafeMain(int argc, char* argv[])
 
         argsParser.args.push_back("-Y");
         argsParser.args.push_back("-o=" + rootPath + "\\tests\\almai-md-join_01.md");
-        argsParser.args.push_back(rootPath + "/_src/almai/**/*.cpp,*.bat");
+        //argsParser.args.push_back(rootPath + "/_src/almai/**/*.cpp,*.bat");
+        argsParser.args.push_back("../../../README.md");
 
     } // if (umba::isDebuggerPresent())
 
@@ -232,6 +233,16 @@ int unsafeMain(int argc, char* argv[])
     if (foundFiles.empty())
     {
         LOG_ERR << "no files found" << "\n";
+
+        // LOG_ERR 
+        LOG_MSG << "Scan paths & masks:\n";
+        for(auto &&s : appConfig.scanInfos)
+        {
+            LOG_MSG << "  " << s.toString() << "\n";
+        }
+
+        LOG_MSG << "\n";
+
         return 1;
     }
 

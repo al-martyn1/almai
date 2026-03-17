@@ -27,6 +27,7 @@ struct AppConfigBase
 {
 
     bool            overwrite = false;
+    bool            quet      = false;
 
     //------------------------------
     using ELinefeedType = marty_cpp::ELinefeedType;

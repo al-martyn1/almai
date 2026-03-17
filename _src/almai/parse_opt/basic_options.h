@@ -7,7 +7,7 @@
         if (opt.isOption("quet") || opt.isOption('q') || opt.setDescription("Operate quetly"))  // . Short alias for '--verbose=quet'
         {
             argsParser.quet = true;
-            //appConfig.setOptQuet(true);
+            appConfig.quet  = true;
             return 1;
         }
 

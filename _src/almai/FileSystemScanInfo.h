@@ -155,6 +155,7 @@ public:
                                             , recursive
                                             , false // logFoundHeader
                                             , false // addFolders
+                                            , true  // compareOnlyFilenames
                                             );
     }
 

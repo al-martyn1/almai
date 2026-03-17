@@ -76,7 +76,7 @@ umba::SimpleFormatter umbaLogStreamNul(&nulWriter);
 bool umbaLogGccFormat   = false; // true;
 bool umbaLogSourceInfo  = false;
 
-bool bOverwrite         = false;
+// bool bOverwrite         = false;
 
 //
 #include "log.h"
@@ -84,6 +84,10 @@ bool bOverwrite         = false;
 #include "AppConfig.h"
 
 AppConfig appConfig;
+
+std::string curFile;
+unsigned lineNo = 0;
+
 
 #include "ArgParser.h"
 
@@ -163,6 +167,24 @@ int unsafeMain(int argc, char* argv[])
         }
         // LOG_INFO("config") << "-----------------------------------------" << "\n";
 
+
+        //!!! --------------
+        appConfig.setAppRoot(argsParser.getAppRoot()); // to find prompts
+        if (!appConfig.findProjectRoot())
+        {
+            LOG_WARN("prj-root") << "project root not found\n";
+        }
+        else
+        {
+            LOG_MSG << "found project root: '" << appConfig.projectRoot << "'\n";
+            if (appConfig.projectFile.empty())
+                LOG_MSG << "project file not found\n";
+            else
+                LOG_MSG << "found project file: '" << appConfig.projectFile << "'\n";
+        }
+
+
+
         if (argsParser.mustExit)
             return 0;
 
@@ -193,9 +215,11 @@ int unsafeMain(int argc, char* argv[])
     {
         //printNameVersion();
         //LOG_MSG<<"\n";
-        umba::cli_tool_helpers::printNameVersion(umbaLogStreamMsg);
+        //umba::cli_tool_helpers::printNameVersion(umbaLogStreamMsg);
     }
 
+
+    // programLocationInfo.getBuiltinOptionsFilename( BuiltinOptionsLocationFlag::appGlobal )
 
 
     return 0;

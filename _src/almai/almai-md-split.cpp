@@ -81,7 +81,7 @@ umba::SimpleFormatter umbaLogStreamNul(&nulWriter);
 bool umbaLogGccFormat   = false; // true;
 bool umbaLogSourceInfo  = false;
 
-bool bOverwrite         = false;
+// bool bOverwrite         = false;
 
 //
 #include "log.h"

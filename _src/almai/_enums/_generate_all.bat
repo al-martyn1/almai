@@ -39,6 +39,7 @@ umba-enum-gen %GEN_OPTS% %HEX2% %TPL_OVERRIDE% %SNIPPETOPTIONS_GEN_FLAGS% ^
     %UINT32% %HEX4% -E=FenceStyle                    -F=@FenceStyle.txt                   ^
     %UINT32% %HEX4% -E=FilenameDecorationStyle       -F=@FilenameDecorationStyle.txt      ^
     %UINT32% %HEX4% -E=FilenameDecorationType        -F=@FilenameDecorationType.txt       ^
+    %UINT32% %HEX4% -E=ResultCode                    -F=@ResultCode.txt                   ^
     %UINT32% %HEX4% -E=SortOrder                     -F=@SortOrder.txt                    ^
     %SERIALIZE_HYPHEN%                                                                    ^
 ..\enums.h

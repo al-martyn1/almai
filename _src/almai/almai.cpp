@@ -176,11 +176,14 @@ int unsafeMain(int argc, char* argv[])
         }
         else
         {
-            LOG_MSG << "found project root: '" << appConfig.projectRoot << "'\n";
-            if (appConfig.projectFile.empty())
-                LOG_MSG << "project file not found\n";
-            else
-                LOG_MSG << "found project file: '" << appConfig.projectFile << "'\n";
+            if (!argsParser.quet)
+            {
+                LOG_MSG << "found project root: '" << appConfig.projectRoot << "'\n";
+                if (appConfig.projectFile.empty())
+                    LOG_MSG << "project file not found\n";
+                else
+                    LOG_MSG << "found project file: '" << appConfig.projectFile << "'\n";
+            }
         }
 
 

@@ -1,0 +1,7 @@
+invalid,unknown=-1
+
+ok                  = 0 // Okay
+foundAlternative        // Alternative was found
+
+
+error = 0x8000

@@ -191,7 +191,11 @@ bool splitFileAndSaveContent(const std::string &fileName)
                 }
             }
 
-            else if (unexpectedEndOfListing || (listingType==MdLineType::codeTilda || listingType==MdLineType::codeBacktick) && listingType==mdLineType && codeMarkerChar==markerChar && codeMarkerLen==markerLen)
+            else if ( unexpectedEndOfListing
+                  || ((listingType==MdLineType::codeTilda || listingType==MdLineType::codeBacktick) 
+                    && listingType==mdLineType && codeMarkerChar==markerChar && codeMarkerLen==markerLen
+                     )
+                    )
             {
                 if (codeLang.empty())
                 {

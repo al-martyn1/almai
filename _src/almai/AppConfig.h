@@ -1,9 +1,13 @@
 #pragma once
 
 
-#include "umba/umba.h"
 //
 #include "AppConfigBase.h"
+#include "PluralDatabase.h"
+//
+#include "umba/umba.h"
+#include "umba/env.h"
+
 //
 #include "umba/string.h"
 #include "umba/rule_of_five.h"
@@ -12,6 +16,7 @@
 
 //
 #include <map>
+#include <vector>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -20,50 +25,102 @@ struct AppConfig : public AppConfigBase
 {
 
     std::string                       appRoot;
+    std::string                       appConfPath;
     std::string                       projectRoot; // устанавливается только через setProjectRoot
     std::string                       projectFile; // Полное имя almai.yaml, с путём
     std::string                       aiName; // Например, deepeek, qwen - используется для поиска кастомизированных препромптов
 
-    std::vector<std::string>          prepromptFolders; // = { "preprompts.custom", "preprompts"}; // препромпты проекта потом добавляем в начало
     std::vector<std::string>          projectRootStopNames = { ".git", ".out", ".vscode", ".build", "build" }; // пока явно инициализируем
     // almai.yaml
+
+    std::unordered_map<almai::PrepromptPathType, std::vector<std::string> > prepromptDirs;
+    almai::PrepromptPathType          curPrepromptPathType = almai::PrepromptPathType::builtinOptions;
+
+    almai::PluralDatabase             pluralDb;
 
 
     // UMBA_RULE_OF_FIVE_COPY_MOVE(FoundFileInfo, default, default, default, default);
     // UMBA_RULE_OF_FIVE(FoundFileInfo, default, default, default, default, default);
 
-    void setAppRoot(const std::string &appRoot_)
+    std::vector<std::string> getPrepromptDirs() const
+    {
+        std::vector<std::string> resVec;
+
+        unsigned pptBegin = (unsigned)almai::PrepromptPathType::begin;
+        unsigned pptEnd   = (unsigned)almai::PrepromptPathType::end;
+        for(unsigned i=pptBegin; i!=pptEnd; ++i)
+        {
+            std::unordered_map<almai::PrepromptPathType, std::vector<std::string> >::const_iterator it = prepromptDirs.find((almai::PrepromptPathType)i);
+            if (it==prepromptDirs.end())
+                continue;
+
+            resVec.insert(resVec.end(), it->second.begin(), it->second.end());
+        }
+
+        return resVec;
+    }
+
+
+    void addPrepromptPath(almai::PrepromptPathType ppt, std::string path)
+    {
+        umba::string::trim(path);
+
+        std::vector<std::string> &ppDirsVec = prepromptDirs[ppt];
+        // ppDirsVec.insert(ppDirsVec.begin(), path); // Позже добавлен - приоритет выше
+        ppDirsVec.push_back(path);
+    }
+
+    void addPrepromptPath(const std::string &path)
+    {
+        addPrepromptPath(curPrepromptPathType, path);
+        
+    }
+
+    void setAppRoot(const std::string &appRoot_, const std::string &appConfPath_)
     {
         appRoot = appRoot_;
+        appConfPath = appConfPath_;
 
-        prepromptFolders.clear();
+        auto tmpPath = umba::filename::makeAbsPath(std::string("preprompts.almai.custom"), appConfPath);
+        if (umba::filesys::isPathDirectory(tmpPath))
+            addPrepromptPath(almai::PrepromptPathType::installDirs, tmpPath);
 
-        prepromptFolders.emplace_back(umba::filename::makeAbsPath(std::string("preprompts.custom"), appRoot));
-        prepromptFolders.emplace_back(umba::filename::makeAbsPath(std::string("preprompts"), appRoot));
+        tmpPath = umba::filename::makeAbsPath(std::string("preprompts.almai"), appConfPath);
+        if (umba::filesys::isPathDirectory(tmpPath))
+            addPrepromptPath(almai::PrepromptPathType::installDirs, tmpPath);
     }
 
     void setProjectRoot(const std::string &projectRoot_)
     {
-        // starts_with_and_strip(name, std::string("//?/"));
-
-        // наверное, не смысла проверять, был ли он уже добавлен - всё равно это делается один раз при старте
-
         projectRoot = projectRoot_;
 
-        auto tmpName = umba::filename::makeAbsPath(std::string(".preprompts.almai"), projectRoot);
-        if (umba::filesys::isPathDirectory(tmpName))
+        auto tmpPath = umba::filename::makeAbsPath(std::string(".preprompts.almai"), projectRoot);
+        if (umba::filesys::isPathDirectory(tmpPath))
         {
-            prepromptFolders.insert(prepromptFolders.begin(), tmpName);
+            addPrepromptPath(almai::PrepromptPathType::projectDirs, tmpPath);
         }
         else
         {
-            tmpName = umba::filename::makeAbsPath(std::string(".preprompts"), projectRoot);
-            if (umba::filesys::isPathDirectory(tmpName))
+            // Это могут быть чужие препромпты
+            tmpPath = umba::filename::makeAbsPath(std::string(".preprompts"), projectRoot);
+            if (umba::filesys::isPathDirectory(tmpPath))
+                addPrepromptPath(almai::PrepromptPathType::projectDirs, tmpPath);
+        }
+    }
+
+    void addEnvironmentPrepromptPaths()
+    {
+        std::string envAlmaiOverlayPrepromtsPathList;
+        if (umba::env::getVar(std::string("ALMAI_OVERLAY_PREPROMTS"), envAlmaiOverlayPrepromtsPathList) && !envAlmaiOverlayPrepromtsPathList.empty())
+        {
+            auto pathList = umba::filename::splitPathList(envAlmaiOverlayPrepromtsPathList);
+            for(auto &&p: pathList)
             {
-                prepromptFolders.insert(prepromptFolders.begin(), tmpName);
+                umba::string::trim(p);
+                std::vector<std::string> &vec = prepromptDirs[almai::PrepromptPathType::envPaths];
+                vec.insert(vec.begin(), p); // Тут приоритет выше у тех, кто впереди - обычно важное в переменных окружения добавляем раньше - чем меньше приоритет, тем ближе к началу
             }
         }
-
     }
 
     //! Проверка существования каталога или файла, одного из многих, по заданному пути

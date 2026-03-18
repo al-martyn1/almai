@@ -4,4 +4,4 @@ ok                  = 0 // Okay
 foundAlternative        // Alternative was found
 
 
-error = 0x8000
+error,genericError = 0x8000

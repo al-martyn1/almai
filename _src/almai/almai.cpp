@@ -169,8 +169,8 @@ int unsafeMain(int argc, char* argv[])
 
 
         //!!! --------------
-        appConfig.setAppRoot(argsParser.getAppRoot()); // to find prompts
-        if (!appConfig.findProjectRoot())
+        appConfig.setAppRoot(argsParser.getAppRoot(), argsParser.getAppConfPath()); // to find prompts
+        if (!appConfig.findProjectRoot()) // Также устанавливает ProjectRoot
         {
             LOG_WARN("prj-root") << "project root not found\n";
         }
@@ -178,14 +178,20 @@ int unsafeMain(int argc, char* argv[])
         {
             if (!argsParser.quet)
             {
+                LOG_MSG << "\n";
+
                 LOG_MSG << "found project root: '" << appConfig.projectRoot << "'\n";
                 if (appConfig.projectFile.empty())
                     LOG_MSG << "project file not found\n";
                 else
                     LOG_MSG << "found project file: '" << appConfig.projectFile << "'\n";
+
+                LOG_MSG << "\n";
             }
         }
 
+        appConfig.addEnvironmentPrepromptPaths();
+        appConfig.curPrepromptPathType = almai::PrepromptPathType::cliOptions;
 
 
         if (argsParser.mustExit)
@@ -213,6 +219,20 @@ int unsafeMain(int argc, char* argv[])
     //     LOG_ERR << "command line arguments parsing error" << "\n";
     //     return -1;
     // }
+
+    #if defined(DEBUG) || defined(_DEBUG)
+    if (!argsParser.quet)
+    {
+        LOG_MSG << "Preprompt dirs:\n";
+        std::vector<std::string> ppDirs = appConfig.getPrepromptDirs();
+        for(auto &&ppd : ppDirs)
+        {
+            LOG_MSG << "  " << ppd << "\n";
+        }
+
+        LOG_MSG << "\n";
+    }
+    #endif
 
     if (!argsParser.quet  /* && !hasHelpOption */ )
     {

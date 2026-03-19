@@ -1,1 +1,8 @@
 --add-plural-pair=analysis:analyses
+
+--add-translation=ru:roles:Твои роли
+--add-translation=en:roles:Your roles
+
+--add-translation=ru:constraints:Ограничения
+--add-translation=en:constraints:Constraints
+

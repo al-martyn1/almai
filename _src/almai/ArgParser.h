@@ -89,6 +89,7 @@ int operator()( const StringType                                &a           //!
 #include "cli_opt_parsers/strip_prefix.h"
 #include "cli_opt_parsers/lang_marker.h"
 #include "cli_opt_parsers/add_plural_pair.h"
+#include "cli_opt_parsers/add_translation.h"
 
         if (opt.isHelpStyleOption())
         {

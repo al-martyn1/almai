@@ -220,19 +220,26 @@ int unsafeMain(int argc, char* argv[])
     //     return -1;
     // }
 
-    #if defined(DEBUG) || defined(_DEBUG)
+    //#if defined(DEBUG) || defined(_DEBUG)
     if (!argsParser.quet)
     {
         LOG_MSG << "Preprompt dirs:\n";
-        std::vector<std::string> ppDirs = appConfig.getPrepromptDirs();
-        for(auto &&ppd : ppDirs)
+
+        // std::vector<std::string> ppDirs = appConfig.getPrepromptDirs();
+        // for(auto &&ppd : ppDirs)
+        // {
+        //     LOG_MSG << "  " << ppd << "\n";
+        // }
+
+        auto ppDirsAnnotated = appConfig.getPrepromptDirsAnnotated();
+        for(auto &&ppdp : ppDirsAnnotated)
         {
-            LOG_MSG << "  " << ppd << "\n";
+            LOG_MSG << "  " << appConfig.getPrepromptPathTypeAnnotation(ppdp.first) << ": " << ppdp.second << "\n";
         }
 
         LOG_MSG << "\n";
     }
-    #endif
+    //#endif
 
     if (!argsParser.quet  /* && !hasHelpOption */ )
     {
@@ -240,6 +247,33 @@ int unsafeMain(int argc, char* argv[])
         //LOG_MSG<<"\n";
         //umba::cli_tool_helpers::printNameVersion(umbaLogStreamMsg);
     }
+
+    if (1)
+    {
+        LOG_MSG << "Translations test:\n";
+
+        auto printTranslation = [&](std::string lang, std::string key)
+        {
+            auto text = appConfig.getLocalizedText(lang, key);
+            LOG_MSG << "  " << lang << ":" << key << ": " << text << "\n";
+        };
+
+        printTranslation("ru", "roles");
+        printTranslation("en", "roles");
+        printTranslation("ru", "constraints");
+        printTranslation("en", "constraints");
+        printTranslation("ru", "domains");
+        printTranslation("en", "domains");
+    }
+    
+
+
+// --add-translation=ru:roles:Твои роли
+// --add-translation=en:roles:Your roles
+//  
+// # --add-translation=ru:constraints:Ограничения
+// --add-translation=en:roles:Project constraints
+
 
 
     // programLocationInfo.getBuiltinOptionsFilename( BuiltinOptionsLocationFlag::appGlobal )

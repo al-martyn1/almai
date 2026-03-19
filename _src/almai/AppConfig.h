@@ -4,6 +4,8 @@
 //
 #include "AppConfigBase.h"
 #include "PluralDatabase.h"
+#include "Localization.h"
+
 //
 #include "umba/umba.h"
 #include "umba/env.h"
@@ -37,11 +39,26 @@ struct AppConfig : public AppConfigBase
     almai::PrepromptPathType          curPrepromptPathType = almai::PrepromptPathType::builtinOptions;
 
     almai::PluralDatabase             pluralDb;
+    almai::Localization               localizations;
 
 
     // UMBA_RULE_OF_FIVE_COPY_MOVE(FoundFileInfo, default, default, default, default);
     // UMBA_RULE_OF_FIVE(FoundFileInfo, default, default, default, default, default);
 
+
+    //------------------------------
+    bool addLocalization(const std::string &langKeyTextTriplet)
+    {
+        return localizations.addLocalization(langKeyTextTriplet);
+    }
+
+    std::string getLocalizedText(std::string lang, const std::string &key) const
+    {
+        return localizations.getLocalizedText(lang, key);
+    }
+
+
+    //------------------------------
     std::vector<std::string> getPrepromptDirs() const
     {
         std::vector<std::string> resVec;
@@ -59,6 +76,46 @@ struct AppConfig : public AppConfigBase
 
         return resVec;
     }
+
+    static
+    std::string getPrepromptPathTypeAnnotation(almai::PrepromptPathType ppt) 
+    {
+        switch(ppt)
+        {
+            case almai::PrepromptPathType::installDirs   : return "INST";
+            case almai::PrepromptPathType::builtinOptions: return "BLTN";
+            case almai::PrepromptPathType::envPaths      : return "ENVV";
+            case almai::PrepromptPathType::projectDirs   : return "PRJD";
+            case almai::PrepromptPathType::cliOptions    : return "CLIO";
+            case almai::PrepromptPathType::unknown       : return "UNKN";
+            case almai::PrepromptPathType::end           : return "END" ;
+            default : return "DFLT";
+        }
+    }
+
+    std::vector<std::pair<almai::PrepromptPathType, std::string> > getPrepromptDirsAnnotated() const
+    {
+        std::vector<std::pair<almai::PrepromptPathType, std::string> > resVec;
+
+        unsigned pptBegin = (unsigned)almai::PrepromptPathType::begin;
+        unsigned pptEnd   = (unsigned)almai::PrepromptPathType::end;
+        for(unsigned i=pptBegin; i!=pptEnd; ++i)
+        {
+            std::unordered_map<almai::PrepromptPathType, std::vector<std::string> >::const_iterator it = prepromptDirs.find((almai::PrepromptPathType)i);
+            if (it==prepromptDirs.end())
+                continue;
+
+            for(auto &&p : it->second)
+            {
+                resVec.emplace_back(it->first, p);
+            }
+            //resVec.insert(resVec.end(), it->second.begin(), it->second.end());
+        }
+
+        return resVec;
+    }
+
+
 
 
     void addPrepromptPath(almai::PrepromptPathType ppt, std::string path)
@@ -81,11 +138,12 @@ struct AppConfig : public AppConfigBase
         appRoot = appRoot_;
         appConfPath = appConfPath_;
 
-        auto tmpPath = umba::filename::makeAbsPath(std::string("preprompts.almai.custom"), appConfPath);
+        auto 
+        tmpPath = umba::filename::makeAbsPath(std::string("preprompts.almai"), appConfPath);
         if (umba::filesys::isPathDirectory(tmpPath))
             addPrepromptPath(almai::PrepromptPathType::installDirs, tmpPath);
 
-        tmpPath = umba::filename::makeAbsPath(std::string("preprompts.almai"), appConfPath);
+        tmpPath = umba::filename::makeAbsPath(std::string("preprompts.almai.custom"), appConfPath);
         if (umba::filesys::isPathDirectory(tmpPath))
             addPrepromptPath(almai::PrepromptPathType::installDirs, tmpPath);
     }
@@ -111,7 +169,7 @@ struct AppConfig : public AppConfigBase
     void addEnvironmentPrepromptPaths()
     {
         std::string envAlmaiOverlayPrepromtsPathList;
-        if (umba::env::getVar(std::string("ALMAI_OVERLAY_PREPROMTS"), envAlmaiOverlayPrepromtsPathList) && !envAlmaiOverlayPrepromtsPathList.empty())
+        if (umba::env::getVar(std::string("ALMAI_OVERLAY_PREPROMPTS"), envAlmaiOverlayPrepromtsPathList) && !envAlmaiOverlayPrepromtsPathList.empty())
         {
             auto pathList = umba::filename::splitPathList(envAlmaiOverlayPrepromtsPathList);
             for(auto &&p: pathList)

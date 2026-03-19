@@ -323,7 +323,7 @@ bool splitFileAndSaveContent(const std::string &fileName)
         for(const auto &name : listingInfo.listingFilenames)
         {
             std::string fullName;
-            if (!appConfig.writeFile(name, listingInfo.listingCodeLines, fullName))
+            if (!appConfig.writeFile(name, listingInfo.listingCodeLines, &fullName))
             {
                  hasErrors = true;
                  LOG_ERR << "failed to write file: '" << fullName << "'\n";

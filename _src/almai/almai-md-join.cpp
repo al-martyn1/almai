@@ -309,7 +309,7 @@ int unsafeMain(int argc, char* argv[])
 
     std::string fullName;
 
-    if (!appConfig.writeFile(appConfig.output, mdLines, fullName))
+    if (!appConfig.writeFile(appConfig.output, mdLines, &fullName))
     {
         LOG_ERR << "failed to write file: '" << fullName << "'\n";
         return 1;

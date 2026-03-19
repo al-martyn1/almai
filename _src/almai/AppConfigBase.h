@@ -99,12 +99,20 @@ struct AppConfigBase
 
         inputFileLines = marty_cpp::splitToLinesSimple(text);
 
+        // Убираем мусорные пробелы в концах строк
+        for(auto &l : inputFileLines)
+            umba::string::rtrim(l);
+
         return true;
     }
 
-    bool writeFile(const std::string &filename, const std::string &filedata, std::string &fullName) const
+    // Если передавать абсолютное имя файла, то можно писать куда угодно
+    // pFullName - опционально возвращаемое значение, возвращает полное имя файла, куда производилась запись (или пытались)
+    bool writeFile(const std::string &filename, const std::string &filedata, std::string *pFullName=0) const
     {
-        fullName = umba::filename::makeAbsPath(filename, output);
+        auto fullName = umba::filename::makeAbsPath(filename, output);
+        if (pFullName)
+           *pFullName = fullName;
 
         auto dir = umba::filename::getPath(fullName);
         if (!dir.empty())
@@ -113,13 +121,7 @@ struct AppConfigBase
         return umba::filesys::writeFile(fullName, filedata, overwrite);
     }
 
-    bool writeFile(const std::string &filename, const std::string &filedata) const
-    {
-        std::string fullName;
-        return writeFile(filename, filedata, fullName);
-    }
-
-    bool writeFile(const std::string &filename, const std::vector<std::string> &lines, std::string &fullName) const
+    bool writeFile(const std::string &filename, const std::vector<std::string> &lines, std::string *pFullName=0) const
     {
         bool addTrailingNewLine = true;
         if (lines.empty())
@@ -133,13 +135,7 @@ struct AppConfigBase
         }
 
         std::string text = marty_cpp::mergeLines(lines, outputLinefeedType,  /* true */ addTrailingNewLine);
-        return writeFile(filename, text, fullName);
-    }
-
-    bool writeFile(const std::string &filename, const std::vector<std::string> &lines) const
-    {
-        std::string fullName;
-        return writeFile(filename, lines, fullName);
+        return writeFile(filename, text, pFullName);
     }
 
 

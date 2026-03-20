@@ -37,6 +37,7 @@ struct AppConfigBase
 
     bool            overwrite = false;
     bool            quet      = false;
+    bool            useClipboard = false;
 
 
     //------------------------------
@@ -132,6 +133,22 @@ struct AppConfigBase
         linesAppendTo.insert(linesAppendTo.end(), lines.begin(), lines.end());
     }
 
+    std::string mergeLines(const std::vector<std::string> &lines) const
+    {
+        bool addTrailingNewLine = true;
+        if (lines.empty())
+        {
+            addTrailingNewLine = false;
+        }
+        else
+        {
+            if (lines.back().empty())
+                addTrailingNewLine = false;
+        }
+     
+        //std::string text = 
+        return marty_cpp::mergeLines(lines, outputLinefeedType,  /* true */ addTrailingNewLine);
+    }
 
     static
     bool readFile(const std::string &inputFilename, std::vector<std::string> &inputFileLines)
@@ -166,19 +183,19 @@ struct AppConfigBase
 
     bool writeFile(const std::string &filename, const std::vector<std::string> &lines, std::string *pFullName=0) const
     {
-        bool addTrailingNewLine = true;
-        if (lines.empty())
-        {
-            addTrailingNewLine = false;
-        }
-        else
-        {
-            if (lines.back().empty())
-                addTrailingNewLine = false;
-        }
-
-        std::string text = marty_cpp::mergeLines(lines, outputLinefeedType,  /* true */ addTrailingNewLine);
-        return writeFile(filename, text, pFullName);
+        // bool addTrailingNewLine = true;
+        // if (lines.empty())
+        // {
+        //     addTrailingNewLine = false;
+        // }
+        // else
+        // {
+        //     if (lines.back().empty())
+        //         addTrailingNewLine = false;
+        // }
+        //  
+        // std::string text = marty_cpp::mergeLines(lines, outputLinefeedType,  /* true */ addTrailingNewLine);
+        return writeFile(filename, mergeLines(lines), pFullName);
     }
 
 

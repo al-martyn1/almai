@@ -49,6 +49,13 @@
 #include "umba/shellapi.h"
 
 //
+#include "umba/utf.h"
+
+#if defined(WIN32) || defined(_WIN32)
+    #include "umba/clipboard_win32.h"
+#endif
+
+//
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -335,6 +342,20 @@ int unsafeMain(int argc, char* argv[])
         LOG_ERR << "failed to write file: '" << fullName << "'\n";
         return 1;
     }
+
+    #if defined(WIN32) || defined(_WIN32)
+    if (appConfig.useClipboard)
+    {
+        auto allText = appConfig.mergeLines(resLines);
+        if (!umba::win32::clipboardTextSet( allText, [](const std::string &t ) { return umba::fromUtf8(t); } /* fromUtfConverter */ , true /* utf */ , umba::win32::clipboardGetConsoleHwnd()))
+        {
+            LOG_WARN("clipbrd") << "failed to set clipboard text\n";
+        }
+    }
+    #else
+    //if (!clipboardTextSet(text, fromUtfConverter, utfSource))
+    #endif
+
 
     return 0;
 

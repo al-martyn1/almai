@@ -309,9 +309,28 @@ int unsafeMain(int argc, char* argv[])
 
     auto mdLines = marty_cpp::splitToLinesSimple(oss.str());
 
+    auto resLines = appConfig.headerLines;
+
+    if (!resLines.empty())
+    {
+        resLines.push_back(std::string());
+        resLines.push_back(std::string());
+    }
+
+    resLines.insert(resLines.end(), mdLines.begin(), mdLines.end());
+
+    if (!appConfig.footerLines.empty())
+    {
+        resLines.push_back(std::string());
+        resLines.push_back(std::string());
+    }
+
+    resLines.insert(resLines.end(), appConfig.footerLines.begin(), appConfig.footerLines.end());
+
+
     std::string fullName;
 
-    if (!appConfig.writeFile(appConfig.output, mdLines, &fullName))
+    if (!appConfig.writeFile(appConfig.output, resLines, &fullName))
     {
         LOG_ERR << "failed to write file: '" << fullName << "'\n";
         return 1;

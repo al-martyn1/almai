@@ -101,18 +101,8 @@ unsigned lineNo = 0;
 
 //----------------------------------------------------------------------------
 inline
-bool splitFileAndSaveContent(const std::string &fileName)
+bool splitLinesAndSaveContent(std::vector<std::string> mdLines)
 {
-    std::vector<std::string> mdLines;
-
-    if (!appConfig.readFile(fileName, mdLines))
-    {
-        LOG_ERR << "failed to read input file: '" << fileName << "'" << "\n";
-        return false;
-    }
-
-    curFile = fileName;
-
     std::vector<std::string> lastSignificantLines;
 
     bool readingCode = false;
@@ -334,6 +324,21 @@ bool splitFileAndSaveContent(const std::string &fileName)
     return !hasErrors;
 }
 
+inline
+bool splitFileAndSaveContent(const std::string &fileName)
+{
+    std::vector<std::string> mdLines;
+
+    if (!appConfig.readFile(fileName, mdLines))
+    {
+        LOG_ERR << "failed to read input file: '" << fileName << "'" << "\n";
+        return false;
+    }
+
+    curFile = fileName;
+
+    return splitLinesAndSaveContent(mdLines);
+}
 //----------------------------------------------------------------------------
 
 
@@ -448,17 +453,47 @@ int unsafeMain(int argc, char* argv[])
     //     umba::cli_tool_helpers::printNameVersion(umbaLogStreamMsg);
     // }
 
-
-    if (appConfig.inputFiles.empty())
+    
+    if ( appConfig.inputFiles.empty()
+      #if defined(WIN32) || defined(_WIN32)
+      && !appConfig.useClipboard
+      #endif
+       )
     {
         LOG_ERR << "no input files taken" << "\n";
         return 1;
     }
 
+
+// template<typename ToUtfConverter> inline
+// bool clipboardTextGet(std::string &text, const ToUtfConverter &toUtfConverter, bool *pUtf, HWND hWndNewOwner=0)
+
+
     appConfig.checkUpdateOutputDir();
 
 
     bool hasErrors = false;
+
+#if defined(WIN32) || defined(_WIN32)
+    if (appConfig.useClipboard)
+    {
+        std::string clpbText;
+        if (!umba::win32::clipboardTextGet( clpbText, [](const std::wstring &t ) { return umba::toUtf8(t); } /* toUtfConverter */ , 0 /* pUtf */ , umba::win32::clipboardGetConsoleHwnd()))
+        {
+            LOG_WARN("clipbrd") << "failed to get clipboard text\n";
+        }
+        else
+        {
+            std::vector<std::string> lines = appConfig.splitTextToLines(clpbText);
+            if (!splitLinesAndSaveContent(lines))
+            {
+                hasErrors = true;
+            }
+        }
+    
+    }
+#endif
+
 
     for(const auto &inputFileName : appConfig.inputFiles)
     {
@@ -467,6 +502,7 @@ int unsafeMain(int argc, char* argv[])
             hasErrors = true;
         }
     }
+
 
     return hasErrors ? 1 : 0;
 }

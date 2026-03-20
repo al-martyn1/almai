@@ -1,7 +1,7 @@
         if ( opt.setParam("?MODE",true)
           || opt.isOption("clipboard") || opt.isOption('B')
           // || opt.setParam("VAL",true)
-          || opt.setDescription("Set/get text to/from clipboard.")
+          || opt.setDescription("Use clipboard.")
            )
         {
             if (argsParser.hasHelpOption) return 0;

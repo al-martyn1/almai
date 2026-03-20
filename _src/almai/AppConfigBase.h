@@ -80,22 +80,6 @@ struct AppConfigBase
     }
 
     static
-    bool readFile(const std::string &inputFilename, std::string &inputFileText)
-    {
-        std::string inputFileTextOrg;
-
-        if (!umba::filesys::readFile(inputFilename, inputFileTextOrg))
-        {
-            return false;
-        }
-
-        inputFileText = autoEncodeToUtf(inputFileTextOrg);
-        inputFileText = marty_cpp::normalizeCrLfToLf(inputFileText);
-
-        return true;
-    }
-
-    static
     std::vector<std::string> stripEmptyHeadLines(const std::vector<std::string> &lines)
     {
         std::vector<std::string> resLines; resLines.reserve(lines.size());
@@ -151,13 +135,35 @@ struct AppConfigBase
     }
 
     static
+    std::vector<std::string> splitTextToLines(const std::string &text)
+    {
+        return marty_cpp::splitToLinesSimple(text);
+    }
+
+    static
+    bool readFile(const std::string &inputFilename, std::string &inputFileText)
+    {
+        std::string inputFileTextOrg;
+
+        if (!umba::filesys::readFile(inputFilename, inputFileTextOrg))
+        {
+            return false;
+        }
+
+        inputFileText = autoEncodeToUtf(inputFileTextOrg);
+        inputFileText = marty_cpp::normalizeCrLfToLf(inputFileText);
+
+        return true;
+    }
+
+    static
     bool readFile(const std::string &inputFilename, std::vector<std::string> &inputFileLines)
     {
         std::string text;
         if (!readFile(inputFilename, text))
              return false;
 
-        inputFileLines = marty_cpp::splitToLinesSimple(text);
+        inputFileLines = splitTextToLines(text);
 
         // Убираем мусорные пробелы в концах строк
         for(auto &l : inputFileLines)

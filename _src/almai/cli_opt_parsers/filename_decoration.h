@@ -4,7 +4,7 @@
                                     "title"
                              )
               || opt.setInitial(-1) 
-              || opt.isOption("filename-decoration-type") || opt.isOption('D')
+              || opt.isOption("filename-decoration-type") || opt.isOption('R')
               || opt.setDescription("Set filename decoration type.")
               )
         {

@@ -199,7 +199,7 @@ protected:
     virtual void onOptionDup( const std::string &opt ) override
     {
         LOG_ERR<<"Duplicated option key - '"<<opt<<"'\n";
-        throw std::runtime_error("Duplicated option key");
+        throw std::runtime_error("Duplicated option key - '" + opt + "'");
     }
 
 };

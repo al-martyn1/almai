@@ -1,4 +1,4 @@
-        if (   opt.setParam("DICT_FILE", umba::command_line::OptionType::optString)
+        if (   opt.setParam("EXT:LANGUAGE", umba::command_line::OptionType::optString)
             || opt.isOption("dict") || opt.isOption('d')
             || opt.setDescription("Add language dictionary entry.")
            )

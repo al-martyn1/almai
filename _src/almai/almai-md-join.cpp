@@ -154,10 +154,12 @@ int unsafeMain(int argc, char* argv[])
         std::cout << "App Root Path: " << rootPath << "\n";
         std::cout << "Working Dir  : " << cwd << "\n";
 
-        argsParser.args.push_back("-Y");
-        argsParser.args.push_back("-o=" + rootPath + "\\tests\\almai-md-join_01.md");
-        //argsParser.args.push_back(rootPath + "/_src/almai/**/*.cpp,*.bat");
-        argsParser.args.push_back("../../../README.md");
+        // argsParser.args.push_back("-Y");
+        // argsParser.args.push_back("-o=" + rootPath + "\\tests\\almai-md-join_01.md");
+        // //argsParser.args.push_back(rootPath + "/_src/almai/**/*.cpp,*.bat");
+        // argsParser.args.push_back("../../../README.md");
+
+        argsParser.args.push_back("--help");
 
     } // if (umba::isDebuggerPresent())
 

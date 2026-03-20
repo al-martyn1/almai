@@ -1,2 +1,3 @@
+--overwrite
 --dict=.cpp:C++
 --dict-file=lang-ext-dict.txt

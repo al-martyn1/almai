@@ -3,7 +3,7 @@
                                      "tilde/tildes"
                              )
               || opt.setInitial(-1) 
-              || opt.isOption("fence-style") || opt.isOption('F')
+              || opt.isOption("fence-style") || opt.isOption('f')
               || opt.setDescription("Code block fence style. Default: auto.")
               )
         {

@@ -23,6 +23,10 @@
 //
 #include "umba/filename.h"
 #include "umba/filesys.h"
+
+//
+#include <algorithm>
+
 //----------------------------------------------------------------------------
 
 
@@ -89,6 +93,45 @@ struct AppConfigBase
 
         return true;
     }
+
+    static
+    std::vector<std::string> stripEmptyHeadLines(const std::vector<std::string> &lines)
+    {
+        std::vector<std::string> resLines; resLines.reserve(lines.size());
+        for(auto l : lines)
+        {
+            umba::string::rtrim(l);
+
+            if (!l.empty())
+            {
+                resLines.emplace_back(l);
+                continue;
+            }
+
+            if (resLines.empty())
+                continue;
+
+            resLines.emplace_back(l);
+        }
+
+        return resLines;
+    }
+
+    static
+    std::vector<std::string> stripEmptyTailLines(std::vector<std::string> lines)
+    {
+        std::reverse(lines.begin(), lines.end());
+        lines = stripEmptyHeadLines(lines);
+        std::reverse(lines.begin(), lines.end());
+        return lines;
+    }
+
+    static
+    void appendLines(std::vector<std::string> &linesAppendTo, const std::vector<std::string> &lines)
+    {
+        linesAppendTo.insert(linesAppendTo.end(), lines.begin(), lines.end());
+    }
+
 
     static
     bool readFile(const std::string &inputFilename, std::vector<std::string> &inputFileLines)

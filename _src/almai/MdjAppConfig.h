@@ -31,8 +31,8 @@
 //----------------------------------------------------------------------------
 struct AppConfig : public AppConfigBase
 {
-
-
+    std::vector<std::string>     headerLines;
+    std::vector<std::string>     footerLines;
 
 }; // struct AppConfig
 

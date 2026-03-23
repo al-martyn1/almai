@@ -176,58 +176,26 @@ int unsafeMain(int argc, char* argv[])
     } // if (umba::isDebuggerPresent())
 
 
-    // try
-    // {
-        // Job completed - may be, --where option found
-        if (argsParser.mustExit)
-            return 0;
+    // Job completed - may be, --where option found
+    if (argsParser.mustExit)
+        return 0;
 
-        // if (!argsParser.quet)
-        // {
-        //     printNameVersion();
-        // }
+    if (!argsParser.parseStdBuiltins())
+    {
+        // LOG_INFO("config") << "Error found in builtin option files\n";
+        return 1;
+    }
 
-        // LOG_INFO("config") << "-----------------------------------------" << "\n";
-        // LOG_INFO("config") << "Processing builtin option files\n";
-        if (!argsParser.parseStdBuiltins())
-        {
-            // LOG_INFO("config") << "Error found in builtin option files\n";
-            return 1;
-        }
-        // LOG_INFO("config") << "-----------------------------------------" << "\n";
+    if (argsParser.mustExit)
+        return 0;
 
-        if (argsParser.mustExit)
-            return 0;
+    if (!argsParser.parse())
+    {
+        return 1;
+    }
 
-        // LOG_INFO("config") << "-----------------------------------------" << "\n";
-        // LOG_INFO("config") << "Processing command line arguments\n";
-        if (!argsParser.parse())
-        {
-            // LOG_INFO("config") << "Error found while parsing command line arguments\n";
-            return 1;
-        }
-        // LOG_INFO("config") << "-----------------------------------------" << "\n";
-
-        if (argsParser.mustExit)
-            return 0;
-    // }
-    // catch(const std::exception &e)
-    // {
-    //     LOG_ERR << e.what() << "\n";
-    //     return -1;
-    // }
-    // catch(const std::exception &e)
-    // {
-    //     LOG_ERR << "command line arguments parsing error" << "\n";
-    //     return -1;
-    // }
-
-    // if (!argsParser.quet  /* && !hasHelpOption */ )
-    // {
-    //     //printNameVersion();
-    //     //LOG_MSG<<"\n";
-    //     umba::cli_tool_helpers::printNameVersion(umbaLogStreamMsg);
-    // }
+    if (argsParser.mustExit)
+        return 0;
 
 
     if (appConfig.scanInfos.empty())
@@ -248,7 +216,6 @@ int unsafeMain(int argc, char* argv[])
     {
         LOG_ERR << "no files found" << "\n";
 
-        // LOG_ERR 
         LOG_MSG << "Scan paths & masks:\n";
         for(auto &&s : appConfig.scanInfos)
         {
@@ -262,7 +229,6 @@ int unsafeMain(int argc, char* argv[])
 
     for( auto &&f: foundFiles)
     {
-        // cout << "  " << f << "\n";
         appConfig.foundFileInfos.emplace_back(f);
     }
 

@@ -597,18 +597,12 @@ std::string formatFileSize(std::size_t sz, bool useDecimal=true)
 {
      std::stringstream oss;
      std::size_t divider = useDecimal ? 1000u : 1024u;
-     const std::size_t divider100 = 100u*divider;
 
-     //const std::size_t szd = sz/divider;
-     //if (sz < divider100) // меньше 100 килобайт выводим в байтах
      if (sz < 100u*divider) // меньше 100 килобайт выводим в байтах
      {
          oss << sz /*  << " bytes" */ ;
          return oss.str();
      }
-
-     // double dsz = (double)sz;
-     // dsz
 
      sz /= divider; // Теперь у нас килобайты
 

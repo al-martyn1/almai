@@ -1,2 +1,7 @@
 Пользоваться агентами - https://rsdn.org/forum/ai/9066954.1
 Отличия агентов от чата - https://rsdn.org/forum/shareware/9067170.1
+Научил ИИ-агента помнить важное и забывать лишнее в SQLite - https://habr.com/ru/articles/1006622/
+Как сделать текст живым, даже если его писал ChatGPT - https://habr.com/ru/articles/1013632/
+Как я перестал бояться Claude Code и научил его не ломать мои проекты - https://habr.com/ru/articles/1013330/
+Что вы не знали о Claude Code: архитектура, управление и инженерные практики - https://habr.com/ru/articles/1012412/
+AI без Python: как исправить документацию и внедрить RAG в JVM-стеке - https://habr.com/ru/companies/raiffeisenbank/articles/1012666/

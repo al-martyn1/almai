@@ -29,11 +29,6 @@ struct AppConfig : public AppConfigBase
 
     std::vector<std::string>                         inputFiles;
 
-    bool listOnly  = false; // list files, but don't save them
-    std::size_t listLines = 5;
-
-
-
 
 }; // struct AppConfig
 

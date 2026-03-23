@@ -236,10 +236,10 @@ Generator: Umba Brief Scanner
 - [ ] `[_libs/umba/filesys_scanners.h:31]`
   Надо бы переименовать в umba::filesys::scanners
 
-- [ ] `[_libs/umba/filesys_scanners.h:276]`
+- [ ] `[_libs/umba/filesys_scanners.h:285]`
   Нужно что-то решать с отсутствующим расширением
 
-- [ ] `[_libs/umba/filesys_scanners.h:494]`
+- [ ] `[_libs/umba/filesys_scanners.h:503]`
   Нужно что-то решать с отсутствующим расширением
 
 - [ ] `[_libs/umba/format_message.h:57]`
@@ -277,20 +277,20 @@ Generator: Umba Brief Scanner
 
 # _libs/umba/internal
 
-- [ ] `[_libs/umba/internal/filesys.h:589]`
+- [ ] `[_libs/umba/internal/filesys.h:591]`
   Посмотреть "Именование файлов, путей и пространств имен" -
   https://learn.microsoft.com/ru-ru/windows/win32/fileio/naming-a-file
 
-- [ ] `[_libs/umba/internal/filesys.h:1595]`
+- [ ] `[_libs/umba/internal/filesys.h:1597]`
   При возникновении исключения hFind утекает. Надо бы переделать, и такие моменты
   надо бы везде это проверить
 
-- [ ] `[_libs/umba/internal/filesys.h:1654]`
+- [ ] `[_libs/umba/internal/filesys.h:1656]`
   При возникновении исключения hFind утекает. Надо бы везде это проверить HANDLE
   hFind = ::FindFirstFileA( umba::filename::prepareForNativeUsage(path).c_str(),
   &fndData );
 
-- [ ] `[_libs/umba/internal/filesys.h:2028]`
+- [ ] `[_libs/umba/internal/filesys.h:2030]`
   Переделать !!!
   https://stackoverflow.com/questions/2910377/get-home-directory-in-linux
 
@@ -309,7 +309,7 @@ Generator: Umba Brief Scanner
 
 # _libs/umba/warnings
 
-- [ ] `[_libs/umba/warnings/disable_unsafe_conversion.h:9]`
+- [ ] `[_libs/umba/warnings/disable_unsafe_conversion.h:15]`
   Проверить на 8/9/10/11/12 ой версии GCC - на 13ой точно есть
 
 

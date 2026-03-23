@@ -4,8 +4,8 @@ call "%~dp0\.find_test_exe.bat" %TEST_NAME%
 @set FOUND_EXE=%FOUND_EXE:"=%
 @if "%FOUND_EXE%"=="" @goto NOT_FOUND
 @set TEST_EXE="%FOUND_EXE%"
-%TEST_EXE%
-
+%TEST_EXE% > "%TEST_NAME%.md"
+almai-md-split.exe -Y "%TEST_NAME%.md"
 
 exit /B 0
 :NOT_FOUND

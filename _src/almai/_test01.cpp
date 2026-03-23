@@ -14,23 +14,65 @@ using namespace almai;
 
 //----------------------------------------------------------------------------
 inline 
-void makeNormalizedRelativePathTest(const std::string &name)
+void performMakeNormalizedRelativePathTest(const std::string &name)
 {
     cout << "  [" << name << "] - [" << makeNormalizedRelativePath(name) << "]\n";
 }
 
 //----------------------------------------------------------------------------
 inline 
-void makeNormalizedRelativePathTests()
+void performMakeNormalizedRelativePathTests()
 {
-    cout << "makeNormalizedRelativePath:\n";
-    makeNormalizedRelativePathTest("C:\\Windows\\Program Files");
-    makeNormalizedRelativePathTest("\\\\?\\C:\\Windows\\Program Files");
-    makeNormalizedRelativePathTest("\\\\?\\share\\c$\\Windows\\Program Files");
-    makeNormalizedRelativePathTest("/usr/share/bin");
-    makeNormalizedRelativePathTest("~/bin");
+    cout << "**test01/makeNormalizedRelativePath.txt**\n";
+    cout << "```\n";
+    performMakeNormalizedRelativePathTest("C:\\Windows\\Program Files");
+    performMakeNormalizedRelativePathTest("\\\\?\\C:\\Windows\\Program Files");
+    performMakeNormalizedRelativePathTest("\\\\?\\share\\c$\\Windows\\Program Files");
+    performMakeNormalizedRelativePathTest("/usr/share/bin");
+    performMakeNormalizedRelativePathTest("~/bin");
+    cout << "```\n\n";
 }
 
+//----------------------------------------------------------------------------
+inline 
+void performFormatFileSizeTest(std::size_t sz, bool dec)
+{
+    cout << sz << ": " << formatFileSize(sz, dec) << "\n";
+}
+
+//----------------------------------------------------------------------------
+inline 
+void performFormatFileSizeTests(bool dec)
+{
+    std::string decStr = dec?"dec":"bin";
+    cout << "**test01/formatFileSize_" << decStr << ".txt**\n";
+    cout << "```\n";
+    // cout << "formatFileSize test (" << decStr << "):\n";
+
+    std::size_t sz = 64;
+    std::size_t incSz = 699;
+    const std::size_t maxSize = 100*1024*1024; // Тестируем до 100 Мб размера
+
+    while(sz<maxSize)
+    {
+        performFormatFileSizeTest(sz, dec);
+
+        if (sz<12800)
+            sz += incSz;
+        else if (sz<128000)
+            sz += incSz*9;
+        else if (sz<1280000)
+            sz += incSz*9*9;
+        else if (sz<12800000)
+            sz += incSz*9*9*9;
+        else
+            sz += incSz*9*9*9*9;
+    }
+
+    cout << "```\n\n";
+}
+
+//----------------------------------------------------------------------------
 
 
 
@@ -40,7 +82,9 @@ int main(int argc, char* argv[])
     UMBA_USED(argc);
     UMBA_USED(argv);
 
-    makeNormalizedRelativePathTests();
+    performMakeNormalizedRelativePathTests();
+    performFormatFileSizeTests(false);
+    performFormatFileSizeTests(true );
 
     return 0;
 }

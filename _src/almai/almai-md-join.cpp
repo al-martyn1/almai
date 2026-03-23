@@ -166,7 +166,12 @@ int unsafeMain(int argc, char* argv[])
         // //argsParser.args.push_back(rootPath + "/_src/almai/**/*.cpp,*.bat");
         // argsParser.args.push_back("../../../README.md");
 
-        argsParser.args.push_back("--help");
+        //argsParser.args.push_back("--help");
+
+
+        argsParser.args.push_back("-Y");
+        argsParser.args.push_back("-J=100");
+        argsParser.args.push_back(rootPath + "/_src/almai/**/*.cpp");
 
     } // if (umba::isDebuggerPresent())
 
@@ -290,12 +295,33 @@ int unsafeMain(int argc, char* argv[])
 
     almai::sortFoundFileInfos(appConfig.foundFileInfos);
 
+    std::vector<std::string> readedFiles;
+
     for(auto &ffi: appConfig.foundFileInfos)
     {
         if (!appConfig.readFile(ffi.fullName, ffi.fileLines))
         {
             LOG_WARN("read-failed") << "failed to read file: '" << ffi.fullName << "'";
         }
+        else
+        {
+            readedFiles.push_back(ffi.fullName);
+        }
+    }
+
+
+    if (appConfig.listOnly)
+    {
+        UMBA_LOG_MSG << "\nFound files:\n";
+
+        for(auto && ff: readedFiles)
+        {
+            UMBA_LOG_MSG << "  " << ff << "\n";
+        }
+
+        UMBA_LOG_MSG << "\n";
+
+        return 0;
     }
 
     // Теперь надо для каждого файла найти fence
@@ -321,6 +347,7 @@ int unsafeMain(int argc, char* argv[])
     if (!resLines.empty())
     {
         resLines.push_back(std::string());
+        resLines.push_back(std::string(3u,'-'));
         resLines.push_back(std::string());
     }
 
@@ -329,6 +356,7 @@ int unsafeMain(int argc, char* argv[])
     if (!appConfig.footerLines.empty())
     {
         resLines.push_back(std::string());
+        resLines.push_back(std::string(3u,'-'));
         resLines.push_back(std::string());
     }
 
@@ -336,12 +364,26 @@ int unsafeMain(int argc, char* argv[])
 
 
     std::string fullName;
+    std::size_t sizeTotal = 0;
 
-    if (!appConfig.writeFile(appConfig.output, resLines, &fullName))
+    if (!appConfig.writeFile(appConfig.output, resLines, &fullName, &sizeTotal))
     {
         LOG_ERR << "failed to write file: '" << fullName << "'\n";
         return 1;
     }
+
+    if (!argsParser.quet)
+    {
+        LOG_MSG << "Result size: " << almai::formatFileSize(sizeTotal) << "\n";
+
+        LOG_MSG << "Line limit to join: ";
+        if (appConfig.isSetJoinLinesLimit())
+            LOG_MSG << appConfig.joinLinesLimit;
+        else
+            LOG_MSG << "not set";
+        LOG_MSG << "\n"; 
+    }
+
 
     #if defined(WIN32) || defined(_WIN32)
     if (appConfig.useClipboard)

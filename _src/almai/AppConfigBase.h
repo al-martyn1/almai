@@ -35,9 +35,14 @@
 struct AppConfigBase
 {
 
-    bool            overwrite = false;
-    bool            quet      = false;
-    bool            useClipboard = false;
+    bool            overwrite         = false;
+    bool            quet              = false;
+    bool            useClipboard      = false;
+
+    bool            listOnly          = false; // list files, but don't save them
+    std::size_t     listLines         = 5;
+
+    std::size_t     joinLinesLimit    = (std::size_t)-1;
 
 
     //------------------------------
@@ -112,6 +117,13 @@ struct AppConfigBase
     }
 
     static
+    std::vector<std::string> stripEmptyHeadTailLines(std::vector<std::string> lines)
+    {
+        return stripEmptyHeadLines(stripEmptyTailLines(lines));
+    }
+
+
+    static
     void appendLines(std::vector<std::string> &linesAppendTo, const std::vector<std::string> &lines)
     {
         linesAppendTo.insert(linesAppendTo.end(), lines.begin(), lines.end());
@@ -138,6 +150,37 @@ struct AppConfigBase
     std::vector<std::string> splitTextToLines(const std::string &text)
     {
         return marty_cpp::splitToLinesSimple(text);
+    }
+
+    static 
+    void splitHeaderFooter(const std::vector<std::string> &hefooter, std::vector<std::string> &header, std::vector<std::string> &footer)
+    {
+        std::vector<std::string> *pResVec = &header;
+
+        for(auto line : hefooter)
+        {
+            umba::string::rtrim(line);
+
+            bool foundSep = false;
+
+            if (!line.empty())
+            {
+                std::size_t nChars = almai::geNumberOfFirstSameChars(line);
+                if (line[0]=='-' && nChars>=3)
+                    foundSep = true;
+            }
+
+            if (foundSep)
+            {
+                pResVec = &footer;
+                continue;
+            }
+
+            pResVec->push_back(line);
+        }
+
+        header = stripEmptyHeadTailLines(header);
+        footer = stripEmptyHeadTailLines(footer);
     }
 
     static
@@ -187,7 +230,7 @@ struct AppConfigBase
         return umba::filesys::writeFile(fullName, filedata, overwrite);
     }
 
-    bool writeFile(const std::string &filename, const std::vector<std::string> &lines, std::string *pFullName=0) const
+    bool writeFile(const std::string &filename, const std::vector<std::string> &lines, std::string *pFullName=0, std::size_t *pSizeTotal=0) const
     {
         // bool addTrailingNewLine = true;
         // if (lines.empty())
@@ -201,7 +244,13 @@ struct AppConfigBase
         // }
         //  
         // std::string text = marty_cpp::mergeLines(lines, outputLinefeedType,  /* true */ addTrailingNewLine);
-        return writeFile(filename, mergeLines(lines), pFullName);
+
+        std::string text = mergeLines(lines);
+
+        if (pSizeTotal)
+           *pSizeTotal = text.size();
+        
+        return writeFile(filename, text, pFullName);
     }
 
 
@@ -355,7 +404,7 @@ struct AppConfigBase
     }
 
 
-    void generateMarkdownListing(std::ostream &oss, const std::string &displayFileName, const std::vector<std::string> &fileLines) const
+    void generateMarkdownListing(std::ostream &oss, const std::string &displayFileName, std::vector<std::string> fileLines) const
     {
         if (filenameDecorationType==almai::FilenameDecorationType::title)
         {
@@ -377,44 +426,34 @@ struct AppConfigBase
 
         oss << "\n";
 
-        // Нужно, чтобы itBegin указывал на первую не пустую строку
-        // Нужно, чтобы itEnd указывал на пустую строку, следующую за последней не пустой
+        fileLines = stripEmptyHeadTailLines(fileLines);
 
-        std::vector<std::string>::const_iterator it = fileLines.begin();
-        std::vector<std::string>::const_iterator itBegin = it;
-        for(; it != fileLines.end(); ++it)
+        std::size_t fileLinesSize = fileLines.size();
+        if (isSetJoinLinesLimit())
         {
-            auto line = *it;
-            umba::string::rtrim(line);
-            if (!line.empty())
-            {
-                itBegin = it;
-                break;
-            }
+            fileLinesSize = joinLinesLimit;
         }
 
-        it = itBegin;
-        std::vector<std::string>::const_iterator itEnd = fileLines.end();
-        for(; it != fileLines.end(); ++it)
+        if (fileLinesSize>fileLines.size())
         {
-            auto line = *it;
-            umba::string::rtrim(line);
-            if (!line.empty())
-            {
-                itEnd = std::next(it /* , std::ptrdiff_t(1) */ );
-            }
+            fileLinesSize = fileLines.size();
         }
 
-        it = itBegin;
-        for(; it != itEnd; ++it)
+        for(std::size_t i=0; i!=fileLinesSize; ++i)
         {
-            auto line = *it;
+            auto line = fileLines[i];
             umba::string::rtrim(line);
             oss << line << "\n";
         }
 
         oss << fence << "\n\n";
 
+    }
+
+
+    bool isSetJoinLinesLimit() const
+    {
+        return joinLinesLimit!=0 && joinLinesLimit!=(std::size_t)-1;
     }
 
 

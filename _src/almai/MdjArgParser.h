@@ -79,7 +79,7 @@ int operator()( const StringType                                &a           //!
 
 #include "cli_opt_parsers/basic_options.h"
 #include "cli_opt_parsers/overwrite.h"
-// #include "cli_opt_parsers/list.h"
+#include "cli_opt_parsers/list.h"
 #include "cli_opt_parsers/dict.h"
 #include "cli_opt_parsers/output.h"
 #include "cli_opt_parsers/filename_decoration.h"
@@ -90,6 +90,7 @@ int operator()( const StringType                                &a           //!
 #include "cli_opt_parsers/lang_marker.h"
 #include "cli_opt_parsers/add_header_footer.h"
 #include "cli_opt_parsers/clipboard.h"
+#include "cli_opt_parsers/join_lines_limit.h"
 
         if (opt.isHelpStyleOption())
         {

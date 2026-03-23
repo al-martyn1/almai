@@ -55,7 +55,7 @@ Generator: Umba Brief Scanner
     return false;
     }
 
-- `[_libs/umba/cmd_line.h:3126]`
+- `[_libs/umba/cmd_line.h:3136]`
   Надо ProgramLocation проверить на юникод
 
 - `[_libs/umba/macros.h:417]`
@@ -64,6 +64,9 @@ Generator: Umba Brief Scanner
 
 - `[_libs/umba/macros.h:421]`
   Пока не будем ничего делать, потом разберёмся
+
+- `[_libs/umba/program_location.h:139]`
+  Надо сделать через dl_*
 
 - `[_libs/umba/shellapi.h:336]`
   тут нужен замут через dl*, но пока лень и не особо нужно
@@ -108,14 +111,17 @@ Generator: Umba Brief Scanner
 
 # _libs/umba/internal
 
-- `[_libs/umba/internal/filesys.h:963]`
+- `[_libs/umba/internal/filesys.h:965]`
   На не винде проверяем доступность на запись и чтение через плюсовые потоки
 
 
 
 # _src/almai
 
-- `[_src/almai/almai-md-split.cpp:151]`
+- `[_src/almai/almai-md-split.cpp:141]`
   Не нужно. Просто был кривоватый документ, в нем были листинги на питоне, и
   внутри них были маркдаун маркеры блоков кода
+
+- `[_src/almai/almai.cpp:171]`
+  --------------
 

@@ -1,4 +1,4 @@
-# Шаблон Umba-проекта
+# Almai - al-martyn1 AI tools
 
 - [Настройка проекта на базе данного шаблона](#настройка-проекта-на-базе-данного-шаблона)
   - [Настройка CMakeLists.txt](#настройка-cmakeliststxt)
@@ -38,7 +38,7 @@
 Импортируем нужные библиотеки:
 
 **CMakeLists.txt:24**
-```
+```cmake
 # Import libraries here
 add_subdirectory(${LIB_ROOT}/encoding)
 add_subdirectory(${LIB_ROOT}/marty_cpp)
@@ -57,7 +57,7 @@ add_subdirectory(${LIB_ROOT}/yaml-cpp)
 Настраиваем списки библиотек для последующего использования:
 
 **CMakeLists.txt:45**
-```
+```cmake
 # Configure libraries here
 set(COMMON_LIBS
     encoding::encoding

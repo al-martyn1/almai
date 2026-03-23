@@ -6,3 +6,5 @@
 --add-translation=ru:constraints:Ограничения
 --add-translation=en:constraints:Constraints
 
+--project-root-marker=-,.git,.vscode,.out,out,.build,build
+

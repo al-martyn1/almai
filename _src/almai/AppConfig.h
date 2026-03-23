@@ -32,7 +32,8 @@ struct AppConfig : public AppConfigBase
     std::string                       projectFile; // Полное имя almai.yaml, с путём
     std::string                       aiName; // Например, deepeek, qwen - используется для поиска кастомизированных препромптов
 
-    std::vector<std::string>          projectRootStopNames = { ".git", ".out", ".vscode", ".build", "build" }; // пока явно инициализируем
+    std::unordered_set<std::string>   projectRootStopNames; //  = { ".git", ".out", ".vscode", ".build", "build" }; // пока явно инициализируем
+    //std::vector<std::string>          projectRootStopNames = { ".git", ".out", ".vscode", ".build", "build" }; // пока явно инициализируем
     // almai.yaml
 
     std::unordered_map<almai::PrepromptPathType, std::vector<std::string> > prepromptDirs;
@@ -40,10 +41,69 @@ struct AppConfig : public AppConfigBase
 
     almai::PluralDatabase             pluralDb;
     almai::Localization               localizations;
+    std::string                       lang;
 
 
     // UMBA_RULE_OF_FIVE_COPY_MOVE(FoundFileInfo, default, default, default, default);
     // UMBA_RULE_OF_FIVE(FoundFileInfo, default, default, default, default, default);
+
+    //------------------------------
+    bool addProjectRootMarker(std::string marker)
+    {
+        umba::string::trim(marker);
+
+        if (marker=="-")
+        {
+            projectRootStopNames.clear();
+            return true;
+        }
+
+        bool bRemove = false;
+
+        if (marker.empty())
+            return false;
+
+        if (marker.front()=='-' || marker.front()=='+')
+        {
+            if (marker.front()=='-')
+                bRemove = true;
+
+            marker.erase(0, 1);
+            umba::string::trim(marker);
+
+            if (marker.empty())
+                return false;
+        }
+
+        if (bRemove)
+            projectRootStopNames.erase(marker);
+        else
+            projectRootStopNames.insert(marker);
+
+        return true;
+    }
+
+    bool addProjectRootMarkers(const std::vector<std::string> &markers)
+    {
+        // Можно через splitPathList(name,','); // umba::filename?
+        // Можно через umba::string::split(p, ',', true /* skipEmpty */ );
+
+        auto markersList = umba::filename::splitPathList(markers, ',');
+        for(const auto &m : markersList)
+        {
+            if (!addProjectRootMarker(m))
+                return false;
+        }
+
+        return true;
+    }
+
+// // std::vector<std::string> maskList = splitPathList(name,',');
+// inline
+// std::vector<std::string> splitNormalizedPath(const std::string &p)
+// {
+//     return umba::string::split(p, '/', true /* skipEmpty */ );
+// }
 
 
     //------------------------------
@@ -53,6 +113,11 @@ struct AppConfig : public AppConfigBase
     }
 
     std::string getLocalizedText(std::string lang, const std::string &key) const
+    {
+        return localizations.getLocalizedText(lang, key);
+    }
+
+    std::string getLocalizedText(const std::string &key) const
     {
         return localizations.getLocalizedText(lang, key);
     }
@@ -196,6 +261,19 @@ struct AppConfig : public AppConfigBase
     }
 
     static
+    bool isPathExistOneOf(const std::string &basePath, const std::unordered_set<std::string> &relNames)
+    {
+        for(auto &&rn : relNames)
+        {
+            auto fullName = umba::filename::makeAbsPath(rn, basePath);
+            if (umba::filesys::isPathExist(fullName))
+                return true;
+        }
+
+        return false;
+    }
+
+    static
     bool isPathExistOneOf(const std::string &basePath, const std::string &relName)
     {
         auto fullName = umba::filename::makeAbsPath(relName, basePath);
@@ -207,7 +285,7 @@ struct AppConfig : public AppConfigBase
     static
     std::string makeAlmaiYamlFullName(const std::string &path, bool leadingDot)
     {
-        return umba::filename::makeAbsPath((leadingDot?".":"") + std::string("almai.yaml"), path);
+        return umba::filename::makeAbsPath((leadingDot?".":"") + std::string("ALMAI.yaml"), path);
     }
 
     bool isProjectRootPath(const std::string &path, std::string *pAlmaiYamlName) const

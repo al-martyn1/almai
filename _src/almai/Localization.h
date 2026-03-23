@@ -94,7 +94,7 @@ struct Localization
         umba::string::trim(lang);
         umba::string::trim(keyTextPair);
 
-        if (lang.empty() || keyTextPair.empty())
+        if ( /* lang.empty() || */ keyTextPair.empty())
             return false;
 
         umba::string::tolower(lang);
@@ -133,6 +133,10 @@ struct Localization
             return resText;
 
         resText = getLocalizedTextImpl("en", key);
+        if (!resText.empty())
+            return resText;
+
+        resText = getLocalizedTextImpl("", key);
         if (!resText.empty())
             return resText;
 

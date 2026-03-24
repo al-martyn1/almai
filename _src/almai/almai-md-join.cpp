@@ -200,8 +200,10 @@ int unsafeMain(int argc, char* argv[])
 
     if (appConfig.scanInfos.empty())
     {
-        LOG_ERR << "no input files/masks taken" << "\n";
-        return 1;
+        // LOG_ERR << "no input files/masks taken" << "\n";
+        // return 1;
+
+        LOG_WARN("no-input") << "no input files/masks taken" << "\n";
     }
 
     std::vector<std::string> foundFiles;
@@ -212,9 +214,11 @@ int unsafeMain(int argc, char* argv[])
         foundFiles.insert(foundFiles.end(), tmp.begin(), tmp.end());
     }
 
-    if (foundFiles.empty())
+    if (!appConfig.scanInfos.empty() && foundFiles.empty())
     {
-        LOG_ERR << "no files found" << "\n";
+        // LOG_ERR << "no files found" << "\n";
+
+        LOG_WARN("no-input") << "no files found" << "\n";
 
         LOG_MSG << "Scan paths & masks:\n";
         for(auto &&s : appConfig.scanInfos)

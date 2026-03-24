@@ -41,7 +41,7 @@ struct AppConfig : public AppConfigBase
 
     almai::PluralDatabase             pluralDb;
     almai::Localization               localizations;
-    std::string                       lang;
+    std::string                       curLang;
 
 
     // UMBA_RULE_OF_FIVE_COPY_MOVE(FoundFileInfo, default, default, default, default);
@@ -83,12 +83,8 @@ struct AppConfig : public AppConfigBase
         return true;
     }
 
-    bool addProjectRootMarkers(const std::vector<std::string> &markers)
+    bool addProjectRootMarkers(const std::vector<std::string> &markersList)
     {
-        // Можно через splitPathList(name,','); // umba::filename?
-        // Можно через umba::string::split(p, ',', true /* skipEmpty */ );
-
-        auto markersList = umba::filename::splitPathList(markers, ',');
         for(const auto &m : markersList)
         {
             if (!addProjectRootMarker(m))
@@ -97,6 +93,17 @@ struct AppConfig : public AppConfigBase
 
         return true;
     }
+
+    bool addProjectRootMarkers(const std::string &markersListStr)
+    {
+        // Можно через splitPathList(name,','); // umba::filename?
+        // Можно через umba::string::split(p, ',', true /* skipEmpty */ );
+
+        auto markersList = umba::filename::splitPathList(markersListStr, ',');
+        return addProjectRootMarkers(markersList);
+    }
+
+
 
 // // std::vector<std::string> maskList = splitPathList(name,',');
 // inline
@@ -119,7 +126,7 @@ struct AppConfig : public AppConfigBase
 
     std::string getLocalizedText(const std::string &key) const
     {
-        return localizations.getLocalizedText(lang, key);
+        return localizations.getLocalizedText(curLang, key);
     }
 
 

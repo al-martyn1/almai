@@ -7,3 +7,4 @@
 AI без Python: как исправить документацию и внедрить RAG в JVM-стеке - https://habr.com/ru/companies/raiffeisenbank/articles/1012666/
 Прогноз волатильности в 3 строки кода без знания ML - https://habr.com/ru/articles/1013486/
 Skills для Claude Code: огромный гайд от инженера Anthropic - https://habr.com/ru/articles/1011524/
+https://southbridge-research.notion.site/Prompt-Engineering-The-Art-of-Instructing-AI-2055fec70db181369002dcdea7d9e732

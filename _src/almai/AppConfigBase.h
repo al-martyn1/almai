@@ -87,39 +87,19 @@ struct AppConfigBase
     static
     std::vector<std::string> stripEmptyHeadLines(const std::vector<std::string> &lines)
     {
-        std::vector<std::string> resLines; resLines.reserve(lines.size());
-        for(auto l : lines)
-        {
-            umba::string::rtrim(l);
-
-            if (!l.empty())
-            {
-                resLines.emplace_back(l);
-                continue;
-            }
-
-            if (resLines.empty())
-                continue;
-
-            resLines.emplace_back(l);
-        }
-
-        return resLines;
+        return almai::stripEmptyLeadingLines(lines);
     }
 
     static
     std::vector<std::string> stripEmptyTailLines(std::vector<std::string> lines)
     {
-        std::reverse(lines.begin(), lines.end());
-        lines = stripEmptyHeadLines(lines);
-        std::reverse(lines.begin(), lines.end());
-        return lines;
+        return almai::stripEmptyTrailingLines(lines);
     }
 
     static
     std::vector<std::string> stripEmptyHeadTailLines(std::vector<std::string> lines)
     {
-        return stripEmptyHeadLines(stripEmptyTailLines(lines));
+        return almai::stripEmptyLeadingTrailingLines(lines); // stripEmptyHeadLines(stripEmptyTailLines(lines));
     }
 
 

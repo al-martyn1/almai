@@ -631,6 +631,51 @@ std::string formatFileSize(std::size_t sz, bool useDecimal=true)
 
 
 //----------------------------------------------------------------------------
+inline
+std::vector<std::string> stripEmptyLeadingLines(const std::vector<std::string> &lines)
+{
+    std::vector<std::string> resLines; resLines.reserve(lines.size());
+    for(auto l : lines)
+    {
+        umba::string::rtrim(l);
+
+        if (!l.empty())
+        {
+            resLines.emplace_back(l);
+            continue;
+        }
+
+        if (resLines.empty())
+            continue;
+
+        resLines.emplace_back(l);
+    }
+
+    return resLines;
+}
+
+//----------------------------------------------------------------------------
+inline
+std::vector<std::string> stripEmptyTrailingLines(std::vector<std::string> lines)
+{
+    std::reverse(lines.begin(), lines.end());
+    lines = stripEmptyLeadingLines(lines);
+    std::reverse(lines.begin(), lines.end());
+    return lines;
+}
+
+//----------------------------------------------------------------------------
+inline
+std::vector<std::string> stripEmptyLeadingTrailingLines(std::vector<std::string> lines)
+{
+    return stripEmptyLeadingLines(stripEmptyTrailingLines(lines));
+}
+
+//----------------------------------------------------------------------------
+
+
+
+//----------------------------------------------------------------------------
 
 } // namespace almai
 

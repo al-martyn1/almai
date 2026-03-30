@@ -54,6 +54,16 @@ using XmlTag  = umba::html::HtmlTagT< false // UseCaseIndependentNames
 
 
 //----------------------------------------------------------------------------
+inline
+void stripEmptyLeadingTrailingLines(XmlTag &xmlTag)
+{
+    for(auto &child : xmlTag.childs)
+    {
+        child.text = almai::stripEmptyLeadingTrailingLines(child.text);
+    }
+}
+
+//----------------------------------------------------------------------------
 // Учитываем листинги
 template<typename LineIterator>
 LineIterator parseMarkdownXml(XmlTag &parseTo, LineIterator b, LineIterator e, bool throwErrors)
@@ -104,7 +114,7 @@ LineIterator parseMarkdownXml(XmlTag &parseTo, LineIterator b, LineIterator e, b
             std::size_t numChars = 0;
 
             MdLineType mdLineType = detectMarkdownLineType(*b, &mdChar, &numChars);
-            if ((mdLineType==MdLineType::codeTilda || mdLineType==MdLineType::codeTilda) && codeType==mdLineType && numChars==codeMarkerLen)
+            if ((mdLineType==MdLineType::codeTilda || mdLineType==MdLineType::codeBacktick) && codeType==mdLineType && numChars==codeMarkerLen)
             {
                 // Найден завершающий маркер листинга
                 codeType = MdLineType::emptyLine;
@@ -123,7 +133,7 @@ LineIterator parseMarkdownXml(XmlTag &parseTo, LineIterator b, LineIterator e, b
             std::size_t numChars = 0;
 
             MdLineType mdLineType = detectMarkdownLineType(*b, &mdChar, &numChars);
-            if ((mdLineType==MdLineType::codeTilda || mdLineType==MdLineType::codeTilda) && numChars>=3)
+            if ((mdLineType==MdLineType::codeTilda || mdLineType==MdLineType::codeBacktick) && numChars>=3)
             {
                 codeType = mdLineType;
                 codeMarkerLen = numChars;
@@ -200,7 +210,7 @@ LineIterator parseMarkdownXml(XmlTag &parseTo, LineIterator b, LineIterator e, b
 
             if (tmpParseTo.tagType==TagType::text || tmpParseTo.tagType==TagType::empty)
             {
-                tmpParseTo.text = stripEmptyLeadingTrailingLines(tmpParseTo.text);
+                // tmpParseTo.text = stripEmptyLeadingTrailingLines(tmpParseTo.text);
                 parseTo.childs.push_back(tmpParseTo);
                 continue;
             }
@@ -208,7 +218,8 @@ LineIterator parseMarkdownXml(XmlTag &parseTo, LineIterator b, LineIterator e, b
             if (tmpParseTo.tagType==TagType::tag)
             {
                 b = parseMarkdownXml(tmpParseTo, b, e, throwErrors);
-                tmpParseTo.text = stripEmptyLeadingTrailingLines(tmpParseTo.text);
+                //tmpParseTo.text = stripEmptyLeadingTrailingLines(tmpParseTo.text);
+                stripEmptyLeadingTrailingLines(tmpParseTo);
                 parseTo.childs.push_back(tmpParseTo);
                 continue;
             }
@@ -237,7 +248,8 @@ LineIterator parseMarkdownXml(XmlTag &parseTo, LineIterator b, LineIterator e, b
 
     } // while(b!=e)
 
-    parseTo.text = stripEmptyLeadingTrailingLines(parseTo.text);
+    //parseTo.text = stripEmptyLeadingTrailingLines(parseTo.text);
+    stripEmptyLeadingTrailingLines(parseTo);
 
     return b;
 }
@@ -247,13 +259,15 @@ template<typename LineIterator>
 XmlTag parseMarkdownXml(LineIterator b, LineIterator e, bool throwErrors)
 {
     XmlTag parseTo;
+    parseTo.tagType = TagType::document;
 
     while(b!=e)
     {
         b = parseMarkdownXml(parseTo, b, e, throwErrors);
-        parseTo.text = stripEmptyLeadingTrailingLines(parseTo.text);
     }
     
+    stripEmptyLeadingTrailingLines(parseTo);
+
     return parseTo;
 }
 

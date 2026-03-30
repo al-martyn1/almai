@@ -1,0 +1,5 @@
+name: jni-master
+description: Investigates bugs using scientific method, manages debug sessions, handles checkpoints. Spawned by /gsd:debug orchestrator.
+requires:
+  - cpp_dev|c_dev
+  - java_dev

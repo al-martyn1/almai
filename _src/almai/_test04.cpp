@@ -1,10 +1,11 @@
 /*!
     \file
-    \brief Тестируем разбор "MdXml"
+    \brief Тестируем разбор frontmatter
  */
 
 #include "utils.h"
-#include "MdXml.h"
+#include "Descriptions.h"
+//
 #include "marty_cpp/src_normalization.h"
 #include "umba/filesys.h"
 #include "umba/shellapi.h"
@@ -35,7 +36,7 @@ int main(int argc, char* argv[])
         std::cout << "App Root Path: " << rootPath << "\n";
         std::cout << "Working Dir  : " << cwd << "\n";
 
-        filename = rootPath + "/tests/_test03_01.md";
+        filename = rootPath + "/tests/_test04_02.yaml";
     }
 
     if (filename.empty())
@@ -55,6 +56,20 @@ int main(int argc, char* argv[])
 
     std::vector<std::string> inputLines = marty_cpp::splitToLinesSimple(text);
 
+    almai::PrepromptDescription ppd;
+
+    try
+    {
+        ppd = almai::PrepromptDescription::parse(inputLines);
+        cout << "Description parsed well";
+    }
+    catch(const std::exception &e)
+    {
+        cerr << "Error while parsing YAML: " << e.what() << "\n";
+    }
+
+#if 0
+
     almai::mdxml::XmlTag mdXml;
 
     try
@@ -73,6 +88,7 @@ int main(int argc, char* argv[])
     {
         cout << l << "\n";
     }
+#endif
 
     return 0;
 }

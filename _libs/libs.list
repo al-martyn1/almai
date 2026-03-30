@@ -18,7 +18,9 @@ marty_cpp
 #pugixml         extern_pugixml
 marty_yaml_toml_json
 nlohmann         forks-nlohmann-json
-sfmt             umba_mm_mod_sfmt
-umba             umba_mm_mod_umba
+#sfmt             umba_mm_mod_sfmt
+sfmt
+#umba             umba_mm_mod_umba
+umba
 umba_tokenizer
 yaml-cpp        forks-jbeder-yaml-cpp

@@ -469,12 +469,14 @@ enum class MdLineType
 {
     emptyLine   = 0,
     regularLine    ,
-    headerArx      ,           // # - Atx - word processor on Amiga, min 1 char
+    headerAtx      ,           // # - Atx - word processor on Amiga, min 1 char
     headerSetext   ,           // ---- / ==== Setext (Structure Enhanced Text), min 1 char
     codeTilda      ,
     codeBacktick   ,
     codeIndentTab  ,
     codeIndentSpace,
+    unorderedList  ,
+    orderedList    ,
     quotation                 // >
 
 }; // enum class MdLineType
@@ -500,9 +502,26 @@ MdLineType detectMarkdownLineType(const std::string &str, char *pChar=0, std::si
     if (pChar)
        *pChar = ch;
 
+    if (ch==' ' && nChars<str.size())
+    {
+        if (str[nChars]=='-')
+            return MdLineType::unorderedList;
+
+
+        if (umba::string::is_digit(str[nChars]))
+        {
+            while(nChars<str.size() && umba::string::is_digit(str[nChars]))
+                ++nChars;
+        }
+
+        if (nChars<str.size() && ch=='.')
+            return MdLineType::orderedList;
+    }
+
+
     switch(ch)
     {
-        case '#' : return MdLineType::headerArx;
+        case '#' : return MdLineType::headerAtx;
         case '-' : return MdLineType::headerSetext;
         case '=' : return MdLineType::headerSetext;
         case '~' : return nChars>=3 ? MdLineType::codeTilda       : MdLineType::regularLine;
@@ -624,6 +643,51 @@ std::string formatFileSize(std::size_t sz, bool useDecimal=true)
 
      oss << sz << " G";
      return oss.str();
+}
+
+//----------------------------------------------------------------------------
+
+
+
+//----------------------------------------------------------------------------
+inline
+std::vector<std::string> stripEmptyLeadingLines(const std::vector<std::string> &lines)
+{
+    std::vector<std::string> resLines; resLines.reserve(lines.size());
+    for(auto l : lines)
+    {
+        umba::string::rtrim(l);
+
+        if (!l.empty())
+        {
+            resLines.emplace_back(l);
+            continue;
+        }
+
+        if (resLines.empty())
+            continue;
+
+        resLines.emplace_back(l);
+    }
+
+    return resLines;
+}
+
+//----------------------------------------------------------------------------
+inline
+std::vector<std::string> stripEmptyTrailingLines(std::vector<std::string> lines)
+{
+    std::reverse(lines.begin(), lines.end());
+    lines = stripEmptyLeadingLines(lines);
+    std::reverse(lines.begin(), lines.end());
+    return lines;
+}
+
+//----------------------------------------------------------------------------
+inline
+std::vector<std::string> stripEmptyLeadingTrailingLines(std::vector<std::string> lines)
+{
+    return stripEmptyLeadingLines(stripEmptyTrailingLines(lines));
 }
 
 //----------------------------------------------------------------------------

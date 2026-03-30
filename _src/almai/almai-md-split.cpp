@@ -223,7 +223,7 @@ bool splitLinesAndSaveContent(std::vector<std::string> mdLines)
         else // обычный режим
         {
             if ( mdLineType==MdLineType::emptyLine
-              || mdLineType==MdLineType::headerArx
+              || mdLineType==MdLineType::headerAtx
               || mdLineType==MdLineType::headerSetext
               || mdLineType==MdLineType::quotation
                )

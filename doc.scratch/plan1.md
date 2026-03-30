@@ -200,6 +200,72 @@
 
 # Детали по препромптам (skills, instructions)
 
+Также могут быть и другие типы препромптов - constraints, extras.
+
+Всё различие в том, что по умолчанию текст препромпта содержит содержимое текущего типа, 
+а содержимое других типов надо явно выделять тэгами соответствующего типа.
+
+Тэги:
+- context - то, что задаётся до основного тела промпта - контекст для ИИ, его настройка.
+- extras - что-то дополнительное
+- instructions - то, что следует после основного тела промпта - что требуется сделать, и что надо учитывать.
+- constraints - ограничения, в выводе следуют после инструкций.
+- formats - выходные форматы
+
+
+## Структура хранения препромптов
+
+Препромпт может быть либо `.md` файлом, либо каталогом, который содержит сам препромпт, и, возможно какие-то дополнительные файлы.
+
+Если существует и `.md` файл, и каталог - то надо выдавать предупреждение и использовать каталог.
+
+
+## frontmatter
+
+Frontmatter содержит атрибуты:
+
+- name - название
+- description - описание
+- requires - зависимости
+
+### frontmatter requires
+
+Поле `requires` может быть:
+- строкой с логическим выражением;
+- YAML-списком по AND;
+
+**Логическое выражение:**
+- Запятая `,` – логическое И (AND).
+- Вертикальная черта `|` – логическое ИЛИ (OR) внутри одного типа.
+- Пример: `"skills:cpp-dev|skills:c-dev,skills:java-dev"` означает `(skills:cpp-dev OR skills:c-dev) AND skills:java-dev`.
+
+**YAML-список:**
+```yaml
+requires:
+  - skills:cpp-dev|skills:c-dev
+  - instructions:cpp11
+```
+
+
+
+
+
+name: gsd-debugger
+description: Investigates bugs using scientific method, manages debug sessions, handles checkpoints. Spawned by /gsd:debug orchestrator.
+tools:
+  - read_file
+  - write_file
+  - replace
+  - run_shell_command
+  - search_file_content
+  - glob
+  - google_web_search
+
+
+
+
+
+
 
 
 

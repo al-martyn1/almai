@@ -1,10 +1,11 @@
 /*!
     \file
-    \brief Тестируем разбор "MdXml"
+    \brief Тестируем чтение препромпта
  */
 
 #include "utils.h"
-#include "MdXml.h"
+#include "Preprompt.h"
+//
 #include "marty_cpp/src_normalization.h"
 #include "umba/filesys.h"
 #include "umba/shellapi.h"
@@ -35,7 +36,7 @@ int main(int argc, char* argv[])
         std::cout << "App Root Path: " << rootPath << "\n";
         std::cout << "Working Dir  : " << cwd << "\n";
 
-        filename = rootPath + "/tests/_test03_01.md";
+        filename = rootPath + "/tests/_test05_01.md";
     }
 
     if (filename.empty())
@@ -53,7 +54,41 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    std::vector<std::string> inputLines = marty_cpp::splitToLinesSimple(text);
+
+    almai::Preprompt pp;
+
+    try
+    {
+        pp = almai::Preprompt::parse(text, true /* throwErrors */ );
+        cout << "Preprompt parsed well";
+    }
+    catch(const std::exception &e)
+    {
+        cerr << "Error parsing preprompt: " << e.what() << "\n";
+        pp = almai::Preprompt::parse(text, false /* throwErrors */ );
+    }
+
+    auto ppSects = pp.findSections();
+
+    cout << "Preprompt: " << pp.description.name << "\n";
+    if (!pp.description.description.empty())
+       cout << "  (" << pp.description.description << ")\n";
+
+    cout << "Sections:";
+    if (!ppSects.empty())
+        cout << "\n";
+    else
+        cout << " not found\n";
+
+    for(auto sect : ppSects)
+    {
+        cout << "  " << sect << "\n";
+    }
+
+    cout << "\n";
+
+
+#if 0
 
     almai::mdxml::XmlTag mdXml;
 
@@ -73,6 +108,7 @@ int main(int argc, char* argv[])
     {
         cout << l << "\n";
     }
+#endif
 
     return 0;
 }

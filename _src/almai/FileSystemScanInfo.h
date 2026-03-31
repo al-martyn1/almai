@@ -9,6 +9,7 @@
 #include "umba/filesys.h"
 #include "umba/filesys_scanners.h"
 #include "umba/string.h"
+#include "umba/nul_ostream.h"
 
 //
 #include <string>
@@ -39,15 +40,15 @@ struct FileSystemScanInfo
 
 protected:
 
-    struct LogDummy
-    {
-        template<typename T>
-        LogDummy& operator<<(const T &t)
-        {
-            UMBA_USED(t);
-            return *this;
-        }
-    };
+    // struct LogDummy
+    // {
+    //     template<typename T>
+    //     LogDummy& operator<<(const T &t)
+    //     {
+    //         UMBA_USED(t);
+    //         return *this;
+    //     }
+    // };
 
     static
     bool isMask(const std::string &name)
@@ -136,7 +137,8 @@ public:
     {
         using namespace umba::filesys::scanners;
 
-        LogDummy log;
+        //LogDummy log;
+        umba::NulOstream log;
 
         std::vector<std::string>    excludedFiles;
         std::set<std::string>       foundExtentions;

@@ -9,6 +9,10 @@
 //
 
 #include "marty_cpp/src_normalization.h"
+#include "umba/filename.h"
+#include "umba/filesys.h"
+#include "umba/filesys_scanners.h"
+#include "umba/nul_ostream.h"
 #include "umba/string.h"
 
 //
@@ -31,11 +35,81 @@ namespace almai {
 //----------------------------------------------------------------------------
 struct PrepromptProps
 {
-    std::string    file; // full file name
-    bool           bExtended = false;
+    std::string    type; // skill (skills), instruction (instructions), knowledge (knowledges), format (formats), output (outputs) 
+    std::string    name;
 
+    std::string    file; // full file name or path
+    bool           bExtended = false;  // somple .md file, not a folder
+
+
+    template<typename MessageHandler>
+    static
+    std::vector<PrepromptProps> scanPath(const std::string &path, const std::string &scanForType, MessageHandler msgHandler)
+    {
+        UMBA_USED(msgHandler);
+
+        umba::NulOstream log;
+
+        // std::string                  path;
+        // std::vector<std::string>     includeMaskList;
+        // std::vector<std::string>     excludeMaskList;
+    
+        // bool                         recursive = false;
+
+        std::vector<std::string>    foundFiles;
+        std::vector<std::string>    excludedFiles;   // Это игнорится, просто оно требуется для вызова scanFolders, надо переделать на опциональное
+        std::set<std::string>       foundExtentions; // Это игнорится, просто оно требуется для вызова scanFolders, надо переделать на опциональное
+
+        umba::filesys::scanners::scanFolders( std::vector<std::string>(1, path) // rootScanPaths
+                                            , std::vector<std::string>() // includeMaskList
+                                            , std::vector<std::string>() // excludeMaskList
+                                            , log
+                                            , foundFiles
+                                            , excludedFiles
+                                            , foundExtentions
+                                            , (std::vector<std::string>*)0 // pFoundFilesRootFolders
+                                            , std::vector<std::string>() // excludeFoldersExact
+                                            , false // recursive
+                                            , false // logFoundHeader
+                                            , true  // !addFolders
+                                            , true  // compareOnlyFilenames
+                                            );
+
+        std::vector<PrepromptProps> resVec;
+
+        for(auto &&foundFile : foundFiles)
+        {
+            PrepromptProps pp = { scanForType, "dummy", foundFile, false };
+            resVec.emplace_back(pp);
+        }
+
+        return resVec;
+    }
+
+    static
+    std::vector<PrepromptProps> scanPath(const std::string &path, const std::string &scanForType)
+    {
+        return scanPath(path, scanForType, [](const std::string &) {});
+    }
 
 }; // struct PrepromptProps
+
+//--------------------------------------------------------------------------------------------------------------------
+template<typename StreamType>
+StreamType& operator<<(StreamType &oss, const PrepromptProps &pp)
+{
+    oss << (pp.bExtended ? "E" : "S") << " " << pp.type << "/" << pp.name << " - " << pp.file;
+    return oss;
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+template<typename StreamType>
+StreamType& operator<<(StreamType &oss, const std::vector<PrepromptProps> &ppv)
+{
+    for(const auto &pp : ppv)
+        oss << pp << "\n";
+    return oss;
+}
 
 //----------------------------------------------------------------------------
 
@@ -44,9 +118,10 @@ struct PrepromptProps
 //----------------------------------------------------------------------------
 struct Preprompt
 {
-    std::string            type;  // Optional type string
+    //std::string            type;  // Optional type string
 
     PrepromptDescription   description;
+    PrepromptProps         props; // Заполняется при считывании
     mdxml::XmlTag          doc; // pp document
 
     static
@@ -176,6 +251,11 @@ struct Preprompt
         findSections(secTagNames);
         return secTagNames;
     }
+
+
+
+
+
 
 }; // struct Preprompt
 

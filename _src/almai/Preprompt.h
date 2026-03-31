@@ -29,6 +29,19 @@ namespace almai {
 
 
 //----------------------------------------------------------------------------
+struct PrepromptProps
+{
+    std::string    file; // full file name
+    bool           bExtended = false;
+
+
+}; // struct PrepromptProps
+
+//----------------------------------------------------------------------------
+
+
+
+//----------------------------------------------------------------------------
 struct Preprompt
 {
     std::string            type;  // Optional type string

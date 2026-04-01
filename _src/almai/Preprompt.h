@@ -48,13 +48,11 @@ struct PrepromptProps
     {
         UMBA_USED(msgHandler);
 
-        umba::NulOstream log;
+        using namespace umba::filename;
+        using namespace umba::filesys;
+        using namespace umba::string;
 
-        // std::string                  path;
-        // std::vector<std::string>     includeMaskList;
-        // std::vector<std::string>     excludeMaskList;
-    
-        // bool                         recursive = false;
+        umba::NulOstream log;
 
         std::vector<std::string>    foundFiles;
         std::vector<std::string>    excludedFiles;   // Это игнорится, просто оно требуется для вызова scanFolders, надо переделать на опциональное
@@ -79,8 +77,46 @@ struct PrepromptProps
 
         for(auto &&foundFile : foundFiles)
         {
-            PrepromptProps pp = { scanForType, "dummy", foundFile, false };
-            resVec.emplace_back(pp);
+            auto fileName = getFileName(foundFile); // имя файла + расширение
+            auto name     = getName(foundFile); // имя файла без пути и расширения
+            auto ext      = getExt(foundFile);
+
+            if (name.empty()) // вообще нет имени или имя пустое (вида .deepseek)
+                continue;
+
+            if (tolower_copy(ext)=="md" && isPathFile(foundFile) && isFileReadable(foundFile)) // isPathDirectory(foundFile)
+            {
+                // Найден читаемый md файл - у нас простой препромпт
+                PrepromptProps pp = { scanForType, name, foundFile, false /* !bExtended */ };
+                resVec.emplace_back(pp);
+                continue;
+            }
+
+            if (isPathDirectory(foundFile))  // Возможно, это каталог с препромптом - расширенный препромпт
+            {
+                auto 
+                // mayBePrepromptFile = appendPath(foundFile, std::string(".md"));
+                mayBePrepromptFile = appendPath(foundFile, ".md");
+                if (isPathFile(mayBePrepromptFile) && isFileReadable(mayBePrepromptFile))
+                {
+                    PrepromptProps pp = { scanForType, name, mayBePrepromptFile, true /* bExtended */ };
+                    resVec.emplace_back(pp);
+                    continue;
+                }
+
+                //mayBePrepromptFile = appendPath(foundFile, std::string("SKILL.md"));
+                mayBePrepromptFile = appendPath(foundFile, "SKILL.md");
+                if (isPathFile(mayBePrepromptFile) && isFileReadable(mayBePrepromptFile))
+                {
+                    PrepromptProps pp = { scanForType, name, mayBePrepromptFile, true /* bExtended */ };
+                    resVec.emplace_back(pp);
+                    continue;
+                }
+
+                // Ещё какие-то варианты
+
+            }
+
         }
 
         return resVec;

@@ -72,7 +72,7 @@ set(COMMON_UMBA_OPTIONS "BIGOBJ" "UTF8" "PEDANTIC" "WERR") # "PEDANTIC"/"WALL" "
 
 
 set(TARGET almai)
-add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" "${headers}")
+add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" "${SRC_ROOT}/almai/AppConfig.cpp" "${headers}")
 umba_add_target_options(${TARGET} ${COMMON_UMBA_OPTIONS} "CONSOLE") 
 target_link_libraries(${TARGET} PRIVATE "${PLATFORM_LIBS}" "${COMMON_LIBS}")
 

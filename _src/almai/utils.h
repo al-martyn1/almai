@@ -551,6 +551,7 @@ std::string extractCodeLangFromFencedCodeBlockMarker(std::string line)
 }
 
 //----------------------------------------------------------------------------
+inline
 std::string generateFence(FenceStyle fenseStyle, const std::vector<std::string> &fileLines)
 {
     std::unordered_set<std::size_t> foundBackticks;

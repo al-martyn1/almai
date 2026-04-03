@@ -274,6 +274,7 @@ std::string findMostCommonPathPrefix(IteratorType b, IteratorType e)
 }
 
 //----------------------------------------------------------------------------
+inline
 std::string checkCorrectMostCommonPathPrefixIsPath(const std::string &p)
 {
     if (p.empty())

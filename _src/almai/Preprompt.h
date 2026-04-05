@@ -157,7 +157,7 @@ struct Preprompt
     //std::string            type;  // Optional type string
 
     PrepromptDescription   description;
-    PrepromptProps         props; // Заполняется при считывании
+    PrepromptProps         props;
     mdxml::XmlTag          doc; // pp document
 
     static

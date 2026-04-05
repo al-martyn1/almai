@@ -232,15 +232,31 @@ int unsafeMain(int argc, char* argv[])
     }
 
 
+    appConfig.curAiEngine = "deepseek"; // !!! Должно вычитываться из настроек проекта
+
+    std::vector<std::string> scannedFolders;
+    std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > scannedPrepromptProps;
+    std::unordered_map< std::string, std::unordered_set<std::string> > scannedPrepromptTypes;
+
+    appConfig.scanForPreprompts(&scannedFolders, scannedPrepromptProps, scannedPrepromptTypes);
+
+    auto prepromptReadingErrorHandler = [&](const std::string &ppFilename)
+    {
+        LOG_WARN("read-error") << "failed to read preprompt file: '" << ppFilename << "'\n";
+    };
+
+    auto prepromptParsingErrorHandler = [&](const std::string &ppFilename, const std::exception &e)
+    {
+        LOG_WARN("parsing-error") << "failed to parsing preprompt file. Error: '" << e.what() << "', file: '" << ppFilename << "'\n";
+    };
+
+    std::unordered_map< std::string, std::unordered_map<std::string, almai::Preprompt> > scannedPreprompts;
+
+    appConfig.scanForPreprompts(scannedPreprompts, scannedPrepromptProps, prepromptReadingErrorHandler, prepromptParsingErrorHandler);
+
+
     if (1)
     {
-        appConfig.curAiEngine = "deepseek";
-
-        std::vector<std::string> scannedFolders;
-        std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > scannedPrepromptProps;
-        std::unordered_map< std::string, std::unordered_set<std::string> > scannedPrepromptTypes;
-
-        appConfig.scanForPreprompts(&scannedFolders, scannedPrepromptProps, scannedPrepromptTypes);
 
         LOG_MSG << "Scanned folders:\n";
 
@@ -282,11 +298,6 @@ int unsafeMain(int argc, char* argv[])
         }
 
     }
-// void AppConfig::scanForPreprompts( std::vector<std::string> &scannedFolders
-//                                  , std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > &scannedPrepromptProps
-//                                  , std::unordered_map< std::string, std::unordered_set<std::string> > &scannedPrepromptTypes
-//                                  , std::vector<std::string> prepromptTypesToScan
-//                                  )
 
     
 

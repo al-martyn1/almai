@@ -110,7 +110,56 @@ struct AppConfig : public AppConfigBase
                           , std::vector<std::string> prepromptTypesToScan = { "skill", "instruction", "knowledge", "format", "output" }
                           );
 
+    template<typename PrepromptReadingErrorHandler, typename PrepromptParsingErrorHandler>
+    void scanForPreprompts( std::unordered_map< std::string, std::unordered_map<std::string, almai::Preprompt> > &scannedPreprompts
+                          , const std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > &scannedPrepromptProps
+                          , PrepromptReadingErrorHandler readingErrHandler
+                          , PrepromptParsingErrorHandler parsingErrorHandler
+                          )
+    {
+        for(const auto &[ppTypeStr, ppNameMap] : scannedPrepromptProps)
+        {
+            for(const auto &[ppName, ppProps] : ppNameMap)
+            {
+                std::vector<std::string> inputFileLines;
+
+                if (!readFile(ppProps.file, inputFileLines))
+                {
+                    readingErrHandler(ppProps.file);
+                    continue;
+                }
+
+                almai::Preprompt preprompt;
+
+                try
+                {
+                    preprompt = almai::Preprompt::parse(inputFileLines, true /* throwErrors */ );
+                }
+                catch(const std::exception &e)
+                {
+                    parsingErrorHandler(ppProps.file, e);
+
+                    // Пробуем игнорировать ошибки
+                    // Но исключение всё равно может вылететь. Но мы его уже не ловим, пусть летит
+                    preprompt = almai::Preprompt::parse(inputFileLines, false /* !throwErrors */ );
+                }
+
+                preprompt.props = ppProps;
+
+                // Если до сюда не вылетели, то можно добавлять в результаты
+
+                // !!! Нужно поправить зависимсти, привести всё в plural
+
+                scannedPreprompts[ppTypeStr][ppName] = preprompt;
+
+            }
+        }
+
+    }
 
 
 }; // struct AppConfig
+
+
+
 

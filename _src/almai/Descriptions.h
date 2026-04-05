@@ -158,8 +158,6 @@ struct PrepromptDescription : public CommonDescription
     std::vector< std::vector<std::string> >     requires;
 
 
-
-
     static
     marty::json parse(PrepromptDescription &d, const std::string &text)
     {
@@ -197,20 +195,6 @@ struct PrepromptDescription : public CommonDescription
                 throw std::runtime_error("'requires' is in unknown format. Only string/array formats allowed");
             }
 
-// // other stuff
-// j.size();     // 4 entries
-// j.empty();    // false
-// j.type();     // json::value_t::array
-// j.clear();    // the array is empty again
-//  
-// // convenience type checkers
-// j.is_null();
-// j.is_boolean();
-// j.is_number();
-// j.is_object();
-// j.is_array();
-// j.is_string();
-
         }
 
         return j;
@@ -241,6 +225,25 @@ struct PrepromptDescription : public CommonDescription
 
 
 }; // struct PrepromptDescription
+
+//----------------------------------------------------------------------------
+
+// // other stuff
+// j.size();     // 4 entries
+// j.empty();    // false
+// j.type();     // json::value_t::array
+// j.clear();    // the array is empty again
+//  
+// // convenience type checkers
+// j.is_null();
+// j.is_boolean();
+// j.is_number();
+// j.is_object();
+// j.is_array();
+// j.is_string();
+
+//----------------------------------------------------------------------------
+
 
 
 //----------------------------------------------------------------------------

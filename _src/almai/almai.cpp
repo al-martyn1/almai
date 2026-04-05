@@ -147,89 +147,56 @@ int unsafeMain(int argc, char* argv[])
     } // if (umba::isDebuggerPresent())
 
 
-    // try
-    // {
-        // Job completed - may be, --where option found
-        if (argsParser.mustExit)
-            return 0;
+    if (argsParser.mustExit)
+        return 0;
 
-        // if (!argsParser.quet)
-        // {
-        //     printNameVersion();
-        // }
+    if (!argsParser.parseStdBuiltins())
+    {
+        return 1;
+    }
 
-        // LOG_INFO("config") << "-----------------------------------------" << "\n";
-        // LOG_INFO("config") << "Processing builtin option files\n";
-        if (!argsParser.parseStdBuiltins())
+    //!!! --------------
+    appConfig.setAppRoot(argsParser.getAppRoot(), argsParser.getAppConfPath()); // to find prompts
+    if (!appConfig.findProjectRoot()) // Также устанавливает ProjectRoot
+    {
+        LOG_WARN("prj-root") << "project root not found\n";
+    }
+    else
+    {
+        if (!argsParser.quet)
         {
-            // LOG_INFO("config") << "Error found in builtin option files\n";
-            return 1;
+            LOG_MSG << "\n";
+
+            LOG_MSG << "found project root: '" << appConfig.projectRoot << "'\n";
+            if (appConfig.projectFile.empty())
+                LOG_MSG << "project file not found\n";
+            else
+                LOG_MSG << "found project file: '" << appConfig.projectFile << "'\n";
+
+            LOG_MSG << "\n";
         }
-        // LOG_INFO("config") << "-----------------------------------------" << "\n";
+    }
+
+    appConfig.addEnvironmentPrepromptPaths();
+    appConfig.curPrepromptPathType = almai::PrepromptPathType::cliOptions;
 
 
-        //!!! --------------
-        appConfig.setAppRoot(argsParser.getAppRoot(), argsParser.getAppConfPath()); // to find prompts
-        if (!appConfig.findProjectRoot()) // Также устанавливает ProjectRoot
-        {
-            LOG_WARN("prj-root") << "project root not found\n";
-        }
-        else
-        {
-            if (!argsParser.quet)
-            {
-                LOG_MSG << "\n";
+    if (argsParser.mustExit)
+        return 0;
 
-                LOG_MSG << "found project root: '" << appConfig.projectRoot << "'\n";
-                if (appConfig.projectFile.empty())
-                    LOG_MSG << "project file not found\n";
-                else
-                    LOG_MSG << "found project file: '" << appConfig.projectFile << "'\n";
+    if (!argsParser.parse())
+    {
+        return 1;
+    }
 
-                LOG_MSG << "\n";
-            }
-        }
-
-        appConfig.addEnvironmentPrepromptPaths();
-        appConfig.curPrepromptPathType = almai::PrepromptPathType::cliOptions;
+    if (argsParser.mustExit)
+        return 0;
 
 
-        if (argsParser.mustExit)
-            return 0;
-
-        // LOG_INFO("config") << "-----------------------------------------" << "\n";
-        // LOG_INFO("config") << "Processing command line arguments\n";
-        if (!argsParser.parse())
-        {
-            // LOG_INFO("config") << "Error found while parsing command line arguments\n";
-            return 1;
-        }
-        // LOG_INFO("config") << "-----------------------------------------" << "\n";
-
-        if (argsParser.mustExit)
-            return 0;
-    // }
-    // catch(const std::exception &e)
-    // {
-    //     LOG_ERR << e.what() << "\n";
-    //     return -1;
-    // }
-    // catch(const std::exception &e)
-    // {
-    //     LOG_ERR << "command line arguments parsing error" << "\n";
-    //     return -1;
-    // }
-
-    //#if defined(DEBUG) || defined(_DEBUG)
-    if (!argsParser.quet)
+    //if (!argsParser.quet)
+    if (1)
     {
         LOG_MSG << "Preprompt dirs:\n";
-
-        // std::vector<std::string> ppDirs = appConfig.getPrepromptDirs();
-        // for(auto &&ppd : ppDirs)
-        // {
-        //     LOG_MSG << "  " << ppd << "\n";
-        // }
 
         auto ppDirsAnnotated = appConfig.getPrepromptDirsAnnotated();
         for(auto &&ppdp : ppDirsAnnotated)
@@ -239,13 +206,9 @@ int unsafeMain(int argc, char* argv[])
 
         LOG_MSG << "\n";
     }
-    //#endif
 
     if (!argsParser.quet  /* && !hasHelpOption */ )
     {
-        //printNameVersion();
-        //LOG_MSG<<"\n";
-        //umba::cli_tool_helpers::printNameVersion(umbaLogStreamMsg);
     }
 
     if (1)
@@ -264,20 +227,72 @@ int unsafeMain(int argc, char* argv[])
         printTranslation("en", "constraints");
         printTranslation("ru", "domains");
         printTranslation("en", "domains");
+
+        LOG_MSG << "\n";
     }
+
+
+    if (1)
+    {
+        appConfig.curAiEngine = "deepseek";
+
+        std::vector<std::string> scannedFolders;
+        std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > scannedPrepromptProps;
+        std::unordered_map< std::string, std::unordered_set<std::string> > scannedPrepromptTypes;
+
+        appConfig.scanForPreprompts(&scannedFolders, scannedPrepromptProps, scannedPrepromptTypes);
+
+        LOG_MSG << "Scanned folders:\n";
+
+        for(const auto &fldr: scannedFolders)
+        {
+            LOG_MSG << "  " << fldr << "\n";
+        }
+
+        LOG_MSG << "\n";
+
+
+        LOG_MSG << "Found preprompts:\n";
+
+        for(const auto &[ppTypeStr, ppNameMap] : scannedPrepromptProps)
+        {
+            LOG_MSG << "  " << ppTypeStr << ":\n";
+
+            for(const auto &[ppName, ppProps] : ppNameMap)
+            {
+                LOG_MSG << "    " << ppProps << "\n";
+            }
+        }
+
+        LOG_MSG << "\n";
+
+        
+        LOG_MSG << "Found preprompt types:\n";
+
+        for(const auto &[ppId, ppTypeSet] : scannedPrepromptTypes)
+        {
+            std::size_t cnt = 0;
+            LOG_MSG << "  " << ppId; // << ""
+            for(const auto ppType: ppTypeSet)
+            {
+                LOG_MSG << (cnt ? ", " : ": ") << ppType;
+                ++cnt;
+            }
+            LOG_MSG << "\n";
+        }
+
+    }
+// void AppConfig::scanForPreprompts( std::vector<std::string> &scannedFolders
+//                                  , std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > &scannedPrepromptProps
+//                                  , std::unordered_map< std::string, std::unordered_set<std::string> > &scannedPrepromptTypes
+//                                  , std::vector<std::string> prepromptTypesToScan
+//                                  )
+
     
-
-
-// --add-translation=ru:roles:Твои роли
-// --add-translation=en:roles:Your roles
-//  
-// # --add-translation=ru:constraints:Ограничения
-// --add-translation=en:roles:Project constraints
-
-
-
-    // programLocationInfo.getBuiltinOptionsFilename( BuiltinOptionsLocationFlag::appGlobal )
 
 
     return 0;
 }
+
+
+

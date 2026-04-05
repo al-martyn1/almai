@@ -6,5 +6,6 @@
 --add-translation=ru:constraints:Ограничения
 --add-translation=en:constraints:Constraints
 
---project-root-marker=-,.git,.vscode,.out,out,.build,build
+# .git,.vscode - могут быть в подмодулях. Или мы никогда не вызываем нашу тулзу из папок подмодулей? Ока, пока так
+--project-root-marker=-,.git,.vscode,.PVS-Studio,.out,out,.build,build
 

@@ -38,7 +38,6 @@ struct AppConfig : public AppConfigBase
     std::string                       aiName; // Например, deepeek, qwen - используется для поиска кастомизированных препромптов
 
     std::unordered_set<std::string>   projectRootStopNames; //  = { ".git", ".out", ".vscode", ".build", "build" }; // пока явно инициализируем
-    //std::vector<std::string>          projectRootStopNames = { ".git", ".out", ".vscode", ".build", "build" }; // пока явно инициализируем
     // almai.yaml
 
     std::unordered_map<almai::PrepromptPathType, std::vector<std::string> > prepromptDirs;
@@ -47,6 +46,9 @@ struct AppConfig : public AppConfigBase
     almai::PluralDatabase             pluralDb;
     almai::Localization               localizations;
     std::string                       curLang;
+
+    std::string                       curAiEngine; // deepseek, qwen
+
 
 
     // UMBA_RULE_OF_FIVE_COPY_MOVE(FoundFileInfo, default, default, default, default);
@@ -93,6 +95,21 @@ struct AppConfig : public AppConfigBase
     bool findProjectRoot(std::string startPath=umba::filesys::getCurrentDirectory());
 
     //------------------------------
+    static
+    void scanForPreprompts( std::vector<std::string> *pScannedFolders
+                          , const std::vector<std::string> &ppDirs
+                          , const std::string &aiEngineName
+                          , std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > &scannedPrepromptProps
+                          , std::unordered_map< std::string, std::unordered_set<std::string> > &scannedPrepromptTypes
+                          , const std::vector<std::string> &prepromptTypesToScan // = { "skill", "instruction", "knowledge", "format", "output" }
+                          );
+
+    void scanForPreprompts( std::vector<std::string> *pScannedFolders
+                          , std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > &scannedPrepromptProps
+                          , std::unordered_map< std::string, std::unordered_set<std::string> > &scannedPrepromptTypes
+                          , std::vector<std::string> prepromptTypesToScan = { "skill", "instruction", "knowledge", "format", "output" }
+                          );
+
 
 
 }; // struct AppConfig

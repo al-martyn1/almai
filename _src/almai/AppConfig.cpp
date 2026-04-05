@@ -3,6 +3,12 @@
  */
 
 #include "AppConfig.h"
+#include "Preprompt.h"
+//
+#include "umba/filename.h"
+
+//
+#include <utility>
 
 //--------------------------------------------------------------------------------------------------------------------
 
@@ -302,10 +308,80 @@ bool AppConfig::findProjectRoot(std::string startPath)
 }
 
 //--------------------------------------------------------------------------------------------------------------------
+void AppConfig::scanForPreprompts( std::vector<std::string> *pScannedFolders
+                                 , std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > &scannedPrepromptProps
+                                 , std::unordered_map< std::string, std::unordered_set<std::string> > &scannedPrepromptTypes
+                                 , std::vector<std::string> prepromptTypesToScan
+                                 )
+{
+    auto ppDirs = getPrepromptDirs();
 
+    {
+        std::vector<std::string> pptsTmp; pptsTmp.reserve(prepromptTypesToScan.size());
+        for(const auto &ppt: prepromptTypesToScan)
+        {
+            pptsTmp.push_back(pluralDb.findPlural(ppt));
+        }
 
+        using std::swap;
 
+        swap(prepromptTypesToScan, pptsTmp);
+    }
 
+    scanForPreprompts(pScannedFolders, ppDirs, std::string(), scannedPrepromptProps, scannedPrepromptTypes, prepromptTypesToScan);
+    if (!curAiEngine.empty())
+        scanForPreprompts(pScannedFolders, ppDirs, curAiEngine, scannedPrepromptProps, scannedPrepromptTypes, prepromptTypesToScan);
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+/*
+    Умеем просканировать каталог на предмет препромптов.
+    Имеем список каталогов с препромптами, добавленное раньше обрабатывается раньше, позднее добавленное перетирает раннее.
+    Итого:
+      - обходим каталоги с препромптами
+      - для каждого каталога сканируем подкаталоги с типами препромптов
+      - после этого делаем тоже самое для подкаталогов curEngine, если не пустой
+
+    PrepromptProps складываем в:
+      - мапу мап - первый ключ - тип, второй - имя препромпта
+      - мапа сетов - ключ - имя препромпта, сет - типы препромптов
+
+*/
+
+void AppConfig::scanForPreprompts( std::vector<std::string> *pScannedFolders
+                                 , const std::vector<std::string> &ppDirs
+                                 , const std::string &aiEngineName
+                                 , std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > &scannedPrepromptProps
+                                 , std::unordered_map< std::string, std::unordered_set<std::string> > &scannedPrepromptTypes
+                                 , const std::vector<std::string> &prepromptTypesToScan
+                                 )
+{
+    for(auto ppDir: ppDirs)
+    {
+        if (!aiEngineName.empty())
+            ppDir = umba::filename::appendPath(ppDir, "." + aiEngineName);
+
+        for(const auto &ppType: prepromptTypesToScan)
+        {
+            auto scanDir = umba::filename::appendPath(ppDir, ppType);
+            if (pScannedFolders)
+                pScannedFolders->push_back(scanDir);
+
+            auto ppPropsVec = almai::PrepromptProps::scanPath(scanDir, ppType);
+
+            for(const auto &pppItem : ppPropsVec)
+            {
+                scannedPrepromptProps[pppItem.type][pppItem.name] = pppItem;
+                scannedPrepromptTypes[pppItem.name].insert(pppItem.type);
+            }
+
+        }
+    }
+
+    UMBA_USED(scannedPrepromptProps);
+    UMBA_USED(scannedPrepromptTypes);
+    UMBA_USED(prepromptTypesToScan);
+}
 
 
 

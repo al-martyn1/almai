@@ -252,28 +252,54 @@ bool AppConfig::isPathExistOneOf(const std::string &basePath, const std::string 
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-std::string AppConfig::makeAlmaiYamlFullName(const std::string &path, bool leadingDot)
+std::vector<std::string> AppConfig::makeAlmaiYamlNames()
 {
-    return umba::filename::makeAbsPath((leadingDot?".":"") + std::string("ALMAI.yaml"), path);
+    return std::vector<std::string>{ ".almai.yaml"
+                                   , ".ALMAI.yaml"
+                                   , ".ALMAI.YAML"
+                                   , ".almai.YAML"
+                                   ,  "almai.yaml"
+                                   ,  "ALMAI.yaml"
+                                   ,  "ALMAI.YAML"
+                                   ,  "almai.YAML"
+                                   };
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+const std::vector<std::string>& AppConfig::getAlmaiYamlNames()
+{
+    static std::vector<std::string> names = makeAlmaiYamlNames();
+    return names;
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+std::vector<std::string> AppConfig::getAlmaiYamlFullNames(const std::string &path)
+{
+    const auto &almaiNames = getAlmaiYamlNames();
+
+    std::vector<std::string> resVec; resVec.reserve(almaiNames.size());
+
+    for(const auto &name : almaiNames)
+    {
+        resVec.push_back(umba::filename::appendPath(path, name));
+    }
+
+    return resVec;
 }
 
 //--------------------------------------------------------------------------------------------------------------------
 bool AppConfig::isProjectRootPath(const std::string &path, std::string *pAlmaiYamlName) const
 {
-    std::string almaiYaml = makeAlmaiYamlFullName(path, true);
-    if (umba::filesys::isFileExist(almaiYaml))
-    {
-        if (pAlmaiYamlName)
-           *pAlmaiYamlName = almaiYaml;
-        return true;
-    }
+    auto almaiNames = getAlmaiYamlFullNames(path);
 
-    almaiYaml = makeAlmaiYamlFullName(path, false);
-    if (umba::filesys::isFileExist(almaiYaml))
+    for(const auto &almaiYaml : almaiNames)
     {
-        if (pAlmaiYamlName)
-           *pAlmaiYamlName = almaiYaml;
-        return true;
+        if (umba::filesys::isFileExist(almaiYaml))
+        {
+            if (pAlmaiYamlName)
+               *pAlmaiYamlName = almaiYaml;
+            return true;
+        }
     }
 
     if (pAlmaiYamlName)

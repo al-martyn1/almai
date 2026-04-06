@@ -88,7 +88,9 @@ struct AppConfig : public AppConfigBase
     static bool isPathExistOneOf(const std::string &basePath, const std::string &relName);
 
     //------------------------------
-    static std::string makeAlmaiYamlFullName(const std::string &path, bool leadingDot);
+    static std::vector<std::string> makeAlmaiYamlNames();
+    static const std::vector<std::string>& getAlmaiYamlNames();
+    static std::vector<std::string> getAlmaiYamlFullNames(const std::string &path);
 
     //------------------------------
     bool isProjectRootPath(const std::string &path, std::string *pAlmaiYamlName) const;

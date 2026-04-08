@@ -83,7 +83,7 @@ bool umbaLogSourceInfo  = false;
 //
 #include "AppConfig.h"
 
-AppConfig appConfig;
+almai::AppConfig appConfig;
 
 std::string curFile;
 unsigned lineNo = 0;
@@ -233,6 +233,22 @@ int unsafeMain(int argc, char* argv[])
     }
 
 
+    std::string processedFileType = "project";
+
+    auto prepromptReadingErrorHandler = [&](const std::string &ppFilename)
+    {
+        LOG_WARN("read-error") << "failed to read " << processedFileType << " file: '" << ppFilename << "'\n";
+    };
+
+    auto prepromptParsingErrorHandler = [&](const std::string &ppFilename, const std::exception &e)
+    {
+        LOG_WARN("parsing-error") << "failed to parsing " << processedFileType << " file. Error: '" << e.what() << "', file: '" << ppFilename << "'\n";
+    };
+
+    appConfig.readProjectFile(prepromptReadingErrorHandler, prepromptParsingErrorHandler);
+
+
+
     appConfig.curAiEngine = "deepseek"; // !!! Должно вычитываться из настроек проекта
 
     std::vector<std::string> scannedFolders;
@@ -241,19 +257,10 @@ int unsafeMain(int argc, char* argv[])
 
     appConfig.scanForPreprompts(&scannedFolders, scannedPrepromptProps, scannedPrepromptTypes);
 
-    auto prepromptReadingErrorHandler = [&](const std::string &ppFilename)
-    {
-        LOG_WARN("read-error") << "failed to read preprompt file: '" << ppFilename << "'\n";
-    };
-
-    auto prepromptParsingErrorHandler = [&](const std::string &ppFilename, const std::exception &e)
-    {
-        LOG_WARN("parsing-error") << "failed to parsing preprompt file. Error: '" << e.what() << "', file: '" << ppFilename << "'\n";
-    };
-
+    processedFileType = "preprompt";
     std::unordered_map< std::string, std::unordered_map<std::string, almai::Preprompt> > scannedPreprompts;
-
     appConfig.scanForPreprompts(scannedPreprompts, scannedPrepromptProps, prepromptReadingErrorHandler, prepromptParsingErrorHandler);
+
 
 
     if (1)

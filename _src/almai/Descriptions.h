@@ -97,7 +97,7 @@ public:
     static
     marty::json parse(CommonDescription &d, const std::vector<std::string> &lines)
     {
-        return parse(d, umba::string::merge(lines.begin(), lines.end(), '\n'));
+        return parse(d, umba::string::merge<std::string>(lines.begin(), lines.end(), '\n'));
     }
 
     static
@@ -155,14 +155,14 @@ struct PrepromptDescription : public CommonDescription
                 // parse array here
                 for (nlohmann::json::iterator it = r.begin(); it!=r.end(); ++it)
                 {
-                  std::string altersListStr = it->get<std::string>();
-                  std::vector<std::string> altersList = splitString(altersListStr, '|');
-                  d.requires.emplace_back(altersList);
+                    std::string altersListStr = it->get<std::string>();
+                    std::vector<std::string> altersList = splitString(altersListStr, '|');
+                    d.requires.emplace_back(altersList);
                 }
             }
             else
             {
-                throw std::runtime_error("'requires' is in unknown format. Only string/array formats allowed");
+                throw std::runtime_error("'requires' is in " + marty::json_utils::nodeTypeName(r) + " format. Only string/array formats allowed");
             }
 
         }
@@ -173,7 +173,7 @@ struct PrepromptDescription : public CommonDescription
     static
     marty::json parse(PrepromptDescription &d, const std::vector<std::string> &lines)
     {
-        return parse(d, umba::string::merge(lines.begin(), lines.end(), '\n'));
+        return parse(d, umba::string::merge<std::string>(lines.begin(), lines.end(), '\n'));
     }
 
     static

@@ -10,6 +10,7 @@
 #include "PluralDatabase.h"
 #include "Localization.h"
 #include "Preprompt.h"
+#include "Project.h"
 
 //
 #include "umba/umba.h"
@@ -27,7 +28,18 @@
 #include <unordered_map>
 #include <unordered_set>
 
+//--------------------------------------------------------------------------------------------------------------------
 
+
+
+//--------------------------------------------------------------------------------------------------------------------
+namespace almai {
+
+//--------------------------------------------------------------------------------------------------------------------
+
+
+
+//--------------------------------------------------------------------------------------------------------------------
 struct AppConfig : public AppConfigBase
 {
 
@@ -49,6 +61,8 @@ struct AppConfig : public AppConfigBase
     std::string                       curLang;
 
     std::string                       curAiEngine; // deepseek, qwen
+
+    almai::Project                    almaiProject;
 
 
 
@@ -96,6 +110,49 @@ struct AppConfig : public AppConfigBase
     //------------------------------
     bool isProjectRootPath(const std::string &path, std::string *pAlmaiYamlName) const;
     bool findProjectRoot(std::string startPath=umba::filesys::getCurrentDirectory());
+
+
+    //------------------------------
+    std::string normalizeSkillName(std::string skillName) const;
+
+    //------------------------------
+    template<typename PrepromptReadingErrorHandler, typename PrepromptParsingErrorHandler>
+    void readProjectFile( PrepromptReadingErrorHandler readingErrHandler
+                        , PrepromptParsingErrorHandler parsingErrorHandler
+                        )
+    {
+        if (projectFile.empty())
+            return;
+
+        std::string projectText;
+
+        if (!readFile(projectFile, projectText))
+        {
+            readingErrHandler(projectFile);
+            return;
+        }
+
+        try
+        {
+            // marty::json parse(Project &p, const std::string &text, SkillNamePrepareHandler skillNamePrepareHandler, bool throwErrors)
+            almai::Project::parse( almaiProject, projectText
+                                 , [&](const std::string &str) { return normalizeSkillName(str); }
+                                 , true /* throwErrors */
+                                 );
+        }
+        catch(const std::exception &e)
+        {
+            parsingErrorHandler(projectFile, e);
+
+            // Пробуем игнорировать ошибки
+            // Но исключение всё равно может вылететь. Но мы его уже не ловим, пусть летит
+            almai::Project::parse( almaiProject, projectText
+                                 , [&](const std::string &str) { return normalizeSkillName(str); }
+                                 , false /* !throwErrors */
+                                 );
+        }
+
+    }
 
     //------------------------------
     static
@@ -151,7 +208,14 @@ struct AppConfig : public AppConfigBase
 
                 // Если до сюда не вылетели, то можно добавлять в результаты
 
-                // !!! Нужно поправить зависимсти, привести всё в plural
+                // !!! Нужно поправить зависимости, привести всё в plural
+                for(auto &require : preprompt.description.requires)
+                {
+                    for(auto &r: require)
+                    {
+                        r = normalizeSkillName(r);
+                    }
+                }
 
                 scannedPreprompts[ppTypeStr][ppName] = preprompt;
 
@@ -160,9 +224,19 @@ struct AppConfig : public AppConfigBase
 
     }
 
+    //------------------------------
+
+
+
 
 }; // struct AppConfig
 
+//--------------------------------------------------------------------------------------------------------------------
 
+
+
+//--------------------------------------------------------------------------------------------------------------------
+
+} // namespace almai
 
 

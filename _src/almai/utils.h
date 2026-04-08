@@ -729,7 +729,7 @@ marty::json parseToJson(const std::string &text)
 inline
 marty::json parseToJson(const std::vector<std::string> &lines)
 {
-    return parseToJson(umba::string::merge(lines.begin(), lines.end(), '\n'));
+    return parseToJson(umba::string::merge<std::string>(lines.begin(), lines.end(), '\n'));
 }
 
 //----------------------------------------------------------------------------

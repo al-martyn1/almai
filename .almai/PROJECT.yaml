@@ -1,4 +1,5 @@
 roles:
+  # Можно записать и как object, но массив гарантирует порядок элементов, а object - не факт. Впрочем, другой нефакт в том, что при настройке ролей нам порядок не особо и важен
   - c-cpp-dev: -, skills/cpp-dev; skills/c-dev, -skills/jni-master # тут в одну строку сбросили все предыдущие скилы для роли, и добавили skills/cpp-dev и skills/c-dev
   - c-cpp-no-java-dev: skills/cpp-dev; skills/c-dev, -skills/jni-master # тут только добавили skills/cpp-dev и skills/c-dev
   - uni-tester:

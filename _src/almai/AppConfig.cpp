@@ -6,9 +6,17 @@
 #include "Preprompt.h"
 //
 #include "umba/filename.h"
+#include "umba/parse_utils.h"
 
 //
 #include <utility>
+
+//--------------------------------------------------------------------------------------------------------------------
+
+
+
+//--------------------------------------------------------------------------------------------------------------------
+namespace almai {
 
 //--------------------------------------------------------------------------------------------------------------------
 
@@ -415,12 +423,30 @@ void AppConfig::scanForPreprompts( std::vector<std::string> *pScannedFolders
     UMBA_USED(prepromptTypesToScan);
 }
 
+//--------------------------------------------------------------------------------------------------------------------
+std::string AppConfig::normalizeSkillName(std::string skillName) const
+{
+    umba::string::trim(skillName);
+    umba::string::tolower(skillName);
+
+    std::string category, name;
+    if (!umba::parse_utils::optionStringSplitToPair(skillName, category, name, "/\\"))
+    {
+        // Нет разделителя
+        return skillName;
+    }
+
+    category = pluralDb.findPlural(category);
+
+    return category + "/" + name;
+}
+
+//--------------------------------------------------------------------------------------------------------------------
 
 
 
+//--------------------------------------------------------------------------------------------------------------------
 
-
-
-
+} // namespace almai
 
 

@@ -34,7 +34,8 @@ struct AppConfig : public AppConfigBase
     std::string                       appRoot;
     std::string                       appConfPath;
     std::string                       projectRoot; // устанавливается только через setProjectRoot
-    std::string                       projectFile; // Полное имя almai.yaml, с путём
+    std::string                       almaiDir; // 
+    std::string                       projectFile; // Полное имя '.almai/project.yaml', с путём
     std::string                       aiName; // Например, deepeek, qwen - используется для поиска кастомизированных препромптов
 
     std::unordered_set<std::string>   projectRootStopNames; //  = { ".git", ".out", ".vscode", ".build", "build" }; // пока явно инициализируем
@@ -88,9 +89,9 @@ struct AppConfig : public AppConfigBase
     static bool isPathExistOneOf(const std::string &basePath, const std::string &relName);
 
     //------------------------------
-    static std::vector<std::string> makeAlmaiYamlNames();
-    static const std::vector<std::string>& getAlmaiYamlNames();
-    static std::vector<std::string> getAlmaiYamlFullNames(const std::string &path);
+    static std::vector<std::string> makeAlmaiFolderNames();
+    static const std::vector<std::string>& getAlmaiFolderNames();
+    static std::vector<std::string> getAlmaiFolderFullNames(const std::string &path);
 
     //------------------------------
     bool isProjectRootPath(const std::string &path, std::string *pAlmaiYamlName) const;

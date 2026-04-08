@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include "utils.h"
+
+//
 #include "marty_yaml_toml_json/marty_yaml_toml_json.h"
 //
 #include "umba/umba.h"
@@ -37,51 +40,18 @@ struct CommonDescription
 
 protected:
 
-    static
-    std::string mergeLines(const std::vector<std::string> &lines)
-    {
-        std::string res;
-        for(const auto &l : lines)
-        {
-            res.append(l);
-            res.append(1, '\n');
-        }
-
-        return res;
-    }
-
-
-    static
-    marty::json parseToJson(const std::string &text)
-    {
-        std::string errMsg;
-        marty::json_utils::FileFormat detectedFormat = marty::json_utils::FileFormat::unknown;
-
-        auto res = marty::json_utils::parseJsonOrYaml( text
-                                                     , true // allowComments
-                                                     , &errMsg
-                                                     , 0 // pTmpJson
-                                                     , &detectedFormat
-                                                     );
-        if (detectedFormat==marty::json_utils::FileFormat::unknown)
-        {
-            if (errMsg.empty())
-                errMsg = "unknown error found while parsing data";
-        }
-
-        if (detectedFormat==marty::json_utils::FileFormat::unknown || !errMsg.empty())
-        {
-            throw std::runtime_error(errMsg);
-        }
-
-        return res;
-    }
-
-    static
-    marty::json parseToJson(const std::vector<std::string> &lines)
-    {
-        return parseToJson(mergeLines(lines));
-    }
+    // static
+    // std::string mergeLines(const std::vector<std::string> &lines)
+    // {
+    //     std::string res;
+    //     for(const auto &l : lines)
+    //     {
+    //         res.append(l);
+    //         res.append(1, '\n');
+    //     }
+    //  
+    //     return res;
+    // }
 
     static
     std::vector<std::string> splitString(const std::string &str, char ch)
@@ -127,7 +97,7 @@ public:
     static
     marty::json parse(CommonDescription &d, const std::vector<std::string> &lines)
     {
-        return parse(d, mergeLines(lines));
+        return parse(d, umba::string::merge(lines.begin(), lines.end(), '\n'));
     }
 
     static
@@ -203,7 +173,7 @@ struct PrepromptDescription : public CommonDescription
     static
     marty::json parse(PrepromptDescription &d, const std::vector<std::string> &lines)
     {
-        return parse(d, CommonDescription::mergeLines(lines));
+        return parse(d, umba::string::merge(lines.begin(), lines.end(), '\n'));
     }
 
     static

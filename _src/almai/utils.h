@@ -3,6 +3,9 @@
  */
 #pragma once
 
+#include "marty_yaml_toml_json/marty_yaml_toml_json.h"
+
+//
 #include "enums.h"
 //
 #include "umba/umba.h"
@@ -689,6 +692,44 @@ inline
 std::vector<std::string> stripEmptyLeadingTrailingLines(std::vector<std::string> lines)
 {
     return stripEmptyLeadingLines(stripEmptyTrailingLines(lines));
+}
+
+//----------------------------------------------------------------------------
+
+
+
+//----------------------------------------------------------------------------
+inline
+marty::json parseToJson(const std::string &text)
+{
+    std::string errMsg;
+    marty::json_utils::FileFormat detectedFormat = marty::json_utils::FileFormat::unknown;
+
+    auto res = marty::json_utils::parseJsonOrYaml( text
+                                                 , true // allowComments
+                                                 , &errMsg
+                                                 , 0 // pTmpJson
+                                                 , &detectedFormat
+                                                 );
+    if (detectedFormat==marty::json_utils::FileFormat::unknown)
+    {
+        if (errMsg.empty())
+            errMsg = "unknown error found while parsing data";
+    }
+
+    if (detectedFormat==marty::json_utils::FileFormat::unknown || !errMsg.empty())
+    {
+        throw std::runtime_error(errMsg);
+    }
+
+    return res;
+}
+
+//----------------------------------------------------------------------------
+inline
+marty::json parseToJson(const std::vector<std::string> &lines)
+{
+    return parseToJson(umba::string::merge(lines.begin(), lines.end(), '\n'));
 }
 
 //----------------------------------------------------------------------------

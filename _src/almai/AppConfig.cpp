@@ -186,7 +186,8 @@ void AppConfig::setProjectRoot(const std::string &projectRoot_)
 {
     projectRoot = projectRoot_;
 
-    auto tmpPath = umba::filename::makeAbsPath(std::string(".preprompts.almai"), projectRoot);
+    auto tmpPath = umba::filename::appendPath(almaiDir, std::string(".preprompts"));
+    // umba::filename::makeAbsPath(std::string(".preprompts.almai"), projectRoot);
     if (umba::filesys::isPathDirectory(tmpPath))
     {
         addPrepromptPath(almai::PrepromptPathType::projectDirs, tmpPath);
@@ -252,30 +253,32 @@ bool AppConfig::isPathExistOneOf(const std::string &basePath, const std::string 
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-std::vector<std::string> AppConfig::makeAlmaiYamlNames()
+std::vector<std::string> AppConfig::makeAlmaiFolderNames()
 {
-    return std::vector<std::string>{ ".almai.yaml"
-                                   , ".ALMAI.yaml"
-                                   , ".ALMAI.YAML"
-                                   , ".almai.YAML"
-                                   ,  "almai.yaml"
-                                   ,  "ALMAI.yaml"
-                                   ,  "ALMAI.YAML"
-                                   ,  "almai.YAML"
+    return std::vector<std::string>{ ".almai"
+                                   , ".ALMAI"
+                                   // , ".almai.yaml"
+                                   // , ".ALMAI.yaml"
+                                   // , ".ALMAI.YAML"
+                                   // , ".almai.YAML"
+                                   // ,  "almai.yaml"
+                                   // ,  "ALMAI.yaml"
+                                   // ,  "ALMAI.YAML"
+                                   // ,  "almai.YAML"
                                    };
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-const std::vector<std::string>& AppConfig::getAlmaiYamlNames()
+const std::vector<std::string>& AppConfig::getAlmaiFolderNames()
 {
-    static std::vector<std::string> names = makeAlmaiYamlNames();
+    static std::vector<std::string> names = makeAlmaiFolderNames();
     return names;
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-std::vector<std::string> AppConfig::getAlmaiYamlFullNames(const std::string &path)
+std::vector<std::string> AppConfig::getAlmaiFolderFullNames(const std::string &path)
 {
-    const auto &almaiNames = getAlmaiYamlNames();
+    const auto &almaiNames = getAlmaiFolderNames();
 
     std::vector<std::string> resVec; resVec.reserve(almaiNames.size());
 
@@ -288,22 +291,22 @@ std::vector<std::string> AppConfig::getAlmaiYamlFullNames(const std::string &pat
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-bool AppConfig::isProjectRootPath(const std::string &path, std::string *pAlmaiYamlName) const
+bool AppConfig::isProjectRootPath(const std::string &path, std::string *pAlmaiFolderName) const
 {
-    auto almaiNames = getAlmaiYamlFullNames(path);
+    auto almaiNames = getAlmaiFolderFullNames(path);
 
-    for(const auto &almaiYaml : almaiNames)
+    for(const auto &almaiFolder : almaiNames)
     {
-        if (umba::filesys::isFileExist(almaiYaml))
+        if (umba::filesys::isDirExist(almaiFolder))
         {
-            if (pAlmaiYamlName)
-               *pAlmaiYamlName = almaiYaml;
+            if (pAlmaiFolderName)
+               *pAlmaiFolderName = almaiFolder;
             return true;
         }
     }
 
-    if (pAlmaiYamlName)
-       pAlmaiYamlName->clear();
+    if (pAlmaiFolderName)
+       pAlmaiFolderName->clear();
 
     if (isPathExistOneOf(path, projectRootStopNames))
         return true;
@@ -320,8 +323,11 @@ bool AppConfig::findProjectRoot(std::string startPath)
     {
         curPath = upLevelPath;
 
-        if (isProjectRootPath(curPath, &projectFile))
+        if (isProjectRootPath(curPath, &almaiDir))
         {
+            projectFile = umba::filename::appendPath(almaiDir, std::string("PROJECT.yaml"));
+            if (!umba::filesys::isFileExist(projectFile))
+                projectFile.clear();
             setProjectRoot(curPath);
             return true;
         }

@@ -157,6 +157,7 @@ int unsafeMain(int argc, char* argv[])
 
     //!!! --------------
     appConfig.setAppRoot(argsParser.getAppRoot(), argsParser.getAppConfPath()); // to find prompts
+
     if (!appConfig.findProjectRoot()) // Также устанавливает ProjectRoot
     {
         LOG_WARN("prj-root") << "project root not found\n";

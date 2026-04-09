@@ -17,6 +17,10 @@
                 return -1;
             }
 
+            // auto optNames = opt.getOptionNamesVector();
+            // for(auto optName : optNames)
+            //     std::cout << optName << "\n";
+
             return 0;
         }
 

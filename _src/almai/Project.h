@@ -118,22 +118,9 @@ struct Project
                 } // for (const auto &[key, value] : r.items())
             }
 
+
             else if (r.is_array())
             {
-
-// roles:
-//   # Можно записать и как object, но массив гарантирует порядок элементов, а object - не факт. Впрочем, другой нефакт в том, что при настройке ролей нам порядок не особо и важен
-//   - c-cpp-dev: -, skills/cpp-dev; skills/c-dev, -skills/jni-master # тут в одну строку сбросили все предыдущие скилы для роли, и добавили skills/cpp-dev и skills/c-dev
-//   - c-cpp-no-java-dev: skills/cpp-dev; skills/c-dev, -skills/jni-master # тут только добавили skills/cpp-dev и skills/c-dev
-//   - uni-tester:
-//     - - # Сбрасываем все предыдущие скилы для роли (а это будет валидно в yml?)
-//     - skills/auto-tester
-//     - skills/manual-tester
-//   - super-architect:
-//     - sw-architect # Архитектор ПО
-//     - sys-architect # Архитектор всей системы
-
-
                 // parse array here
                 for (nlohmann::json::iterator it = r.begin(); it!=r.end(); ++it) // array iteraion
                 {
@@ -170,24 +157,68 @@ struct Project
                         {
                             const std::string &role = key;
 
-                            // if (value.is_object())
-                            // {
-                            //     for (const auto &[k2, v2] : r.items()) // object iteraion
-                            // }
-
-                            if (!value.is_string())
+                            if (value.is_string())
                             {
-                                if (throwErrors)
-                                    throw std::runtime_error("value in compact mapping in sequence can be only a string type, role: '" + role + "', value type: " + marty::json_utils::nodeTypeName(value));
+                                std::string skillsList = value.get<std::string>();
+    
+                                if (!p.updateRoleFromRoleStringList(role, skillsList, skillNamePrepareHandler))
+                                {
+                                    if (throwErrors)
+                                        throw std::runtime_error("failed to update role '" + role + "' with skills: '" + skillsList + "'");
+                                }
                             }
 
-                            std::string skillsList = value.get<std::string>();
+                            else if (value.is_array())
+                            {
+                                for (nlohmann::json::iterator it2 = value.begin(); it2!=value.end(); ++it2) // array iteraion
+                                {
+                                    auto arrItem2 = *it2;
+                
+                                    if (arrItem2.is_array())
+                                    {
+                                        // Значение из минуса ("-") без кавычек преобразовывается в массив с олним null элементом, только не понятно кем.
+                                        // Это либо yaml-cpp, либо мой движок конвертации в nlohmann json
+                                        if (arrItem2.size()==1 && arrItem2[0].is_null()) 
+                                        {
+                                            std::string skillName = "-"; // arrItem2.get<std::string>();
+                                            if (!p.updateRoleFromRoleString(role, skillName, skillNamePrepareHandler))
+                                            {
+                                                if (throwErrors)
+                                                    throw std::runtime_error("failed to update role '" + role + "' with skill value '" + skillName + "'");
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (throwErrors)
+                                                throw std::runtime_error("value can be only a string type, role: '" + role + "', value type: " + marty::json_utils::nodeTypeName(arrItem2));
+                                        }
+                                    }
 
-                            if (!p.updateRoleFromRoleStringList(role, skillsList, skillNamePrepareHandler))
+                                    else if (arrItem2.is_string())
+                                    {
+                                        std::string skillName = arrItem2.get<std::string>();
+                                        if (!p.updateRoleFromRoleString(role, skillName, skillNamePrepareHandler))
+                                        {
+                                            if (throwErrors)
+                                                throw std::runtime_error("failed to update role '" + role + "' with skill value '" + skillName + "'");
+                                        }
+                                    }
+
+                                    else
+                                    {
+                                        if (throwErrors)
+                                            throw std::runtime_error("value can be only a string type, role: '" + role + "', value type: " + marty::json_utils::nodeTypeName(arrItem2));
+                                    }
+
+                                }
+                            }
+
+                            else 
                             {
                                 if (throwErrors)
-                                    throw std::runtime_error("failed to update role '" + role + "' with skills: '" + skillsList + "'");
+                                    throw std::runtime_error("value can be only a string or array type, role: '" + role + "', value type: " + marty::json_utils::nodeTypeName(value));
                             }
+
 
                         } // for (const auto &[key, value] : r.items()) // object iteraion
 

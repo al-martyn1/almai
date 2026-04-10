@@ -77,6 +77,7 @@ int operator()( const StringType                                &a           //!
 
 
 
+#include "cli_opt_parsers/empty_option_error.h"
 #include "cli_opt_parsers/basic_options.h"
 #include "cli_opt_parsers/overwrite.h"
 // #include "cli_opt_parsers/list.h"

@@ -1,0 +1,481 @@
+#pragma once
+
+#include <stack>
+
+//#include "app_config.h"
+#include "umba/cmd_line.h"
+#include "umba/cli_tool_helpers.h"
+#include "umba/shellapi.h"
+#include "umba/string_plus.h"
+#include "umba/rule_of_five.h"
+//
+//#include "marty_cpp/marty_cpp.h"
+//
+#include "AppVerConfig.h"
+
+//
+//#include "marty_cpp/src_normalization.h"
+
+
+
+// AppConfig    appConfig;
+
+//extern umba::SimpleFormatter umbaLogStreamMsg;
+
+
+template<typename StringType>
+struct ArgParser
+{
+
+    umba::command_line::CommandSequenceController   cmdController;
+
+    bool isOptionAllowed(const umba::command_line::CommandLineOption &opt) const
+    {
+        return cmdController.isOptionAllowed(opt);
+    }
+
+    bool isOptionAllowed(const umba::command_line::CommandLineOption &opt, std::string &errMsg) const
+    {
+        return cmdController.isOptionAllowed(opt, errMsg);
+    }
+
+    // bool cmdController.canAddSubCommand() const
+    // bool cmdController.isSubCommandAllowed(const std::string& cmd, std::string &errMsg) const
+    // cmdController.appendSubCommandSequence(const std::string& cmd, bool throwError=true)
+    // void cmdController.addOptionsToFinalCommands(const std::string &optionsStr)
+
+    //UMBA_RULE_OF_FIVE_DEFAULT(ArgParser);
+    UMBA_RULE_OF_FIVE_COPY_MOVE_DEFAULT(ArgParser);
+
+    #define APP_ARGPARSER_CHECK_OPTION_ALLOWED()    \
+            if (argsParser.hasHelpOption) return 0; \
+            do                                      \
+            {                                       \
+                if (!cmdController.isOptionAllowed(opt, errMsg)) \
+                {                                   \
+                    LOG_ERR<<errMsg<<"\n";          \
+                    return -1;                      \
+                }                                   \
+            } while(0)
+
+
+    ArgParser()
+    {
+        // cmdController.addStandardCommonGlobalOptions()
+        // cmdController.addStandardAutocompleteGlobalOptions()
+        // cmdController.addStandardHelpGlobalOptions()
+
+        cmdController.addAllStandardGlobalOptions();
+
+        //cmdController.addGlobalOptions("")
+
+        cmdController.addCommandOptions("branch","delete,force-delete,move,all"); // -d delete, -D force-delete, -m move, -a all
+        cmdController.addCommandOptions("stash push", "message"); // -M message
+        cmdController.addCommand("stash list");
+        cmdController.addCommand("stash apply");
+        cmdController.addCommand("stash pop");
+        cmdController.addCommand("stash drop");
+        cmdController.addCommand("stash clear");
+
+        cmdController.addCommandOptions("config", "global,local,list,unset");
+
+        cmdController.addCommandOptions("log", "oneline,graph,patch,since");
+        cmdController.addCommandOptions("reset", "soft,mixed,hard ");
+
+        // cmdController.addCommandOptions("", "");
+
+
+        cmdController.addCommand("submodule add");
+        cmdController.addCommandOptions("submodule update", "init,recursive");
+        cmdController.addCommand("submodule foreach");
+
+        cmdController.addCommand("worktree add");
+        cmdController.addCommand("worktree remove");
+        cmdController.addCommand("worktree list");
+
+        // cmdController.addCommand("");
+
+        // https://chat.deepseek.com/share/m489klmmtnimvksyqz
+        //  
+        // git branch feature — создаёт новую ветку feature (но не переключается на неё).
+        // git branch -d feature — удаляет ветку feature (только если она слита с текущей).
+        // git branch -D feature — принудительно удаляет ветку feature (даже если не слита).
+        // git branch -m old-name new-name — переименовывает ветку.
+        // git branch -a — показывает все локальные и удалённые ветки.
+        //  
+        // git stash push -m "описание" — сохраняет текущие изменения с сообщением.
+        // git stash list — показывает список всех сохранений.
+        // git stash apply stash@{0} — применяет последнее сохранение (не удаляя его из стека).
+        // git stash pop — применяет последнее сохранение и удаляет его из стека.
+        // git stash drop stash@{0} — удаляет конкретное сохранение.
+        // git stash clear — удаляет все сохранения.
+        //  
+        // git config --global user.name "Ваше Имя" — задаёт глобальное имя автора коммитов.
+        // git config --local user.email "email@example.com" — задаёт email только для текущего репозитория.
+        // git config --list — показывает все текущие настройки.
+        // git config --unset alias.co — удаляет псевдоним co.
+        //  
+        // git log --oneline — компактный вывод (каждый коммит в одну строку).
+        // git log --graph — отображает историю в виде ASCII-графа.
+        // git log -p — показывает разницу (patch) для каждого коммита.
+        // git log --since="2 days ago" — коммиты за последние 2 дня.
+        //  
+        // git reset --soft HEAD~1 — отменяет последний коммит, но оставляет изменения в индексе (staged).
+        // git reset --mixed HEAD~1 — отменяет последний коммит и убирает изменения из индекса (остаются только в рабочей директории).
+        // git reset --hard HEAD~1
+        //  
+        // git reflog — показывает все перемещения HEAD.
+        // git reflog expire --expire=now --all — очищает старые записи рефлога.
+        //  
+        // git submodule add <url> — добавляет внешний репозиторий как подмодуль.
+        // git submodule update --init --recursive — инициализирует и подтягивает все вложенные подмодули.
+        // git submodule foreach git pull — выполняет git pull в каждом подмодуле.
+        //  
+        // git worktree add ../backup-branch backup — создаёт новую рабочую копию ветки backup в папке ../backup-branch.
+        // git worktree remove ../backup-branch — удаляет созданную рабочую копию.
+        // git worktree list — показывает все привязанные рабочие деревья.
+
+
+        cmdController.addOptionsToFinalCommands("pass");
+
+    }
+
+
+    static
+    const std::set<std::string>& getWarnOptsSet()
+    {
+        const static std::set<std::string> s {}; // {"img-copy", "img-copy-exist", "same-file", "plantuml", "graphviz"};
+        return s;
+    }
+
+    static
+    const std::set<std::string>& getInfoOptsSet()
+    {
+        const static std::set<std::string> s {}; // /* = */ {"snippet-lookup", "plantuml", "graphviz", "opt-files", "config", "strip-extentions", "page-index", "meta-tags", "auto-url"};
+        return s;
+    }
+
+
+// 0 - ok, 1 normal stop, -1 - error
+template<typename ArgsParser>
+int operator()( const StringType                                &a           //!< строка - текущий аргумент
+              , umba::command_line::CommandLineOption           &opt         //!< Объект-опция, содержит разобранный аргумент и умеет отвечать на некоторые вопросы
+              , ArgsParser                                      &argsParser  //!< Класс, который нас вызывает, содержит некоторый контекст
+              , umba::command_line::ICommandLineOptionCollector *pCol        //!< Коллектор опций - собирает инфу по всем опциям и готов вывести справку
+              , bool fBuiltin
+              , bool ignoreInfos
+              )
+{
+    //using namespace marty::clang::helpers;
+
+    UMBA_USED(fBuiltin);
+    UMBA_USED(a);
+
+    std::string dppof = "Don't parse predefined options from ";
+
+    if (opt.isOption())
+    {
+
+#include "umba/warnings/push_disable_C4189.h"
+
+        std::string errMsg;
+        std::string strVal;
+        int intVal = 0;
+        //unsigned uintVal = 0;
+        std::size_t szVal = 0;
+        bool boolVal = false;
+
+        UMBA_USED(szVal);
+        UMBA_USED(boolVal);
+
+#include "umba/warnings/pop.h"
+
+        // !!! setDescription обязателеь, он "финализирует" опцию. Может быть пустым.
+        // if (opt.isOption("recursive") || opt.setDescription(""))
+
+#include "cli_opt_parsers/empty_option_seal.h"
+#include "cli_opt_parsers/basic_options.h"
+#include "cli_opt_parsers/overwrite.h"
+// #include "cli_opt_parsers/list.h"
+//#include "cli_opt_parsers/dict.h"
+//#include "cli_opt_parsers/output.h"
+//#include "cli_opt_parsers/filename_decoration.h"
+//#include "cli_opt_parsers/filename_title_level.h"
+//#include "cli_opt_parsers/sort.h"
+//#include "cli_opt_parsers/fence_style.h"
+//#include "cli_opt_parsers/strip_prefix.h"
+//#include "cli_opt_parsers/lang_marker.h"
+//#include "cli_opt_parsers/add_plural_pair.h"
+//#include "cli_opt_parsers/add_translation.h"
+//#include "cli_opt_parsers/add_project_root_marker.h"
+
+        if (opt.isOption("delete") || opt.isOption('d') || opt.setDescription(""))
+        {
+            APP_ARGPARSER_CHECK_OPTION_ALLOWED();
+            // do nothing
+            return 0;
+        }
+
+        if (opt.isOption("force-delete") || opt.isOption('D') || opt.setDescription(""))
+        {
+            APP_ARGPARSER_CHECK_OPTION_ALLOWED();
+            // do nothing
+            return 0;
+        }
+
+        if (opt.isOption("move")  || opt.isOption('m') || opt.setDescription(""))
+        {
+            APP_ARGPARSER_CHECK_OPTION_ALLOWED();
+            // do nothing
+            return 0;
+        }
+
+        if (opt.isOption("all") || opt.isOption('a') || opt.setDescription(""))
+        {
+            APP_ARGPARSER_CHECK_OPTION_ALLOWED();
+            // do nothing
+            return 0;
+        }
+
+        if (opt.isOption("message") || opt.setDescription(""))
+        {
+            APP_ARGPARSER_CHECK_OPTION_ALLOWED();
+            // do nothing
+            return 0;
+        }
+
+        if (opt.isOption("global") || opt.setDescription(""))
+        {
+            APP_ARGPARSER_CHECK_OPTION_ALLOWED();
+            // do nothing
+            return 0;
+        }
+
+        if (opt.isOption("local") || opt.setDescription(""))
+        {
+            APP_ARGPARSER_CHECK_OPTION_ALLOWED();
+            // do nothing
+            return 0;
+        }
+
+        if (opt.isOption("list") || opt.isOption('l') || opt.setDescription(""))
+        {
+            APP_ARGPARSER_CHECK_OPTION_ALLOWED();
+            // do nothing
+            return 0;
+        }
+
+        if (opt.isOption("unset") || opt.setDescription(""))
+        {
+            APP_ARGPARSER_CHECK_OPTION_ALLOWED();
+            // do nothing
+            return 0;
+        }
+
+        if (opt.isOption("oneline") || opt.setDescription(""))
+        {
+            APP_ARGPARSER_CHECK_OPTION_ALLOWED();
+            // do nothing
+            return 0;
+        }
+
+        if (opt.isOption("graph") || opt.setDescription(""))
+        {
+            APP_ARGPARSER_CHECK_OPTION_ALLOWED();
+            // do nothing
+            return 0;
+        }
+
+        if (opt.isOption("patch") || opt.isOption('p') || opt.setDescription(""))
+        {
+            APP_ARGPARSER_CHECK_OPTION_ALLOWED();
+            // do nothing
+            return 0;
+        }
+
+        if (opt.isOption("since") || opt.setDescription(""))
+        {
+            APP_ARGPARSER_CHECK_OPTION_ALLOWED();
+            // do nothing
+            return 0;
+        }
+
+        if (opt.isOption("soft") || opt.isOption('S') || opt.setDescription(""))
+        {
+            APP_ARGPARSER_CHECK_OPTION_ALLOWED();
+            // do nothing
+            return 0;
+        }
+
+        if (opt.isOption("mixed") || opt.isOption('X') || opt.setDescription(""))
+        {
+            APP_ARGPARSER_CHECK_OPTION_ALLOWED();
+            // do nothing
+            return 0;
+        }
+
+        if (opt.isOption("hard") || opt.isOption('H') || opt.setDescription(""))
+        {
+            APP_ARGPARSER_CHECK_OPTION_ALLOWED();
+            // do nothing
+            return 0;
+        }
+
+
+        if (opt.isOption("init") || opt.setDescription(""))
+        {
+            // if (argsParser.hasHelpOption) return 0;
+            //  
+            // if (!opt.getParamValue(intVal,errMsg))
+            // {
+            //     LOG_ERR<<errMsg<<"\n";
+            //     return -1;
+            // }
+
+            APP_ARGPARSER_CHECK_OPTION_ALLOWED();
+            // do nothing
+            return 0;
+        }
+
+
+        if (opt.isOption("recursive") || opt.isOption('R') || opt.setDescription(""))
+        {
+            APP_ARGPARSER_CHECK_OPTION_ALLOWED();
+            // do nothing
+            return 0;
+        }
+
+
+        // if (opt.isOption(""))
+        // {
+        //     APP_ARGPARSER_CHECK_OPTION_ALLOWED();
+        //     // do nothing
+        //     return 0;
+        // }
+
+
+
+        if (opt.isHelpStyleOption())
+        {
+            // Job is done in isHelpStyleOption
+            // return 0; // !!!
+        }
+
+        else if (opt.isHelpOption()) // if (opt.infoIgnore() || opt.isOption("help") || opt.isOption('h') || opt.isOption('?') || opt.setDescription(""))
+        {
+            if (!ignoreInfos)
+            {
+                if (pCol && !pCol->isNormalPrintHelpStyle())
+                    argsParser.quet = true;
+                //printNameVersion();
+                if (!argsParser.quet)
+                {
+                    umba::cli_tool_helpers::printNameVersion(std::cout);
+                    //umba::cli_tool_helpers::printBuildDateTime();
+                    umba::cli_tool_helpers::printCommitHash(std::cout);
+                    std::cout<<"\n";
+                //printHelp();
+                }
+
+                if (pCol && pCol->isNormalPrintHelpStyle() && argsParser.argsNeedHelp.empty())
+                {
+                    //argsParser.printHelpPage( std::cout, "[OPTIONS] input_file [output_file]", "If output_file not taken, STDOUT used", helpText );
+                    auto helpText = opt.getHelpOptionsString();
+                    std::cout << "Usage: " << argsParser.programLocationInfo.exeName
+                              << " [OPTIONS] PATTERN [PATTERN]\n"
+                              << "\nOptions:\n\n"
+                              << helpText;
+                              //<< " [OPTIONS] input_file [output_file]\n\nOptions:\n\n"<<helpText;
+                }
+
+                if (pCol) // argsNeedHelp
+                {
+                    argsParser.printHelpPage( std::cout
+                                            , "[OPTIONS] input_file [output_file]"
+                                            , "If output_file not taken, STDOUT used"
+                                            , pCol->makeText( 78, &argsParser.argsNeedHelp )
+                                            );
+                    // std::cout<<pCol->makeText( 78, &argsParser.argsNeedHelp );
+                }
+
+                return 1;
+
+            }
+
+            return 0; // simple skip then parse builtins
+        }
+
+        else
+        {
+            LOG_ERR<<"unknown option: "<<opt.argOrg<<"\n";
+            return -1;
+        }
+
+        return 0;
+
+    } // if (opt.isOption())
+
+    else if (opt.isResponseFile())
+    {
+        //std::string
+
+        StringType optName;
+        umba::utfToStringTypeHelper(optName, opt.name);
+        auto optFileName = argsParser.makeAbsPath(optName);
+
+        if (!argsParser.quet)
+        {
+            #if !defined(NDEBUG)
+            // std::cout << "Processing options file: " << optFileName << "\n";
+            #endif
+        }
+
+        argsParser.pushOptionsFileName(optFileName);
+        auto parseRes = argsParser.parseOptionsFile( optFileName );
+        argsParser.popOptionsFileName();
+
+        if (!parseRes)
+            return -1;
+
+        if (argsParser.mustExit)
+            return 1;
+
+        return 0;
+
+    }
+
+    // Process non-option args here
+    if (cmdController.canAddSubCommand())
+    {
+        cmdController.appendSubCommandSequence(a);
+    }
+    else
+    {
+        cmdController.addInput(a);
+        // process input files here
+    }
+
+    // appConfig.inputFiles.push_back(argsParser.makeAbsPath(a));
+    //appConfig.scanInfos.emplace_back(almai::FileSystemScanInfo::parse(argsParser.makeAbsPath(a)));
+
+    return 0;
+
+}
+
+}; // struct ArgParser
+
+
+
+class CommandLineOptionCollector : public umba::command_line::CommandLineOptionCollectorImplBase
+{
+protected:
+    virtual void onOptionDup( const std::string &opt ) override
+    {
+        LOG_ERR<<"Duplicated option key - '"<<opt<<"'\n";
+        throw std::runtime_error("Duplicated option key - '" + opt + "'");
+    }
+
+};
+
+
+

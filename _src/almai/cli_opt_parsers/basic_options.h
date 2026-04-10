@@ -1,14 +1,8 @@
-        if (opt.name.empty())
-        {
-            LOG_ERR<<"invalid (empty) option name\n";
-            return -1;
-        }
-
         if (opt.isOption("quet") || opt.isOption('q') || opt.setDescription("Operate quetly"))  // . Short alias for '--verbose=quet'
         {
             argsParser.quet = true;
             appConfig.quet  = true;
-            return 1;
+            return 0;
         }
 
         if (opt.isOption("home") || opt.setDescription("Open homepage"))

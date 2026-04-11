@@ -6,6 +6,8 @@
 @set TEST_EXE="%FOUND_EXE%"
 
 %TEST_EXE% --help >"%~dp0\%~n0-help.txt"
+
+%TEST_EXE% submodule foreach git pull submodule --init --recursive update
 %TEST_EXE% branch
 %TEST_EXE% branch -d
 %TEST_EXE% branch -D

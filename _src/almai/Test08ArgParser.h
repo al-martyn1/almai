@@ -99,7 +99,7 @@ struct ArgParser
         cmdController.addCommand("reset").setOptions("soft,mixed,hard ");
         cmdController.addCommand("submodule add");
         cmdController.addCommand("submodule update").setOptions("init,recursive");
-        cmdController.addCommand("submodule foreach");
+        cmdController.addCommand("submodule foreach").setRawMode(true);
         cmdController.addCommand("worktree add")
                      .setMaxInputParams(2) // Или закоментить throw ниже в setParameterTransformHandler
                      .setParameterTransformHandler( []( const std::string & /* fullCommandStr */  // команда не нужна, игнорим
@@ -200,7 +200,7 @@ int operator()( const StringType                                &a           //!
 
     std::string dppof = "Don't parse predefined options from ";
 
-    if (opt.isOption())
+    if (!cmdController.isRawMode() && opt.isOption())
     {
 
 #include "umba/warnings/push_disable_C4189.h"
@@ -442,7 +442,7 @@ int operator()( const StringType                                &a           //!
 
     } // if (opt.isOption())
 
-    else if (opt.isResponseFile())
+    else if (!cmdController.isRawMode() && opt.isResponseFile())
     {
         //std::string
 
@@ -479,7 +479,7 @@ int operator()( const StringType                                &a           //!
     else
     {
         // cmdController.addInput(a, getBasePath()); // add as is
-        cmdController.addInput(a, argsParser.getBasePath()); // add file with base path
+        cmdController.addInput(a, argsParser.getBasePath()); // add file with base path // учитывается "сырой" режим
     }
 
     // StringType getBasePath() const

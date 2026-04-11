@@ -39,6 +39,25 @@ struct ArgParser
         return cmdController.isOptionAllowed(opt, errMsg);
     }
 
+    umba::command_line::CommandInfo& addCommand(const std::string &cmd)
+    {
+        return cmdController.addCommand(cmd);
+    }
+
+
+
+    // if (cmdController.canAddSubCommand())
+    // {
+    //     cmdController.appendSubCommandSequence(a);
+    // }
+    // else
+    // {
+    //     // cmdController.addInput(a, getBasePath()); // add as is
+    //     cmdController.addInput(a, getBasePath()); // add file with base path
+
+
+
+
     // bool cmdController.canAddSubCommand() const
     // bool cmdController.isSubCommandAllowed(const std::string& cmd, std::string &errMsg) const
     // cmdController.appendSubCommandSequence(const std::string& cmd, bool throwError=true)
@@ -64,36 +83,44 @@ struct ArgParser
         // cmdController.addStandardCommonGlobalOptions()
         // cmdController.addStandardAutocompleteGlobalOptions()
         // cmdController.addStandardHelpGlobalOptions()
-
         cmdController.addAllStandardGlobalOptions();
 
         //cmdController.addGlobalOptions("")
 
-        cmdController.addCommandOptions("branch","delete,force-delete,move,all"); // -d delete, -D force-delete, -m move, -a all
-        cmdController.addCommandOptions("stash push", "message"); // -M message
+        cmdController.addCommand("branch").setOptions("delete,force-delete,move,all"); // -d delete, -D force-delete, -m move, -a all
+        cmdController.addCommand("stash push").setOptions("message"); // -M message
         cmdController.addCommand("stash list");
         cmdController.addCommand("stash apply");
         cmdController.addCommand("stash pop");
         cmdController.addCommand("stash drop");
         cmdController.addCommand("stash clear");
-
-        cmdController.addCommandOptions("config", "global,local,list,unset");
-
-        cmdController.addCommandOptions("log", "oneline,graph,patch,since");
-        cmdController.addCommandOptions("reset", "soft,mixed,hard ");
-
-        // cmdController.addCommandOptions("", "");
-
-
+        cmdController.addCommand("config").setOptions("global,local,list,unset");
+        cmdController.addCommand("log").setOptions("oneline,graph,patch,since");
+        cmdController.addCommand("reset").setOptions("soft,mixed,hard ");
         cmdController.addCommand("submodule add");
-        cmdController.addCommandOptions("submodule update", "init,recursive");
+        cmdController.addCommand("submodule update").setOptions("init,recursive");
         cmdController.addCommand("submodule foreach");
+        cmdController.addCommand("worktree add")
+                     .setMaxInputParams(2) // Или закоментить throw ниже в setParameterTransformHandler
+                     .setParameterTransformHandler( []( const std::string & /* fullCommandStr */  // команда не нужна, игнорим
+                                                      , const std::vector<std::string> &inputList // ../backup-branch backup
+                                                      , const std::string &paramValue
+                                                      , const std::string &cwd
+                                                      )
+                                                    {
+                                                        if (inputList.empty())
+                                                            return umba::filename::makeAbsPath( paramValue, cwd );
+                                                        else if (inputList.size()<2)
+                                                            return paramValue;
+                                                        else
+                                                            return paramValue;
+                                                            // throw std::runtime_error("too many parameters for command: '" + fullCommandStr + "'");
+                                                    }
+                                                  );
 
-        cmdController.addCommand("worktree add");
         cmdController.addCommand("worktree remove");
         cmdController.addCommand("worktree list");
 
-        // cmdController.addCommand("");
 
         // https://chat.deepseek.com/share/m489klmmtnimvksyqz
         //  
@@ -451,10 +478,11 @@ int operator()( const StringType                                &a           //!
     }
     else
     {
-        cmdController.addInput(a);
-        // process input files here
+        // cmdController.addInput(a, getBasePath()); // add as is
+        cmdController.addInput(a, argsParser.getBasePath()); // add file with base path
     }
 
+    // StringType getBasePath() const
     // appConfig.inputFiles.push_back(argsParser.makeAbsPath(a));
     //appConfig.scanInfos.emplace_back(almai::FileSystemScanInfo::parse(argsParser.makeAbsPath(a)));
 

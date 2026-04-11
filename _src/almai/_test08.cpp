@@ -150,10 +150,18 @@ int unsafeMain(int argc, char* argv[])
         argsParser.args.push_back("--overwrite");
         argsParser.args.push_back("-q");
         
-        argsParser.args.push_back("submodule");
-        argsParser.args.push_back("--init");
-        argsParser.args.push_back("--recursive");
-        argsParser.args.push_back("update");
+        // argsParser.args.push_back("submodule");
+        // argsParser.args.push_back("--init");
+        // argsParser.args.push_back("--recursive");
+        // argsParser.args.push_back("update");
+
+        // argsParser.args.push_back("branch");
+        // //argsParser.args.push_back("-d");
+
+        argsParser.args.push_back("worktree");
+        argsParser.args.push_back("add");
+        argsParser.args.push_back("../backup-branch");
+        argsParser.args.push_back("backup");
 
     } // if (umba::isDebuggerPresent())
 

@@ -14,6 +14,8 @@
 %TEST_EXE% submodule --init --recursive update
 %TEST_EXE% submodule update --init --recursive
 %TEST_EXE% submodule update
+%TEST_EXE% worktree add ../backup-branch backup
+%TEST_EXE% worktree add ../backup-branch backup workout
 @rem %TEST_EXE% 
 
 

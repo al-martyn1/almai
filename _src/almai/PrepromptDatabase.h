@@ -36,6 +36,7 @@ namespace almai {
 struct PrepromptDatabase
 {
 
+    //--------------------------------------------------------------------------------------------------------------------
     using PrepromptMapType         = std::unordered_map<std::string, Preprompt>;
     using PrepromptPropsMapType    = std::unordered_map<std::string, PrepromptProps>;
     using PrepromptCategorySetType = std::unordered_set<std::string>;
@@ -43,14 +44,17 @@ struct PrepromptDatabase
     using PluralDatabaseSharedPtrType = std::shared_ptr<almai::PluralDatabase>;
 
 
+    //--------------------------------------------------------------------------------------------------------------------
     PluralDatabaseSharedPtrType                                    pluralDb;
     std::vector<std::string>                                       prepromptDirs;
     std::unordered_map< std::string, PrepromptMapType >            preprompts;
     std::unordered_map< std::string, PrepromptPropsMapType >       prepromptProps;
     std::unordered_map< std::string, PrepromptCategorySetType >    prepromptCategories;
 
+    //--------------------------------------------------------------------------------------------------------------------
 
 
+    //--------------------------------------------------------------------------------------------------------------------
     UMBA_RULE_OF_FIVE_DEFAULT(PrepromptDatabase);
 
     PrepromptDatabase( PluralDatabaseSharedPtrType pluralDb_
@@ -59,11 +63,75 @@ struct PrepromptDatabase
     : pluralDb(pluralDb_)
     , prepromptDirs(prepromptDirs_)
     {}
+
+    //--------------------------------------------------------------------------------------------------------------------
     
 
-    const Preprompt* findPreprompt(const std::string &prepromptId, PrepromptCategorySetType *ppCategories=0) const
+
+    //--------------------------------------------------------------------------------------------------------------------
+    template<typename WarningHandler>
+    bool expandPrepromptDependenciesImpl(const std::string &prepromptId, const std::vector<std::string> &expanded, std::set<std::string> &alreadyUsed, WarningHandler warningHandler)
+    {
+        std::string ppFullName;
+        PrepromptCategorySetType ppCategories;
+
+        const Preprompt* pPreprompt = findPreprompt(prepromptId, ppFullName, &ppCategories);
+        if (!pPreprompt)
+        {
+            std::string msg = makeCompletePpIdErrorMsg( prepromptId, ppFullName, ppCategories, 0 /* pGood */ );
+            warningHandler(msg);
+            return false;
+        }
+
+        if (alreadyUsed.find(ppFullName)!=alreadyUsed.end())
+            return true;
+
+        alreadyUsed.insert(ppFullName);
+        
+        // pPreprompt->description.requires // std::vector< std::vector<std::string> >     requires;
+
+        return true;
+
+    }
+
+
+    // umba::parse_utils::
+    //bool optionStringUpdateSet(std::string opt, SetType &s, OptPrepareHandler optPrepareHandler=OptionPrepareDefault(), CaseOption caseOption=CaseOption::toLower, bool defaultAdd=true)
+    // bool optionStringInsertToSet(const std::string &opt, SetType &s)
+
+
+        // bool bGood = false;
+
+    // std::string makeCompletePpIdErrorMsg( const std::string &requestedPrepromptId
+    //                                     , const std::string &foundPrepromptId
+    //                                     , const PrepromptCategorySetType &ppCategories
+    //                                     , bool *pGood=0
+    //                                     ) const
+
+    //--------------------------------------------------------------------------------------------------------------------
+    const Preprompt* findPreprompt(const std::string &prepromptId, std::string *pPrepromptFullName = 0, PrepromptCategorySetType *ppCategories=0) const
     {
         auto fullPpId = makeCompletePpId(prepromptId, ppCategories);
+        if (pPrepromptFullName)
+           *pPrepromptFullName = fullPpId;
+
+        if (fullPpId.empty())
+            return 0;
+
+        std::string category, id;
+        splitPrepromptId(fullPpId, category, id);
+        UMBA_ASSERT(!category.empty());
+
+        auto ppCatIt = preprompts.find(category);
+        if (ppCatIt==preprompts.end())
+            return 0;
+
+        // найдена категория
+        auto ppIt = ppCatIt->second.find(name);
+        if (ppIt==ppCatIt->second.end())
+            return 0;
+
+        return &ppIt->second;
     }
 
     //--------------------------------------------------------------------------------------------------------------------
@@ -340,11 +408,9 @@ struct PrepromptDatabase
     }
 
 
+}; // struct PrepromptDatabase
 
-
-};
-
-
+//----------------------------------------------------------------------------
 
 
 

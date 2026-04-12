@@ -236,6 +236,9 @@ int operator()( const StringType                                &a           //!
 //#include "cli_opt_parsers/add_translation.h"
 //#include "cli_opt_parsers/add_project_root_marker.h"
 
+#include "cli_opt_parsers/role_setup.h"
+
+
         if (opt.isOption("delete") || opt.isOption('d') || opt.setDescription(""))
         {
             APP_ARGPARSER_CHECK_OPTION_ALLOWED();

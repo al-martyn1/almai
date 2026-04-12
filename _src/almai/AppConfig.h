@@ -11,6 +11,8 @@
 #include "Localization.h"
 #include "Preprompt.h"
 #include "Project.h"
+//
+#include "utils.h"
 
 //
 #include "umba/umba.h"
@@ -27,6 +29,7 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <memory>
 
 //--------------------------------------------------------------------------------------------------------------------
 
@@ -43,6 +46,8 @@ namespace almai {
 struct AppConfig : public AppConfigBase
 {
 
+    using PluralDatabaseSharedPtrType = std::shared_ptr<almai::PluralDatabase>;
+
     std::string                       appRoot;
     std::string                       appConfPath;
     std::string                       projectRoot; // устанавливается только через setProjectRoot
@@ -56,7 +61,7 @@ struct AppConfig : public AppConfigBase
     std::unordered_map<almai::PrepromptPathType, std::vector<std::string> > prepromptDirs;
     almai::PrepromptPathType          curPrepromptPathType = almai::PrepromptPathType::builtinOptions;
 
-    almai::PluralDatabase             pluralDb;
+    PluralDatabaseSharedPtrType       pluralDb = std::make_shared<almai::PluralDatabase>();
     almai::Localization               localizations;
     std::string                       curLang;
 
@@ -68,6 +73,9 @@ struct AppConfig : public AppConfigBase
 
     // UMBA_RULE_OF_FIVE_COPY_MOVE(FoundFileInfo, default, default, default, default);
     // UMBA_RULE_OF_FIVE(FoundFileInfo, default, default, default, default, default);
+
+    //------------------------------
+    std::string normalizePrepromptId(const std::string &prepromptId) const { return almai::utils::normalizePrepromptId(*pluralDb.get(), prepromptId); }
 
     //------------------------------
     bool addProjectRootMarker(std::string marker); // Добавляет маркер остановки поиска корневого каталога проекта
@@ -88,6 +96,9 @@ struct AppConfig : public AppConfigBase
 
     void addPrepromptPath(almai::PrepromptPathType ppt, std::string path);
     void addPrepromptPath(const std::string &path);
+
+    //------------------------------
+    bool roleSetupFromCli(const std::string &roleSetupStr);
 
     //------------------------------
     void setAppRoot(const std::string &appRoot_, const std::string &appConfPath_);
@@ -111,14 +122,22 @@ struct AppConfig : public AppConfigBase
     bool isProjectRootPath(const std::string &path, std::string *pAlmaiYamlName) const;
     bool findProjectRoot(std::string startPath=umba::filesys::getCurrentDirectory());
 
-
     //------------------------------
-    std::string normalizeSkillName(std::string skillName) const;
+    auto makeSkillPrepareHandler() const
+    {
+        auto skillPrepareHandler = [&](std::string str)
+        {
+            umba::string::case_convert(str, umba::CaseOption::toLower);
+            return normalizePrepromptId(str);
+        };
+
+        return skillPrepareHandler;
+    }
 
     //------------------------------
     template<typename PrepromptReadingErrorHandler, typename PrepromptParsingErrorHandler>
-    void readProjectFile( PrepromptReadingErrorHandler readingErrHandler
-                        , PrepromptParsingErrorHandler parsingErrorHandler
+    void readProjectFile( PrepromptReadingErrorHandler   readingErrHandler
+                        , PrepromptParsingErrorHandler   parsingErrorHandler
                         )
     {
         if (projectFile.empty())
@@ -126,7 +145,7 @@ struct AppConfig : public AppConfigBase
 
         std::string projectText;
 
-        if (!readFile(projectFile, projectText))
+        if (!almai::utils::readFile(projectFile, projectText))
         {
             readingErrHandler(projectFile);
             return;
@@ -134,9 +153,8 @@ struct AppConfig : public AppConfigBase
 
         try
         {
-            // marty::json parse(Project &p, const std::string &text, SkillNamePrepareHandler skillNamePrepareHandler, bool throwErrors)
             almai::Project::parse( almaiProject, projectText
-                                 , [&](const std::string &str) { return normalizeSkillName(str); }
+                                 , makeSkillPrepareHandler()
                                  , true /* throwErrors */
                                  );
         }
@@ -147,81 +165,20 @@ struct AppConfig : public AppConfigBase
             // Пробуем игнорировать ошибки
             // Но исключение всё равно может вылететь. Но мы его уже не ловим, пусть летит
             almai::Project::parse( almaiProject, projectText
-                                 , [&](const std::string &str) { return normalizeSkillName(str); }
+                                 , makeSkillPrepareHandler()
                                  , false /* !throwErrors */
                                  );
         }
 
     }
 
-    //------------------------------
-    static
-    void scanForPreprompts( std::vector<std::string> *pScannedFolders
-                          , const std::vector<std::string> &ppDirs
-                          , const std::string &aiEngineName
-                          , std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > &scannedPrepromptProps
-                          , std::unordered_map< std::string, std::unordered_set<std::string> > &scannedPrepromptTypes
-                          , const std::vector<std::string> &prepromptTypesToScan // = { "skill", "instruction", "knowledge", "format", "output" }
-                          );
-
-    void scanForPreprompts( std::vector<std::string> *pScannedFolders
-                          , std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > &scannedPrepromptProps
-                          , std::unordered_map< std::string, std::unordered_set<std::string> > &scannedPrepromptTypes
-                          , std::vector<std::string> prepromptTypesToScan = { "skill", "instruction", "knowledge", "format", "output" }
-                          );
-
-    template<typename PrepromptReadingErrorHandler, typename PrepromptParsingErrorHandler>
-    void scanForPreprompts( std::unordered_map< std::string, std::unordered_map<std::string, almai::Preprompt> > &scannedPreprompts
-                          , const std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > &scannedPrepromptProps
-                          , PrepromptReadingErrorHandler readingErrHandler
-                          , PrepromptParsingErrorHandler parsingErrorHandler
-                          )
+    template<typename ErrorHandler, typename WarningHandler>
+    bool projectCheckNormalize( const PrepromptDatabase &ppDb
+                              , ErrorHandler   errorHandler
+                              , WarningHandler warningHandler
+                              )
     {
-        for(const auto &[ppTypeStr, ppNameMap] : scannedPrepromptProps)
-        {
-            for(const auto &[ppName, ppProps] : ppNameMap)
-            {
-                std::vector<std::string> inputFileLines;
-
-                if (!readFile(ppProps.file, inputFileLines))
-                {
-                    readingErrHandler(ppProps.file);
-                    continue;
-                }
-
-                almai::Preprompt preprompt;
-
-                try
-                {
-                    preprompt = almai::Preprompt::parse(inputFileLines, true /* throwErrors */ );
-                }
-                catch(const std::exception &e)
-                {
-                    parsingErrorHandler(ppProps.file, e);
-
-                    // Пробуем игнорировать ошибки
-                    // Но исключение всё равно может вылететь. Но мы его уже не ловим, пусть летит
-                    preprompt = almai::Preprompt::parse(inputFileLines, false /* !throwErrors */ );
-                }
-
-                preprompt.props = ppProps;
-
-                // Если до сюда не вылетели, то можно добавлять в результаты
-
-                // !!! Нужно поправить зависимости, привести всё в plural
-                for(auto &require : preprompt.description.requires)
-                {
-                    for(auto &r: require)
-                    {
-                        r = normalizeSkillName(r);
-                    }
-                }
-
-                scannedPreprompts[ppTypeStr][ppName] = preprompt;
-
-            }
-        }
-
+        return almaiProject.checkNormalize(ppDb, errorHandler, warningHandler);
     }
 
     //------------------------------

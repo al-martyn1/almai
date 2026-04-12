@@ -5,9 +5,8 @@
 #pragma once
 
 #include "utils.h"
+#include "yaml_json.h"
 
-//
-#include "marty_yaml_toml_json/marty_yaml_toml_json.h"
 //
 #include "umba/umba.h"
 #include "umba/filename.h"
@@ -79,16 +78,18 @@ public:
     static
     marty::json parse(CommonDescription &d, const std::string &text)
     {
-        auto j = parseToJson(text);
+        auto j = yaml_json::parseToJson(text);
 
         if (j.find("name")!=j.end())
         {
-            d.name = j["name"].get<std::string>();
+            if (!j["name"].is_null())
+                d.name = j["name"].get<std::string>();
         }
 
         if (j.find("description")!=j.end())
         {
-            d.description = j["description"].get<std::string>();
+            if (!j["description"].is_null())
+                d.description = j["description"].get<std::string>();
         }
 
         return j;
@@ -160,9 +161,13 @@ struct PrepromptDescription : public CommonDescription
                     d.requires.emplace_back(altersList);
                 }
             }
+            else if (r.is_null())
+            {
+                // simple ignore null fields
+            }
             else
             {
-                throw std::runtime_error("'requires' is in " + marty::json_utils::nodeTypeName(r) + " format. Only string/array formats allowed");
+                throw std::runtime_error("'requires' is in '" + marty::json_utils::nodeTypeName(r) + "' format. Only string/array formats allowed");
             }
 
         }

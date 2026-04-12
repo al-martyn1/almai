@@ -14,7 +14,7 @@
             auto fileName = argsParser.makeAbsPath(strVal);
 
             std::vector<std::string> lines;
-            if (!appConfig.readFile(fileName, lines))
+            if (!almai::utils::readFile(fileName, lines))
             {
                 LOG_ERR << "failed to read header file: '" << fileName << "'"; // ("read-failed")
                 return -1;
@@ -46,7 +46,7 @@
             auto fileName = argsParser.makeAbsPath(strVal);
 
             std::vector<std::string> lines;
-            if (!appConfig.readFile(fileName, lines))
+            if (!almai::utils::readFile(fileName, lines))
             {
                 LOG_ERR << "failed to read footer file: '" << fileName << "'"; // ("read-failed")
                 return -1;
@@ -78,7 +78,7 @@
             auto fileName = argsParser.makeAbsPath(strVal);
 
             std::vector<std::string> lines;
-            if (!appConfig.readFile(fileName, lines))
+            if (!almai::utils::readFile(fileName, lines))
             {
                 LOG_ERR << "failed to read footer file: '" << fileName << "'"; // ("read-failed")
                 return -1;

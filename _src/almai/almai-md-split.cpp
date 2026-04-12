@@ -125,7 +125,7 @@ bool splitLinesAndSaveContent(std::vector<std::string> mdLines)
         char markerChar = 0;
         std::size_t markerLen = 0;
 
-        MdLineType mdLineType = almai::detectMarkdownLineType(line, &markerChar, &markerLen);
+        MdLineType mdLineType = almai::utils::detectMarkdownLineType(line, &markerChar, &markerLen);
 
         if (readingCode)
         {
@@ -169,7 +169,7 @@ bool splitLinesAndSaveContent(std::vector<std::string> mdLines)
                         codeMarkerChar = markerChar;
                         codeMarkerLen  = markerLen ;
                         codeLines.clear();
-                        codeLang = almai::extractCodeLangFromFencedCodeBlockMarker(line);
+                        codeLang = almai::utils::extractCodeLangFromFencedCodeBlockMarker(line);
                     }
                     else
                     {
@@ -189,7 +189,7 @@ bool splitLinesAndSaveContent(std::vector<std::string> mdLines)
             {
                 if (codeLang.empty())
                 {
-                    codeLang = almai::extractCodeLangFromFencedCodeBlockMarker(line);
+                    codeLang = almai::utils::extractCodeLangFromFencedCodeBlockMarker(line);
                 }
 
                 // Остальная обработка финализации листинга
@@ -198,12 +198,12 @@ bool splitLinesAndSaveContent(std::vector<std::string> mdLines)
                 listingInfo.foundLangName    = codeLang;
 
                 std::vector<std::string> filenames;
-                bool hasEdging = almai::findListingFilenames(lastSignificantLines, filenames);
+                bool hasEdging = almai::utils::findListingFilenames(lastSignificantLines, filenames);
 
                 for(auto &name : filenames)
                 {
-                    name = almai::replaceInvalidPathNameChars(name, !hasEdging);
-                    name = almai::makeNormalizedRelativePath(name);
+                    name = almai::utils::replaceInvalidPathNameChars(name, !hasEdging);
+                    name = almai::utils::makeNormalizedRelativePath(name);
                     listingInfo.listingFilenames.emplace_back(name);
                 }
 
@@ -241,7 +241,7 @@ bool splitLinesAndSaveContent(std::vector<std::string> mdLines)
                 codeMarkerChar = markerChar;
                 codeMarkerLen  = markerLen ;
                 codeLines.clear();
-                codeLang = almai::extractCodeLangFromFencedCodeBlockMarker(line);
+                codeLang = almai::utils::extractCodeLangFromFencedCodeBlockMarker(line);
             }
             else if (mdLineType==MdLineType::codeIndentTab || mdLineType==MdLineType::codeIndentSpace)
             {
@@ -329,7 +329,7 @@ bool splitFileAndSaveContent(const std::string &fileName)
 {
     std::vector<std::string> mdLines;
 
-    if (!appConfig.readFile(fileName, mdLines))
+    if (!almai::utils::readFile(fileName, mdLines))
     {
         LOG_ERR << "failed to read input file: '" << fileName << "'" << "\n";
         return false;
@@ -454,7 +454,7 @@ int unsafeMain(int argc, char* argv[])
         }
         else
         {
-            std::vector<std::string> lines = appConfig.splitTextToLines(clpbText);
+            std::vector<std::string> lines = almai::utils::splitTextToLines(clpbText);
             if (!splitLinesAndSaveContent(lines))
             {
                 hasErrors = true;

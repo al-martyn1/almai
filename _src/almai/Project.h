@@ -3,6 +3,8 @@
  */
 #pragma once
 
+#include "PrepromptDatabase.h"
+//
 #include "enums.h"
 #include "utils.h"
 //
@@ -38,6 +40,44 @@ struct Project
     std::unordered_map<std::string, std::vector<std::string> >       roles;
 
 
+    template<typename WarningHandler>
+    void normalizeRoles( const PrepromptDatabase &ppDb
+                       , WarningHandler warningHandler
+                       )
+    {
+        for(auto &[role, roleSkills] : roles)
+        {
+            for(auto &skill : roleSkills)
+            {
+                PrepromptDatabase::PrepromptCategorySetType skillCategories;
+
+                std::string completeSkillName = ppDb.makeCompletePpId(skill, &skillCategories);
+                bool bGood = false;
+                auto msg = ppDb.makeCompletePpIdErrorMsg(skill, completeSkillName, skillCategories, &bGood);
+
+                if (bGood)
+                {
+                    skill = completeSkillName;
+                }
+                else
+                {
+                    warningHandler(msg);
+                }
+            }
+        }
+    }
+
+    template<typename ErrorHandler, typename WarningHandler>
+    bool checkNormalize( const PrepromptDatabase &ppDb
+                       , ErrorHandler   errorHandler
+                       , WarningHandler warningHandler
+                       )
+    {
+        UMBA_USED(errorHandler);
+        normalizeRoles(ppDb, warningHandler);
+        return true;
+    }
+
 
     template<typename SkillNamePrepareHandler>
     bool updateRoleFromRoleString(const std::string &role, const std::string &str, SkillNamePrepareHandler skillNamePrepareHandler)
@@ -66,7 +106,7 @@ struct Project
     static
     marty::json parse(Project &p, const std::string &text, SkillNamePrepareHandler skillNamePrepareHandler, bool throwErrors)
     {
-        auto j = parseToJson(text);
+        auto j = yaml_json::parseToJson(text);
 
 
         if (j.find("roles")!=j.end())
@@ -74,18 +114,14 @@ struct Project
             //d.name = j["name"].get<std::string>();
             auto r = j["roles"];
 
-            // if (!r.is_object())
-            // {
-            //     throw std::runtime_error("'roles' is in " + marty::json_utils::nodeTypeName(r) + " format. Only object format allowed");
-            // }
-
             // https://github.com/nlohmann/json?tab=readme-ov-file#stl-like-access
 
             if (r.is_object())
             {
                 for (const auto &[key, value] : r.items()) // object iteraion
                 {
-                    const std::string &role = key;
+                    std::string role = key;
+                    umba::string::case_convert(role, umba::CaseOption::toLower);
     
                     if (value.is_array())
                     {
@@ -121,6 +157,7 @@ struct Project
 
             else if (r.is_array())
             {
+                //------------- !!!
                 // parse array here
                 for (nlohmann::json::iterator it = r.begin(); it!=r.end(); ++it) // array iteraion
                 {
@@ -136,6 +173,8 @@ struct Project
                             if (throwErrors)
                                throw std::runtime_error("failed to parse role definition string: '" + roleDefinitionString + "'");
                         }
+
+                        umba::string::case_convert(role, umba::CaseOption::toLower);
 
                         if (!p.updateRoleFromRoleStringList(role, skillsList, skillNamePrepareHandler))
                         {
@@ -155,70 +194,28 @@ struct Project
                     {
                         for (const auto &[key, value] : arrItem.items()) // object iteraion
                         {
-                            const std::string &role = key;
+                            std::string role = key;
+                            umba::string::case_convert(role, umba::CaseOption::toLower);
 
-                            if (value.is_string())
-                            {
-                                std::string skillsList = value.get<std::string>();
-    
-                                if (!p.updateRoleFromRoleStringList(role, skillsList, skillNamePrepareHandler))
-                                {
-                                    if (throwErrors)
-                                        throw std::runtime_error("failed to update role '" + role + "' with skills: '" + skillsList + "'");
-                                }
-                            }
-
-                            else if (value.is_array())
-                            {
-                                for (nlohmann::json::iterator it2 = value.begin(); it2!=value.end(); ++it2) // array iteraion
-                                {
-                                    auto arrItem2 = *it2;
-                
-                                    if (arrItem2.is_array())
-                                    {
-                                        // Значение из минуса ("-") без кавычек преобразовывается в массив с олним null элементом, только не понятно кем.
-                                        // Это либо yaml-cpp, либо мой движок конвертации в nlohmann json
-                                        if (arrItem2.size()==1 && arrItem2[0].is_null()) 
-                                        {
-                                            std::string skillName = "-"; // arrItem2.get<std::string>();
-                                            if (!p.updateRoleFromRoleString(role, skillName, skillNamePrepareHandler))
-                                            {
-                                                if (throwErrors)
-                                                    throw std::runtime_error("failed to update role '" + role + "' with skill value '" + skillName + "'");
-                                            }
-                                        }
-                                        else
-                                        {
-                                            if (throwErrors)
-                                                throw std::runtime_error("value can be only a string type, role: '" + role + "', value type: " + marty::json_utils::nodeTypeName(arrItem2));
-                                        }
-                                    }
-
-                                    else if (arrItem2.is_string())
-                                    {
-                                        std::string skillName = arrItem2.get<std::string>();
-                                        if (!p.updateRoleFromRoleString(role, skillName, skillNamePrepareHandler))
-                                        {
-                                            if (throwErrors)
-                                                throw std::runtime_error("failed to update role '" + role + "' with skill value '" + skillName + "'");
-                                        }
-                                    }
-
-                                    else
-                                    {
-                                        if (throwErrors)
-                                            throw std::runtime_error("value can be only a string type, role: '" + role + "', value type: " + marty::json_utils::nodeTypeName(arrItem2));
-                                    }
-
-                                }
-                            }
-
-                            else 
+                            if (role.empty())
                             {
                                 if (throwErrors)
-                                    throw std::runtime_error("value can be only a string or array type, role: '" + role + "', value type: " + marty::json_utils::nodeTypeName(value));
-                            }
+                                    throw std::runtime_error("failed to update role - role name is empty");
 
+                                continue;
+
+                            }
+                            
+                            auto &rolesSet = p.roles[role];
+
+                            yaml_json::parseJsonKeyValueArrayOrString( value // j
+                                                          , rolesSet
+                                                          , skillNamePrepareHandler
+                                                          , throwErrors
+                                                          , "value can be only a string type, role: '" + role + "'" // msgValueOnlyString
+                                                          , "value can be only a string or array type, role: '" + role + "'" // msgValueOnlyStringOrArray
+                                                          , "failed to update role '" + role + "'" // msgUpdateFailedWithVal
+                                                          );
 
                         } // for (const auto &[key, value] : r.items()) // object iteraion
 
@@ -234,22 +231,13 @@ struct Project
 
                     else
                     {
-                        //std::string arrItemStr = arrItem.get<std::string>();
-    
                         if (throwErrors)
                             throw std::runtime_error( /* "'" */   /* + arrItemStr + */   /* "'" */ "!!!" " is in " + marty::json_utils::nodeTypeName(arrItem) + " format.");
-    
-                        // std::string altersListStr = it->get<std::string>();
-                        // std::vector<std::string> altersList = splitString(altersListStr, '|');
-                        // d.requires.emplace_back(altersList);
-                    
                     }
 
-                }
+                } // for (nlohmann::json::iterator it = r.begin(); it!=r.end(); ++it) // array iteraion
 
-
-
-            }
+            } // if (r.is_object()) else if (r.is_array())
 
 
         } // if (j.find("roles")!=j.end())
@@ -259,6 +247,34 @@ struct Project
 
 
 }; // struct Project
+
+//----------------------------------------------------------------------------
+
+
+
+//----------------------------------------------------------------------------
+template<typename StreamType> inline
+StreamType& operator<<(StreamType &oss, const Project &p)
+{
+    oss << "Project:\n\n";
+
+    oss << "  Roles:\n";
+    for(const auto &[role,skills] : p.roles)
+    {
+        oss << "    " << role;
+
+        for(std::size_t i=0; i!=skills.size(); ++i)
+        {
+            oss << (i==0 ? ": " : ", ") << skills[i];
+        }
+
+        oss << "\n";
+    }
+
+    oss << "\n";
+
+    return oss;
+}
 
 //----------------------------------------------------------------------------
 

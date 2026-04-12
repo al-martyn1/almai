@@ -15,7 +15,7 @@ using namespace almai;
 inline 
 void performMakeNormalizedRelativePathTest(const std::string &name)
 {
-    cout << "  [" << name << "] - [" << makeNormalizedRelativePath(name) << "]\n";
+    cout << "  [" << name << "] - [" << almai::utils::makeNormalizedRelativePath(name) << "]\n";
 }
 
 //----------------------------------------------------------------------------
@@ -36,7 +36,7 @@ void performMakeNormalizedRelativePathTests()
 inline 
 void performFormatFileSizeTest(std::size_t sz, bool dec)
 {
-    cout << sz << ": " << formatFileSize(sz, dec) << "\n";
+    cout << sz << ": " << almai::utils::formatFileSize(sz, dec) << "\n";
 }
 
 //----------------------------------------------------------------------------

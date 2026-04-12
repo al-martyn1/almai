@@ -37,7 +37,7 @@
             auto dictFile = argsParser.makeAbsPath(strVal);
 
             std::string dictFileText;
-            if (!appConfig.readFile(dictFile, dictFileText))
+            if (!almai::utils::readFile(dictFile, dictFileText))
             {
                 LOG_ERR << "failed to read langiage dictionary file: " << dictFile << "\n";
                 return -1;

@@ -8,6 +8,8 @@
 #include "umba/umba.h"
 //
 #include "umba/html_base.h"
+//
+#include "utils.h"
 
 //
 #include <string>
@@ -59,7 +61,7 @@ void stripEmptyLeadingTrailingLines(XmlTag &xmlTag)
 {
     for(auto &child : xmlTag.childs)
     {
-        child.text = almai::stripEmptyLeadingTrailingLines(child.text);
+        child.text = utils::stripEmptyLeadingTrailingLines(child.text);
     }
 }
 
@@ -113,8 +115,8 @@ LineIterator parseMarkdownXml(XmlTag &parseTo, LineIterator b, LineIterator e, b
             char mdChar = 0;
             std::size_t numChars = 0;
 
-            MdLineType mdLineType = detectMarkdownLineType(*b, &mdChar, &numChars);
-            if ((mdLineType==MdLineType::codeTilda || mdLineType==MdLineType::codeBacktick) && codeType==mdLineType && numChars==codeMarkerLen)
+            MdLineType mdLineType = utils::detectMarkdownLineType(*b, &mdChar, &numChars);
+            if ((mdLineType== MdLineType::codeTilda || mdLineType== MdLineType::codeBacktick) && codeType==mdLineType && numChars==codeMarkerLen)
             {
                 // Найден завершающий маркер листинга
                 codeType = MdLineType::emptyLine;
@@ -132,7 +134,7 @@ LineIterator parseMarkdownXml(XmlTag &parseTo, LineIterator b, LineIterator e, b
             char mdChar = 0;
             std::size_t numChars = 0;
 
-            MdLineType mdLineType = detectMarkdownLineType(*b, &mdChar, &numChars);
+            MdLineType mdLineType = utils::detectMarkdownLineType(*b, &mdChar, &numChars);
             if ((mdLineType==MdLineType::codeTilda || mdLineType==MdLineType::codeBacktick) && numChars>=3)
             {
                 codeType = mdLineType;

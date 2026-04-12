@@ -8,3 +8,6 @@ AI без Python: как исправить документацию и внед
 Прогноз волатильности в 3 строки кода без знания ML - https://habr.com/ru/articles/1013486/
 Skills для Claude Code: огромный гайд от инженера Anthropic - https://habr.com/ru/articles/1011524/
 https://southbridge-research.notion.site/Prompt-Engineering-The-Art-of-Instructing-AI-2055fec70db181369002dcdea7d9e732
+    docs3dp\Prompt_Engineering_The_Art_of_Instructing_AI.mhtml
+    https://chat.deepseek.com/share/uqxctgsbgdyatebvcm
+Про локальные модели - https://rsdn.org/forum/ai/9076969.1

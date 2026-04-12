@@ -9,3 +9,5 @@
 # .git,.vscode - могут быть в подмодулях. Или мы никогда не вызываем нашу тулзу из папок подмодулей? Ока, пока так
 --project-root-marker=-,.git,.vscode,.PVS-Studio,.out,out,.build,build
 
+--role-setup=analyst:generic-analyzer
+

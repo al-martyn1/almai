@@ -269,7 +269,7 @@ int unsafeMain(int argc, char* argv[])
 
     for(auto &ffi: appConfig.foundFileInfos)
     {
-        if (!appConfig.readFile(ffi.fullName, ffi.fileLines))
+        if (!almai::utils::readFile(ffi.fullName, ffi.fileLines))
         {
             LOG_WARN("read-failed") << "failed to read file: '" << ffi.fullName << "'";
         }
@@ -344,7 +344,7 @@ int unsafeMain(int argc, char* argv[])
 
     if (!argsParser.quet)
     {
-        LOG_MSG << "Result size: " << almai::formatFileSize(sizeTotal) << "\n";
+        LOG_MSG << "Result size: " << almai::utils::formatFileSize(sizeTotal) << "\n";
 
         LOG_MSG << "Line limit to join: ";
         if (appConfig.isSetJoinLinesLimit())

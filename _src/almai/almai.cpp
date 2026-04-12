@@ -61,6 +61,10 @@
 #include "umba/shellapi.h"
 
 //
+
+#include "PrepromptDatabase.h"
+
+//
 // #include "utils.h"
 //
 
@@ -242,24 +246,35 @@ int unsafeMain(int argc, char* argv[])
 
     auto prepromptParsingErrorHandler = [&](const std::string &ppFilename, const std::exception &e)
     {
-        LOG_WARN("parsing-error") << "failed to parsing " << processedFileType << " file. Error: '" << e.what() << "', file: '" << ppFilename << "'\n";
+        LOG_WARN("parsing-error") << "failed to parsing " << processedFileType << " file: " << e.what() << ", file: '" << ppFilename << "'\n";
     };
 
     appConfig.readProjectFile(prepromptReadingErrorHandler, prepromptParsingErrorHandler);
 
+    std::cout << appConfig.almaiProject <<"\n";
+    
+    // appConfig.curAiEngine = "deepseek"; // !!! Должно вычитываться из настроек проекта
+    std::vector<std::string> aiEngines = {"deepseek", "qwen"};
 
-
-    appConfig.curAiEngine = "deepseek"; // !!! Должно вычитываться из настроек проекта
-
+    almai::PrepromptDatabase ppDb = almai::PrepromptDatabase(appConfig.pluralDb, appConfig.getPrepromptDirs());
+    ppDb.prepromptDirs = appConfig.getPrepromptDirs();
     std::vector<std::string> scannedFolders;
-    std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > scannedPrepromptProps;
-    std::unordered_map< std::string, std::unordered_set<std::string> > scannedPrepromptTypes;
-
-    appConfig.scanForPreprompts(&scannedFolders, scannedPrepromptProps, scannedPrepromptTypes);
 
     processedFileType = "preprompt";
-    std::unordered_map< std::string, std::unordered_map<std::string, almai::Preprompt> > scannedPreprompts;
-    appConfig.scanForPreprompts(scannedPreprompts, scannedPrepromptProps, prepromptReadingErrorHandler, prepromptParsingErrorHandler);
+
+    ppDb.scanForPreprompts( &scannedFolders, aiEngines
+                          , { "skill", "instruction", "knowledge", "format", "output" }
+                          , prepromptReadingErrorHandler, prepromptParsingErrorHandler
+                          );
+
+    // std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > scannedPrepromptProps;
+    // std::unordered_map< std::string, std::unordered_set<std::string> > scannedPrepromptTypes;
+    //  
+    // appConfig.scanForPreprompts(&scannedFolders, scannedPrepromptProps, scannedPrepromptTypes);
+    //  
+    // processedFileType = "preprompt";
+    // std::unordered_map< std::string, std::unordered_map<std::string, almai::Preprompt> > scannedPreprompts;
+    // appConfig.scanForPreprompts(scannedPreprompts, scannedPrepromptProps, prepromptReadingErrorHandler, prepromptParsingErrorHandler);
 
 
 
@@ -278,7 +293,7 @@ int unsafeMain(int argc, char* argv[])
 
         LOG_MSG << "Found preprompts:\n";
 
-        for(const auto &[ppTypeStr, ppNameMap] : scannedPrepromptProps)
+        for(const auto &[ppTypeStr, ppNameMap] : ppDb.prepromptProps)
         {
             LOG_MSG << "  " << ppTypeStr << ":\n";
 
@@ -293,7 +308,7 @@ int unsafeMain(int argc, char* argv[])
         
         LOG_MSG << "Found preprompt types:\n";
 
-        for(const auto &[ppId, ppTypeSet] : scannedPrepromptTypes)
+        for(const auto &[ppId, ppTypeSet] : ppDb.prepromptCategories)
         {
             std::size_t cnt = 0;
             LOG_MSG << "  " << ppId; // << ""

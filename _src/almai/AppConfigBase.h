@@ -71,36 +71,9 @@ struct AppConfigBase
     }
 
 
-    static
-    std::string autoEncodeToUtf(const std::string &text)
-    {
-        size_t bomSize = 0;
-        //const charDataPtr =
-        encoding::EncodingsApi* pEncodingsApi = encoding::getEncodingsApi();
-        std::string detectRes = pEncodingsApi->detect( text.data(), text.size(), bomSize );
-        auto cpId = pEncodingsApi->getCodePageByName(detectRes);
-        std::string utfText = pEncodingsApi->convert( text.data()+bomSize, text.size()-bomSize, cpId, encoding::EncodingsApi::cpid_UTF8 );
-        return utfText;
-    }
-
-    static
-    std::vector<std::string> stripEmptyHeadLines(const std::vector<std::string> &lines)
-    {
-        return almai::stripEmptyLeadingLines(lines);
-    }
-
-    static
-    std::vector<std::string> stripEmptyTailLines(std::vector<std::string> lines)
-    {
-        return almai::stripEmptyTrailingLines(lines);
-    }
-
-    static
-    std::vector<std::string> stripEmptyHeadTailLines(std::vector<std::string> lines)
-    {
-        return almai::stripEmptyLeadingTrailingLines(lines);
-    }
-
+    static std::vector<std::string> stripEmptyHeadLines(const std::vector<std::string> &lines) { return almai::utils::stripEmptyLeadingLines(lines); }
+    static std::vector<std::string> stripEmptyTailLines(std::vector<std::string> lines)        { return almai::utils::stripEmptyTrailingLines(lines); }
+    static std::vector<std::string> stripEmptyHeadTailLines(std::vector<std::string> lines)    { return almai::utils::stripEmptyLeadingTrailingLines(lines); }
 
     static
     void appendLines(std::vector<std::string> &linesAppendTo, const std::vector<std::string> &lines)
@@ -125,12 +98,6 @@ struct AppConfigBase
         return marty_cpp::mergeLines(lines, outputLinefeedType,  /* true */ addTrailingNewLine);
     }
 
-    static
-    std::vector<std::string> splitTextToLines(const std::string &text)
-    {
-        return marty_cpp::splitToLinesSimple(text);
-    }
-
     static 
     void splitHeaderFooter(const std::vector<std::string> &hefooter, std::vector<std::string> &header, std::vector<std::string> &footer)
     {
@@ -144,7 +111,7 @@ struct AppConfigBase
 
             if (!line.empty())
             {
-                std::size_t nChars = almai::geNumberOfFirstSameChars(line);
+                std::size_t nChars = almai::utils::getNumberOfFirstSameChars(line);
                 if (line[0]=='-' && nChars>=3)
                     foundSep = true;
             }
@@ -160,38 +127,6 @@ struct AppConfigBase
 
         header = stripEmptyHeadTailLines(header);
         footer = stripEmptyHeadTailLines(footer);
-    }
-
-    static
-    bool readFile(const std::string &inputFilename, std::string &inputFileText)
-    {
-        std::string inputFileTextOrg;
-
-        if (!umba::filesys::readFile(inputFilename, inputFileTextOrg))
-        {
-            return false;
-        }
-
-        inputFileText = autoEncodeToUtf(inputFileTextOrg);
-        inputFileText = marty_cpp::normalizeCrLfToLf(inputFileText);
-
-        return true;
-    }
-
-    static
-    bool readFile(const std::string &inputFilename, std::vector<std::string> &inputFileLines)
-    {
-        std::string text;
-        if (!readFile(inputFilename, text))
-             return false;
-
-        inputFileLines = splitTextToLines(text);
-
-        // Убираем мусорные пробелы в концах строк
-        for(auto &l : inputFileLines)
-            umba::string::rtrim(l);
-
-        return true;
     }
 
     // Если передавать абсолютное имя файла, то можно писать куда угодно
@@ -289,7 +224,7 @@ struct AppConfigBase
         std::unordered_map<std::string, std::string>::const_iterator it = langExtDict.find(langName);
         if (it==langExtDict.end())
         {
-            return almai::replaceInvalidFileNameChars(langName, true /* replaceSpaceAlso */ );
+            return almai::utils::replaceInvalidFileNameChars(langName, true /* replaceSpaceAlso */ );
         }
 
         return it->second;
@@ -394,7 +329,7 @@ struct AppConfigBase
             oss << makeFilenameTextDecorated(displayFileName) << "\n";
         }
 
-        std::string fence = almai::generateFence(fenceStyle, fileLines);
+        std::string fence = almai::utils::generateFence(fenceStyle, fileLines);
 
         oss << fence << makeLangMarker(displayFileName);
 

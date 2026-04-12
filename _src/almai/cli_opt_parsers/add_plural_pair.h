@@ -11,7 +11,7 @@
                 return -1;
             }
 
-            if (!appConfig.pluralDb.addWordForms(strVal))
+            if (!appConfig.pluralDb->addWordForms(strVal))
             {
                 LOG_ERR<<"failed to add singular <-> plural mapping (--add-plural-pair).\n";
                 return -1;

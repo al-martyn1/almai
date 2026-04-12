@@ -3,19 +3,24 @@
  */
 #pragma once
 
-#include "marty_yaml_toml_json/marty_yaml_toml_json.h"
-
-//
 #include "enums.h"
+#include "almai_enums.h"
+#include "PluralDatabase.h"
 //
 #include "umba/umba.h"
+#include "umba/parse_utils.h"
+//
+#include "encoding/encoding.h"
 //
 #include "umba/string.h"
 #include "umba/filename.h"
 #include "umba/filesys.h"
+//
+#include "marty_cpp/src_normalization.h"
+//
+#include "marty_yaml_toml_json/marty_yaml_toml_json.h"
 
 //
-
 #include <algorithm>
 #include <iterator>
 #include <string>
@@ -27,7 +32,9 @@
 
 
 //----------------------------------------------------------------------------
+// almai::utils::
 namespace almai {
+namespace utils {
 
 //----------------------------------------------------------------------------
 
@@ -446,7 +453,7 @@ bool findListingFilenames( std::vector<std::string> textLines
 
 //----------------------------------------------------------------------------
 inline
-std::size_t geNumberOfFirstSameChars(const std::string &str)
+std::size_t getNumberOfFirstSameChars(const std::string &str)
 {
     if (str.empty())
         return 0;
@@ -468,34 +475,13 @@ std::size_t geNumberOfFirstSameChars(const std::string &str)
 
 
 //----------------------------------------------------------------------------
-enum class MdLineType
-{
-    emptyLine   = 0,
-    regularLine    ,
-    headerAtx      ,           // # - Atx - word processor on Amiga, min 1 char
-    headerSetext   ,           // ---- / ==== Setext (Structure Enhanced Text), min 1 char
-    codeTilda      ,
-    codeBacktick   ,
-    codeIndentTab  ,
-    codeIndentSpace,
-    unorderedList  ,
-    orderedList    ,
-    quotation                 // >
-
-}; // enum class MdLineType
-
-//----------------------------------------------------------------------------
-
-
-
-//----------------------------------------------------------------------------
 inline
 MdLineType detectMarkdownLineType(const std::string &str, char *pChar=0, std::size_t *pNumChars=0)
 {
     if (str.empty() || umba::string::trim_copy(str).empty())
         return MdLineType::emptyLine;
         
-    std::size_t nChars = geNumberOfFirstSameChars(str);
+    std::size_t nChars = getNumberOfFirstSameChars(str);
 
     if (pNumChars)
        *pNumChars = nChars;
@@ -542,7 +528,7 @@ std::string extractCodeLangFromFencedCodeBlockMarker(std::string line)
 {
     char markerChar = 0;
     std::size_t markerLen = 0;
-    MdLineType mdLineType = almai::detectMarkdownLineType(line, &markerChar, &markerLen);
+    MdLineType mdLineType = detectMarkdownLineType(line, &markerChar, &markerLen);
     if (mdLineType==MdLineType::codeTilda || mdLineType==MdLineType::codeBacktick)
     {
         line.erase(0, markerLen);
@@ -700,36 +686,75 @@ std::vector<std::string> stripEmptyLeadingTrailingLines(std::vector<std::string>
 
 //----------------------------------------------------------------------------
 inline
-marty::json parseToJson(const std::string &text)
+std::string autoEncodeToUtf(const std::string &text)
 {
-    std::string errMsg;
-    marty::json_utils::FileFormat detectedFormat = marty::json_utils::FileFormat::unknown;
-
-    auto res = marty::json_utils::parseJsonOrYaml( text
-                                                 , true // allowComments
-                                                 , &errMsg
-                                                 , 0 // pTmpJson
-                                                 , &detectedFormat
-                                                 );
-    if (detectedFormat==marty::json_utils::FileFormat::unknown)
-    {
-        if (errMsg.empty())
-            errMsg = "unknown error found while parsing data";
-    }
-
-    if (detectedFormat==marty::json_utils::FileFormat::unknown || !errMsg.empty())
-    {
-        throw std::runtime_error(errMsg);
-    }
-
-    return res;
+    size_t bomSize = 0;
+    //const charDataPtr =
+    encoding::EncodingsApi* pEncodingsApi = encoding::getEncodingsApi();
+    std::string detectRes = pEncodingsApi->detect( text.data(), text.size(), bomSize );
+    auto cpId = pEncodingsApi->getCodePageByName(detectRes);
+    std::string utfText = pEncodingsApi->convert( text.data()+bomSize, text.size()-bomSize, cpId, encoding::EncodingsApi::cpid_UTF8 );
+    return utfText;
 }
 
 //----------------------------------------------------------------------------
 inline
-marty::json parseToJson(const std::vector<std::string> &lines)
+std::vector<std::string> splitTextToLines(const std::string &text)
 {
-    return parseToJson(umba::string::merge<std::string>(lines.begin(), lines.end(), '\n'));
+    return marty_cpp::splitToLinesSimple(text);
+}
+
+//----------------------------------------------------------------------------
+inline
+bool readFile(const std::string &inputFilename, std::string &inputFileText)
+{
+    std::string inputFileTextOrg;
+
+    if (!umba::filesys::readFile(inputFilename, inputFileTextOrg))
+    {
+        return false;
+    }
+
+    inputFileText = autoEncodeToUtf(inputFileTextOrg);
+    inputFileText = marty_cpp::normalizeCrLfToLf(inputFileText);
+
+    return true;
+}
+
+//----------------------------------------------------------------------------
+inline
+bool readFile(const std::string &inputFilename, std::vector<std::string> &inputFileLines)
+{
+    std::string text;
+    if (!readFile(inputFilename, text))
+         return false;
+
+    inputFileLines = splitTextToLines(text);
+
+    // Убираем мусорные пробелы в концах строк
+    for(auto &l : inputFileLines)
+        umba::string::rtrim(l);
+
+    return true;
+}
+
+//----------------------------------------------------------------------------
+inline
+std::string normalizePrepromptId(const PluralDatabase &pluralDb, std::string prepromptId)
+{
+    umba::string::trim(prepromptId);
+    umba::string::tolower(prepromptId);
+
+    std::string category, name;
+    if (!umba::parse_utils::optionStringSplitToPair(prepromptId, category, name, "/\\"))
+    {
+        // Нет разделителя
+        return prepromptId;
+    }
+
+    category = pluralDb.findPlural(category);
+
+    return category + "/" + name;
 }
 
 //----------------------------------------------------------------------------
@@ -738,7 +763,10 @@ marty::json parseToJson(const std::vector<std::string> &lines)
 
 //----------------------------------------------------------------------------
 
+} // namespace utils
 } // namespace almai
+
+// almai::utils::
 
 //----------------------------------------------------------------------------
 

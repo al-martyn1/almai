@@ -55,7 +55,7 @@ struct ListingInfo
             }
             else
             {
-                name = insertCounterIntoFilename(name, counter);
+                name = almai::utils::insertCounterIntoFilename(name, counter);
                 ++filenameCounters[lowerCaseName];
             }
         }

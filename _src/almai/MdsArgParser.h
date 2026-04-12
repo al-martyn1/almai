@@ -8,6 +8,8 @@
 #include "umba/shellapi.h"
 #include "umba/string_plus.h"
 //
+#include "utils.h"
+//
 #include "marty_cpp/marty_cpp.h"
 //
 #include "MdsAppVerConfig.h"

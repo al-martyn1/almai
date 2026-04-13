@@ -127,7 +127,7 @@ struct PrepromptDatabase
             return 0;
 
         // найдена категория
-        auto ppIt = ppCatIt->second.find(name);
+        auto ppIt = ppCatIt->second.find(id);
         if (ppIt==ppCatIt->second.end())
             return 0;
 

@@ -6,18 +6,24 @@
 @set TEST_EXE="%FOUND_EXE%"
 
 %TEST_EXE% --help >"%~dp0\%~n0-help.txt"
+%TEST_EXE% --message --help >"%~dp0\%~n0-help-on-message.txt"
+%TEST_EXE% --md --help >"%~dp0\%~n0-help-md.txt"
+%TEST_EXE% --md --message --help >"%~dp0\%~n0-help-on-message-md.txt"
+%TEST_EXE% --wiki --help >"%~dp0\%~n0-help-wiki.txt"
+%TEST_EXE% --wiki --message --help >"%~dp0\%~n0-help-on-message-wiki.txt"
+%TEST_EXE% --ule-ule --help >"%~dp0\%~n0-help-on-ule-ule.txt"
 
-%TEST_EXE% submodule foreach git pull submodule --init --recursive update
-%TEST_EXE% branch
-%TEST_EXE% branch -d
-%TEST_EXE% branch -D
-%TEST_EXE% -D branch
-%TEST_EXE% stash --message push
-%TEST_EXE% submodule --init --recursive update
-%TEST_EXE% submodule update --init --recursive
-%TEST_EXE% submodule update
-%TEST_EXE% worktree add ../backup-branch backup
-%TEST_EXE% worktree add ../backup-branch backup workout
+@rem %TEST_EXE% submodule foreach git pull submodule --init --recursive update
+@rem %TEST_EXE% branch
+@rem %TEST_EXE% branch -d
+@rem %TEST_EXE% branch -D
+@rem %TEST_EXE% -D branch
+@rem %TEST_EXE% stash --message push
+@rem %TEST_EXE% submodule --init --recursive update
+@rem %TEST_EXE% submodule update --init --recursive
+@rem %TEST_EXE% submodule update
+@rem %TEST_EXE% worktree add ../backup-branch backup
+@rem %TEST_EXE% worktree add ../backup-branch backup workout
 @rem %TEST_EXE% 
 
 

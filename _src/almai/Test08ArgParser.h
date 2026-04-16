@@ -239,14 +239,14 @@ int operator()( const StringType                                &a           //!
 #include "cli_opt_parsers/role_setup.h"
 
 
-        if (opt.isOption("delete") || opt.isOption('d') || opt.setDescription(""))
+        if (opt.isOption("delete") || opt.isOption('d') || opt.setDescription("Delete something"))
         {
             APP_ARGPARSER_CHECK_OPTION_ALLOWED();
             // do nothing
             return 0;
         }
 
-        if (opt.isOption("force-delete") || opt.isOption('D') || opt.setDescription(""))
+        if (opt.isOption("force-delete") || opt.isOption('D') || opt.setDescription("Force delete something"))
         {
             APP_ARGPARSER_CHECK_OPTION_ALLOWED();
             // do nothing
@@ -267,28 +267,28 @@ int operator()( const StringType                                &a           //!
             return 0;
         }
 
-        if (opt.isOption("message") || opt.setDescription(""))
+        if (opt.isOption("message") || opt.setDescription("Commit message"))
         {
             APP_ARGPARSER_CHECK_OPTION_ALLOWED();
             // do nothing
             return 0;
         }
 
-        if (opt.isOption("global") || opt.setDescription(""))
+        if (opt.isOption("global") || opt.setDescription("Global configuration"))
         {
             APP_ARGPARSER_CHECK_OPTION_ALLOWED();
             // do nothing
             return 0;
         }
 
-        if (opt.isOption("local") || opt.setDescription(""))
+        if (opt.isOption("local") || opt.setDescription("Local configuration"))
         {
             APP_ARGPARSER_CHECK_OPTION_ALLOWED();
             // do nothing
             return 0;
         }
 
-        if (opt.isOption("list") || opt.isOption('l') || opt.setDescription(""))
+        if (opt.isOption("list") || opt.isOption('l') || opt.setDescription("List something"))
         {
             APP_ARGPARSER_CHECK_OPTION_ALLOWED();
             // do nothing
@@ -397,19 +397,30 @@ int operator()( const StringType                                &a           //!
             {
                 if (pCol && !pCol->isNormalPrintHelpStyle())
                     argsParser.quet = true;
-                //printNameVersion();
+
                 if (!argsParser.quet)
                 {
-                    umba::cli_tool_helpers::printNameVersion(std::cout);
+                    //umba::cli_tool_helpers::printNameVersion(std::cout);
                     //umba::cli_tool_helpers::printBuildDateTime();
-                    umba::cli_tool_helpers::printCommitHash(std::cout);
-                    std::cout<<"\n";
+                    //umba::cli_tool_helpers::printCommitHash(std::cout);
+                    //std::cout<<"\n";
                 //printHelp();
                 }
 
+                // virtual void setPrintHelpStyle( PrintHelpStyle phs ) override
+                // virtual PrintHelpStyle getPrintHelpStyle() const override
+                // argsNeedHelp - похоже, что справка по отдельной опции (опциям)
+                // isNormalPrintHelpStyle - похоже, это вариант, когда вывод не для документации, а на консоль
+
+                // Если есть коллектор опций
+                // и вывод online, на консоль, для оперативной подсказки
+                // и вывод не по отдельным опциям, а общий
+
+                // std::cout << opt.getHelpOptionsString();
+
+                #if 0
                 if (pCol && pCol->isNormalPrintHelpStyle() && argsParser.argsNeedHelp.empty())
                 {
-                    //argsParser.printHelpPage( std::cout, "[OPTIONS] input_file [output_file]", "If output_file not taken, STDOUT used", helpText );
                     auto helpText = opt.getHelpOptionsString();
                     std::cout << "Usage: " << argsParser.programLocationInfo.exeName
                               << " [OPTIONS] PATTERN [PATTERN]\n"
@@ -417,8 +428,58 @@ int operator()( const StringType                                &a           //!
                               << helpText;
                               //<< " [OPTIONS] input_file [output_file]\n\nOptions:\n\n"<<helpText;
                 }
+                #endif
 
-                if (pCol) // argsNeedHelp
+                // argsNeedHelp - справка по отдельной опции
+                // Тут выводится полная справка, по одной опции или по всем
+
+                // 1) Режим хелпа детектится раньше всего
+                // 2) В режиме хелпа никакие проверки не будут срабатывать - чек на help работает раньше
+                // 3) В режиме хелпа можно задать несколько опций, и хелп будет только по ним
+                // 4) Поддерживается вроде в итоге только режим markdown и обычный. Всё, что не обычный - это markdown. На остальное положен больт. Но вроде только местами
+                // 5) pCol->makeText( 78, &argsParser.argsNeedHelp ) - генерит текст справки по опциям, вроде во всех форматах (normal/md/wiki)
+
+                // pCol->getPrintHelpStyle() - возвращает стиль форматирования
+                // umba::::textAddIndent(umba::text_utils::formatTextParas( descr, width, umba::text_utils::TextAlignment::left ), "    " );
+                // if (style==PrintHelpStyle::wiki || style==PrintHelpStyle::md)
+                // umba::command_line::ICommandLineOptionCollector *pCol
+                // std::set<StringType>      argsNeedHelp
+
+                /*
+                    Итого.
+
+                    1) argsParser.argsNeedHelp - это set опций, по которым запрашиваем справку.
+                       но если попадается неизвестная опция - будет ошибка - это гут
+                       Но нет, неизвестная опция обнаруживается только на этапе обработки аргументов, а не при выдаче справки, так что не гут
+                    2) pCol->makeText - делает всю магию документации по опциям
+                    3) Если задана команда - то выдаём справку только по ней, и, 
+                       используя argsParser.argsNeedHelp - справку по её опциям - заодно проверяется соответствие, нигде ли не накосячили с опциями.
+                       (на самом деле это работает на уровне разбора аргументов, а не унутре, унутре проверок нет)
+
+                    Ещё раз:
+
+                      (no command) --help - выдаёт справку по всем опциям (после краткого описания команд)
+                      (no command) --option1 --option2 --help - выдаёт справку по опциям --option1/--option2, не важно, чьи они (без описания команд).
+                      command [subcommand] --help - выдаёт справку по команде/сабкоманде - brief/detailed, и краткий список всех опций сабкоманды, без описаний
+                      command [subcommand] --option1 --option2 --help - выдаёт справку по команде/сабкоманде и детальную справку по option1 и option2
+                
+                */
+
+                if (argsParser.argsNeedHelp.empty())
+                {
+                    argsParser.argsNeedHelp.insert("ule-ule");
+                    argsParser.argsNeedHelp.insert("all");
+                    argsParser.argsNeedHelp.insert("delete");
+                    argsParser.argsNeedHelp.insert("force-delete");
+                    argsParser.argsNeedHelp.insert("message");
+                    argsParser.argsNeedHelp.insert("global");
+                    argsParser.argsNeedHelp.insert("local");
+                    argsParser.argsNeedHelp.insert("list");
+                }
+
+
+                #if 1
+                if (pCol) 
                 {
                     argsParser.printHelpPage( std::cout
                                             , "[OPTIONS] input_file [output_file]"
@@ -427,6 +488,7 @@ int operator()( const StringType                                &a           //!
                                             );
                     // std::cout<<pCol->makeText( 78, &argsParser.argsNeedHelp );
                 }
+                #endif
 
                 return 1;
 

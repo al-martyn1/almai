@@ -87,19 +87,58 @@ struct ArgParser
 
         //cmdController.addGlobalOptions("")
 
-        cmdController.addCommand("branch").setOptions("delete,force-delete,move,all"); // -d delete, -D force-delete, -m move, -a all
-        cmdController.addCommand("stash push").setOptions("message"); // -M message
-        cmdController.addCommand("stash list");
-        cmdController.addCommand("stash apply");
-        cmdController.addCommand("stash pop");
-        cmdController.addCommand("stash drop");
-        cmdController.addCommand("stash clear");
-        cmdController.addCommand("config").setOptions("global,local,list,unset");
-        cmdController.addCommand("log").setOptions("oneline,graph,patch,since");
-        cmdController.addCommand("reset").setOptions("soft,mixed,hard ");
-        cmdController.addCommand("submodule add");
-        cmdController.addCommand("submodule update").setOptions("init,recursive");
-        cmdController.addCommand("submodule foreach").setRawMode(true);
+        // branch
+        cmdController.addCommand("branch").setOptions("delete,force-delete,move,all") // -d delete, -D force-delete, -m move, -a all
+                     // .setUsageInfo("[OPTIONS] BRANCH_NAME") // это не нужно
+                     .setUsageInfo("BRANCH_NAME") // можно короче
+                     .setBrief("create branch")
+                     .setDescription("create branch create branch create branch");
+
+        // stash
+        cmdController.addCommand("stash push").setOptions("message") // -M message
+                     // .setUsageInfo("[OPTIONS]") // это не нужно
+                     .setBrief("push stash to stash stack")
+                     .setDescription("push stash to stash stack push stash to stash stack");
+
+        cmdController.addCommand("stash list")
+                     .setBrief("list stashes");
+
+        cmdController.addCommand("stash apply")
+                     .setBrief("apply stash");
+
+        cmdController.addCommand("stash pop")
+                     .setBrief("pop stash");
+
+        cmdController.addCommand("stash drop")
+                     .setBrief("drop stash");
+
+        cmdController.addCommand("stash clear")
+                     .setBrief("clear stash");
+
+        // config
+        cmdController.addCommand("config").setOptions("global,local,list,unset")
+                     .setUsageInfo("CONFIG_VALUE_NAME")
+                     .setBrief("set/unset configuration option");
+
+        // log
+        cmdController.addCommand("log").setOptions("oneline,graph,patch,since")
+                     .setBrief("show log");
+
+        // reset
+        cmdController.addCommand("reset").setOptions("soft,mixed,hard ")
+                     .setBrief("perform reset");
+
+        // submodule
+        cmdController.addCommand("submodule add")
+                     .setBrief("add submodule");
+
+        cmdController.addCommand("submodule update").setOptions("init,recursive")
+                     .setBrief("update submodule");
+
+        cmdController.addCommand("submodule foreach").setRawMode(true)
+                     .setBrief("exec command for each submodule");
+
+        // worktree
         cmdController.addCommand("worktree add")
                      .setMaxInputParams(2) // Или закоментить throw ниже в setParameterTransformHandler
                      .setParameterTransformHandler( []( const std::string & /* fullCommandStr */  // команда не нужна, игнорим
@@ -116,11 +155,29 @@ struct ArgParser
                                                             return paramValue;
                                                             // throw std::runtime_error("too many parameters for command: '" + fullCommandStr + "'");
                                                     }
-                                                  );
+                                                  )
+                     .setBrief("add worktree");
 
-        cmdController.addCommand("worktree remove");
-        cmdController.addCommand("worktree list");
+        cmdController.addCommand("worktree remove all")
+                     .setBrief("remove worktree all");
 
+        cmdController.addCommand("worktree remove exact")
+                     .setBrief("remove worktree exact item");
+
+        cmdController.addCommand("worktree remove filter")
+                     .setBrief("remove worktree by filter");
+
+        cmdController.addCommand("worktree list")
+                     .setBrief("list worktree");
+
+        cmdController.findCommand("worktree")
+                     .setOptions("local,remote");
+
+        cmdController.findCommand("worktree remove")
+                     .setOptions("soft,hard");
+
+        cmdController.findCommand("worktree remove filter")
+                     .setOptions("simple,regex");
 
         // https://chat.deepseek.com/share/m489klmmtnimvksyqz
         //  
@@ -163,7 +220,7 @@ struct ArgParser
         // git worktree list — показывает все привязанные рабочие деревья.
 
 
-        cmdController.addOptionsToFinalCommands("pass");
+        // cmdController.addOptionsToFinalCommands("pass");
 
     }
 
@@ -239,14 +296,14 @@ int operator()( const StringType                                &a           //!
 #include "cli_opt_parsers/role_setup.h"
 
 
-        if (opt.isOption("delete") || opt.isOption('d') || opt.setDescription(""))
+        if (opt.isOption("delete") || opt.isOption('d') || opt.setDescription("Delete something"))
         {
             APP_ARGPARSER_CHECK_OPTION_ALLOWED();
             // do nothing
             return 0;
         }
 
-        if (opt.isOption("force-delete") || opt.isOption('D') || opt.setDescription(""))
+        if (opt.isOption("force-delete") || opt.isOption('D') || opt.setDescription("Force delete something"))
         {
             APP_ARGPARSER_CHECK_OPTION_ALLOWED();
             // do nothing
@@ -267,28 +324,28 @@ int operator()( const StringType                                &a           //!
             return 0;
         }
 
-        if (opt.isOption("message") || opt.setDescription(""))
+        if (opt.isOption("message") || opt.setDescription("Commit message"))
         {
             APP_ARGPARSER_CHECK_OPTION_ALLOWED();
             // do nothing
             return 0;
         }
 
-        if (opt.isOption("global") || opt.setDescription(""))
+        if (opt.isOption("global") || opt.setDescription("Global configuration"))
         {
             APP_ARGPARSER_CHECK_OPTION_ALLOWED();
             // do nothing
             return 0;
         }
 
-        if (opt.isOption("local") || opt.setDescription(""))
+        if (opt.isOption("local") || opt.setDescription("Local configuration"))
         {
             APP_ARGPARSER_CHECK_OPTION_ALLOWED();
             // do nothing
             return 0;
         }
 
-        if (opt.isOption("list") || opt.isOption('l') || opt.setDescription(""))
+        if (opt.isOption("list") || opt.isOption('l') || opt.setDescription("List something"))
         {
             APP_ARGPARSER_CHECK_OPTION_ALLOWED();
             // do nothing
@@ -397,19 +454,30 @@ int operator()( const StringType                                &a           //!
             {
                 if (pCol && !pCol->isNormalPrintHelpStyle())
                     argsParser.quet = true;
-                //printNameVersion();
+
                 if (!argsParser.quet)
                 {
-                    umba::cli_tool_helpers::printNameVersion(std::cout);
+                    //umba::cli_tool_helpers::printNameVersion(std::cout);
                     //umba::cli_tool_helpers::printBuildDateTime();
-                    umba::cli_tool_helpers::printCommitHash(std::cout);
-                    std::cout<<"\n";
+                    //umba::cli_tool_helpers::printCommitHash(std::cout);
+                    //std::cout<<"\n";
                 //printHelp();
                 }
 
+                // virtual void setPrintHelpStyle( PrintHelpStyle phs ) override
+                // virtual PrintHelpStyle getPrintHelpStyle() const override
+                // argsNeedHelp - похоже, что справка по отдельной опции (опциям)
+                // isNormalPrintHelpStyle - похоже, это вариант, когда вывод не для документации, а на консоль
+
+                // Если есть коллектор опций
+                // и вывод online, на консоль, для оперативной подсказки
+                // и вывод не по отдельным опциям, а общий
+
+                // std::cout << opt.getHelpOptionsString();
+
+                #if 0
                 if (pCol && pCol->isNormalPrintHelpStyle() && argsParser.argsNeedHelp.empty())
                 {
-                    //argsParser.printHelpPage( std::cout, "[OPTIONS] input_file [output_file]", "If output_file not taken, STDOUT used", helpText );
                     auto helpText = opt.getHelpOptionsString();
                     std::cout << "Usage: " << argsParser.programLocationInfo.exeName
                               << " [OPTIONS] PATTERN [PATTERN]\n"
@@ -417,8 +485,67 @@ int operator()( const StringType                                &a           //!
                               << helpText;
                               //<< " [OPTIONS] input_file [output_file]\n\nOptions:\n\n"<<helpText;
                 }
+                #endif
 
-                if (pCol) // argsNeedHelp
+                // argsNeedHelp - справка по отдельной опции
+                // Тут выводится полная справка, по одной опции или по всем
+
+                // 1) Режим хелпа детектится раньше всего
+                // 2) В режиме хелпа никакие проверки не будут срабатывать - чек на help работает раньше
+                // 3) В режиме хелпа можно задать несколько опций, и хелп будет только по ним
+                // 4) Поддерживается вроде в итоге только режим markdown и обычный. Всё, что не обычный - это markdown. На остальное положен больт. Но вроде только местами
+                // 5) pCol->makeText( 78, &argsParser.argsNeedHelp ) - генерит текст справки по опциям, вроде во всех форматах (normal/md/wiki)
+
+                // pCol->getPrintHelpStyle() - возвращает стиль форматирования
+                // umba::::textAddIndent(umba::text_utils::formatTextParas( descr, width, umba::text_utils::TextAlignment::left ), "    " );
+                // if (style==PrintHelpStyle::wiki || style==PrintHelpStyle::md)
+                // umba::command_line::ICommandLineOptionCollector *pCol
+                // std::set<StringType>      argsNeedHelp
+
+                /*
+                    Итого.
+
+                    1) argsParser.argsNeedHelp - это set опций, по которым запрашиваем справку.
+                       но если попадается неизвестная опция - будет ошибка - это гут
+                       Но нет, неизвестная опция обнаруживается только на этапе обработки аргументов, а не при выдаче справки, так что не гут
+                    2) pCol->makeText - делает всю магию документации по опциям
+                    3) Если задана команда - то выдаём справку только по ней, и, 
+                       используя argsParser.argsNeedHelp - справку по её опциям - заодно проверяется соответствие, нигде ли не накосячили с опциями.
+                       (на самом деле это работает на уровне разбора аргументов, а не унутре, унутре проверок нет)
+
+                    Ещё раз:
+
+                      (no command) --help - выдаёт справку по всем опциям (после краткого описания команд)
+                      (no command) --option1 --option2 --help - выдаёт справку по опциям --option1/--option2, не важно, чьи они (без описания команд).
+                      command [subcommand] --help - выдаёт справку по команде/сабкоманде - brief/detailed, и краткий список всех опций сабкоманды, без описаний
+                      command [subcommand] --option1 --option2 --help - выдаёт справку по команде/сабкоманде и детальную справку по option1 и option2
+                
+                */
+
+                auto helpText = cmdController.makeHelp( 78   // textWidth
+                                                      , pCol // ICommandLineOptionCollector
+                                                      , argsParser.argsNeedHelp
+                                                      //, argsParser.programLocationInfo.exeName
+                                                      );
+
+                std::cout << helpText << "\n";
+
+                #if 0
+                if (argsParser.argsNeedHelp.empty())
+                {
+                    argsParser.argsNeedHelp.insert("ule-ule");
+                    argsParser.argsNeedHelp.insert("all");
+                    argsParser.argsNeedHelp.insert("delete");
+                    argsParser.argsNeedHelp.insert("force-delete");
+                    argsParser.argsNeedHelp.insert("message");
+                    argsParser.argsNeedHelp.insert("global");
+                    argsParser.argsNeedHelp.insert("local");
+                    argsParser.argsNeedHelp.insert("list");
+                }
+
+
+                #if 1
+                if (pCol) 
                 {
                     argsParser.printHelpPage( std::cout
                                             , "[OPTIONS] input_file [output_file]"
@@ -427,6 +554,8 @@ int operator()( const StringType                                &a           //!
                                             );
                     // std::cout<<pCol->makeText( 78, &argsParser.argsNeedHelp );
                 }
+                #endif
+                #endif
 
                 return 1;
 

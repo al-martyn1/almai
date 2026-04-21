@@ -158,10 +158,17 @@ int unsafeMain(int argc, char* argv[])
         // argsParser.args.push_back("branch");
         // //argsParser.args.push_back("-d");
 
-        argsParser.args.push_back("worktree");
-        argsParser.args.push_back("add");
-        argsParser.args.push_back("../backup-branch");
-        argsParser.args.push_back("backup");
+        // argsParser.args.push_back("worktree");
+        // argsParser.args.push_back("remove");
+
+        //argsParser.args.push_back("add");
+        //argsParser.args.push_back("--bash");
+        // argsParser.args.push_back("--clink");
+        argsParser.args.push_back("--help");
+
+        // argsParser.args.push_back("../backup-branch");
+        // argsParser.args.push_back("backup");
+        // argsParser.args.push_back("--help");
 
     } // if (umba::isDebuggerPresent())
 

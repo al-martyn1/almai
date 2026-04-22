@@ -87,19 +87,58 @@ struct ArgParser
 
         //cmdController.addGlobalOptions("")
 
-        cmdController.addCommand("branch").setOptions("delete,force-delete,move,all"); // -d delete, -D force-delete, -m move, -a all
-        cmdController.addCommand("stash push").setOptions("message"); // -M message
-        cmdController.addCommand("stash list");
-        cmdController.addCommand("stash apply");
-        cmdController.addCommand("stash pop");
-        cmdController.addCommand("stash drop");
-        cmdController.addCommand("stash clear");
-        cmdController.addCommand("config").setOptions("global,local,list,unset");
-        cmdController.addCommand("log").setOptions("oneline,graph,patch,since");
-        cmdController.addCommand("reset").setOptions("soft,mixed,hard ");
-        cmdController.addCommand("submodule add");
-        cmdController.addCommand("submodule update").setOptions("init,recursive");
-        cmdController.addCommand("submodule foreach").setRawMode(true);
+        // branch
+        cmdController.addCommand("branch").setOptions("delete,force-delete,move,all") // -d delete, -D force-delete, -m move, -a all
+                     // .setUsageInfo("[OPTIONS] BRANCH_NAME") // это не нужно
+                     .setUsageInfo("BRANCH_NAME") // можно короче
+                     .setBrief("create branch")
+                     .setDescription("create branch create branch create branch");
+
+        // stash
+        cmdController.addCommand("stash push").setOptions("message") // -M message
+                     // .setUsageInfo("[OPTIONS]") // это не нужно
+                     .setBrief("push stash to stash stack")
+                     .setDescription("push stash to stash stack push stash to stash stack");
+
+        cmdController.addCommand("stash list")
+                     .setBrief("list stashes");
+
+        cmdController.addCommand("stash apply")
+                     .setBrief("apply stash");
+
+        cmdController.addCommand("stash pop")
+                     .setBrief("pop stash");
+
+        cmdController.addCommand("stash drop")
+                     .setBrief("drop stash");
+
+        cmdController.addCommand("stash clear")
+                     .setBrief("clear stash");
+
+        // config
+        cmdController.addCommand("config").setOptions("global,local,list,unset")
+                     .setUsageInfo("CONFIG_VALUE_NAME")
+                     .setBrief("set/unset configuration option");
+
+        // log
+        cmdController.addCommand("log").setOptions("oneline,graph,patch,since")
+                     .setBrief("show log");
+
+        // reset
+        cmdController.addCommand("reset").setOptions("soft,mixed,hard ")
+                     .setBrief("perform reset");
+
+        // submodule
+        cmdController.addCommand("submodule add")
+                     .setBrief("add submodule");
+
+        cmdController.addCommand("submodule update").setOptions("init,recursive")
+                     .setBrief("update submodule");
+
+        cmdController.addCommand("submodule foreach").setRawMode(true)
+                     .setBrief("exec command for each submodule");
+
+        // worktree
         cmdController.addCommand("worktree add")
                      .setMaxInputParams(2) // Или закоментить throw ниже в setParameterTransformHandler
                      .setParameterTransformHandler( []( const std::string & /* fullCommandStr */  // команда не нужна, игнорим
@@ -116,11 +155,29 @@ struct ArgParser
                                                             return paramValue;
                                                             // throw std::runtime_error("too many parameters for command: '" + fullCommandStr + "'");
                                                     }
-                                                  );
+                                                  )
+                     .setBrief("add worktree");
 
-        cmdController.addCommand("worktree remove");
-        cmdController.addCommand("worktree list");
+        cmdController.addCommand("worktree remove all")
+                     .setBrief("remove worktree all");
 
+        cmdController.addCommand("worktree remove exact")
+                     .setBrief("remove worktree exact item");
+
+        cmdController.addCommand("worktree remove filter")
+                     .setBrief("remove worktree by filter");
+
+        cmdController.addCommand("worktree list")
+                     .setBrief("list worktree");
+
+        cmdController.findCommand("worktree")
+                     .setOptions("local,remote");
+
+        cmdController.findCommand("worktree remove")
+                     .setOptions("soft,hard");
+
+        cmdController.findCommand("worktree remove filter")
+                     .setOptions("simple,regex");
 
         // https://chat.deepseek.com/share/m489klmmtnimvksyqz
         //  
@@ -163,7 +220,7 @@ struct ArgParser
         // git worktree list — показывает все привязанные рабочие деревья.
 
 
-        cmdController.addOptionsToFinalCommands("pass");
+        // cmdController.addOptionsToFinalCommands("pass");
 
     }
 
@@ -465,6 +522,15 @@ int operator()( const StringType                                &a           //!
                 
                 */
 
+                auto helpText = cmdController.makeHelp( 78   // textWidth
+                                                      , pCol // ICommandLineOptionCollector
+                                                      , argsParser.argsNeedHelp
+                                                      //, argsParser.programLocationInfo.exeName
+                                                      );
+
+                std::cout << helpText << "\n";
+
+                #if 0
                 if (argsParser.argsNeedHelp.empty())
                 {
                     argsParser.argsNeedHelp.insert("ule-ule");
@@ -488,6 +554,7 @@ int operator()( const StringType                                &a           //!
                                             );
                     // std::cout<<pCol->makeText( 78, &argsParser.argsNeedHelp );
                 }
+                #endif
                 #endif
 
                 return 1;

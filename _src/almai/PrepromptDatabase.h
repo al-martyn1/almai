@@ -88,7 +88,7 @@ struct PrepromptDatabase
 
         alreadyUsed.insert(ppFullName);
         
-        // pPreprompt->description.requires // std::vector< std::vector<std::string> >     requires;
+        // pPreprompt->description.requiresList // std::vector< std::vector<std::string> >     requiresList;
 
         return true;
 
@@ -392,7 +392,7 @@ struct PrepromptDatabase
                 // Если до сюда не вылетели, то можно добавлять в результаты
 
                 // !!! Нужно поправить зависимости, привести всё в plural
-                for(auto &require : preprompt.description.requires)
+                for(auto &require : preprompt.description.requiresList)
                 {
                     for(auto &r: require)
                     {

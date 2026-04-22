@@ -126,7 +126,7 @@ public:
 //----------------------------------------------------------------------------
 struct PrepromptDescription : public CommonDescription
 {
-    std::vector< std::vector<std::string> >     requires;
+    std::vector< std::vector<std::string> >     requiresList;
 
 
     static
@@ -147,7 +147,7 @@ struct PrepromptDescription : public CommonDescription
                 for(const auto &altersListStr : requiresList)
                 {
                     std::vector<std::string> altersList = CommonDescription::splitString(altersListStr, '|');
-                    d.requires.emplace_back(altersList);
+                    d.requiresList.emplace_back(altersList);
                 }
 
             }
@@ -158,7 +158,7 @@ struct PrepromptDescription : public CommonDescription
                 {
                     std::string altersListStr = it->get<std::string>();
                     std::vector<std::string> altersList = splitString(altersListStr, '|');
-                    d.requires.emplace_back(altersList);
+                    d.requiresList.emplace_back(altersList);
                 }
             }
             else if (r.is_null())

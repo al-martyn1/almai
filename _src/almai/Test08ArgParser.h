@@ -88,7 +88,7 @@ struct ArgParser
         //cmdController.addGlobalOptions("")
 
         // branch
-        cmdController.addCommand("branch").setOptions("delete,force-delete,move,all") // -d delete, -D force-delete, -m move, -a all
+        cmdController.addCommand("branch").setOptions("delete","force-delete","move,all") // -d delete, -D force-delete, -m move, -a all
                      // .setUsageInfo("[OPTIONS] BRANCH_NAME") // это не нужно
                      .setUsageInfo("BRANCH_NAME") // можно короче
                      .setBrief("create branch")
@@ -116,16 +116,16 @@ struct ArgParser
                      .setBrief("clear stash");
 
         // config
-        cmdController.addCommand("config").setOptions("global,local,list,unset")
+        cmdController.addCommand("config").setOptions("global","local","list","unset")
                      .setUsageInfo("CONFIG_VALUE_NAME")
                      .setBrief("set/unset configuration option");
 
         // log
-        cmdController.addCommand("log").setOptions("oneline,graph,patch,since")
+        cmdController.addCommand("log").setOptions("oneline","graph","patch","since")
                      .setBrief("show log");
 
         // reset
-        cmdController.addCommand("reset").setOptions("soft,mixed,hard ")
+        cmdController.addCommand("reset").setOptions({"soft","mixed","hard"})
                      .setBrief("perform reset");
 
         // submodule

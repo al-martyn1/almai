@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (umba::filesys::move(oldName, newName))
+    if (umba::filesys::moveFileOrDir(oldName, newName))
     {
         cerr << "OK: " << oldName << " -> " << newName << "\n";
     }

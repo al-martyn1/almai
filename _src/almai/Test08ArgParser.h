@@ -91,49 +91,49 @@ struct ArgParser
         cmdController.addCommand("branch").setOptions("delete","force-delete","move,all") // -d delete, -D force-delete, -m move, -a all
                      // .setUsageInfo("[OPTIONS] BRANCH_NAME") // это не нужно
                      .setUsageInfo("BRANCH_NAME") // можно короче
-                     .setBrief("create branch")
-                     .setDescription("create branch create branch create branch");
+                     .setBrief("create branch brief")
+                     .setDescription("create branch full description create branch full description  create branch full description ");
 
         // stash
         cmdController.addCommand("stash push").setOptions("message") // -M message
                      // .setUsageInfo("[OPTIONS]") // это не нужно
                      .setBrief("push stash to stash stack")
-                     .setDescription("push stash to stash stack push stash to stash stack");
+                     .setDescription("push stash to stash stack full description  push stash to stash stack full description ");
 
         cmdController.addCommand("stash list")
-                     .setBrief("list stashes");
+                     .setBrief("list stashes brief");
 
         cmdController.addCommand("stash apply")
-                     .setBrief("apply stash");
+                     .setBrief("apply stash brief");
 
         cmdController.addCommand("stash pop")
-                     .setBrief("pop stash");
+                     .setBrief("pop stash brief");
 
         cmdController.addCommand("stash drop")
-                     .setBrief("drop stash");
+                     .setBrief("drop stash brief");
 
         cmdController.addCommand("stash clear")
-                     .setBrief("clear stash");
+                     .setBrief("clear stash brief");
 
         // config
         cmdController.addCommand("config").setOptions("global","local","list","unset")
                      .setUsageInfo("CONFIG_VALUE_NAME")
-                     .setBrief("set/unset configuration option");
+                     .setBrief("set/unset configuration option brief");
 
         // log
         cmdController.addCommand("log").setOptions("oneline","graph","patch","since")
-                     .setBrief("show log");
+                     .setBrief("show log brief");
 
         // reset
         cmdController.addCommand("reset").setOptions({"soft","mixed","hard"})
-                     .setBrief("perform reset");
+                     .setBrief("perform reset brief");
 
         // submodule
         cmdController.addCommand("submodule add")
-                     .setBrief("add submodule");
+                     .setBrief("add submodule brief");
 
         cmdController.addCommand("submodule update").setOptions("init,recursive")
-                     .setBrief("update submodule");
+                     .setBrief("update submodule brief");
 
         cmdController.addCommand("submodule foreach").setRawMode(true)
                      .setBrief("exec command for each submodule");
@@ -528,34 +528,7 @@ int operator()( const StringType                                &a           //!
                                                       //, argsParser.programLocationInfo.exeName
                                                       );
 
-                std::cout << helpText << "\n";
-
-                #if 0
-                if (argsParser.argsNeedHelp.empty())
-                {
-                    argsParser.argsNeedHelp.insert("ule-ule");
-                    argsParser.argsNeedHelp.insert("all");
-                    argsParser.argsNeedHelp.insert("delete");
-                    argsParser.argsNeedHelp.insert("force-delete");
-                    argsParser.argsNeedHelp.insert("message");
-                    argsParser.argsNeedHelp.insert("global");
-                    argsParser.argsNeedHelp.insert("local");
-                    argsParser.argsNeedHelp.insert("list");
-                }
-
-
-                #if 1
-                if (pCol) 
-                {
-                    argsParser.printHelpPage( std::cout
-                                            , "[OPTIONS] input_file [output_file]"
-                                            , "If output_file not taken, STDOUT used"
-                                            , pCol->makeText( 78, &argsParser.argsNeedHelp )
-                                            );
-                    // std::cout<<pCol->makeText( 78, &argsParser.argsNeedHelp );
-                }
-                #endif
-                #endif
+                std::cout << helpText; // << "\n"; Там хватает переводов строки
 
                 return 1;
 

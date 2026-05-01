@@ -11,6 +11,7 @@
 #include "Localization.h"
 #include "Preprompt.h"
 #include "Project.h"
+#include "PrepromptDatabase.h"
 //
 #include "utils.h"
 
@@ -47,6 +48,8 @@ struct AppConfig : public AppConfigBase
 {
 
     using PluralDatabaseSharedPtrType = std::shared_ptr<almai::PluralDatabase>;
+    using PrepromptDatabaseMap        = std::unordered_map<std::string, PrepromptDatabase>;
+
 
     std::string                       appRoot;
     std::string                       appConfPath;
@@ -65,7 +68,8 @@ struct AppConfig : public AppConfigBase
     almai::Localization               localizations;
     std::string                       curLang;
 
-    std::string                       curAiEngine; // deepseek, qwen
+    //std::string                       curAiEngine; // deepseek, qwen
+    PrepromptDatabaseMap              ppDBases;
 
     almai::Project                    almaiProject;
 
@@ -183,6 +187,36 @@ struct AppConfig : public AppConfigBase
 
     //------------------------------
 
+    // template<typename PrepromptReadingErrorHandler, typename PrepromptParsingErrorHandler>
+    // void scanForPreprompts( std::vector<std::string>       *pScannedFolders
+    //                       , std::vector<std::string>       aiEngines
+    //                       , std::vector<std::string>       prepromptCategoriesToScan
+    //                       , PrepromptReadingErrorHandler   readingErrHandler
+    //                       , PrepromptParsingErrorHandler   parsingErrorHandler
+    //                       )
+    // {
+    //     auto ppDirs = getPrepromptDirs();
+    //  
+    //     for(const auto &aiEngine : aiEngines)
+    //     {
+    //         PrepromptDatabase ppDb = almai::PrepromptDatabase(pluralDb, ppDirs);
+    //     }
+    // }
+    //  
+    //  
+    //  
+    // almai::PrepromptDatabase ppDb = almai::PrepromptDatabase(appConfig.pluralDb, appConfig.getPrepromptDirs());
+    // ppDb.prepromptDirs = appConfig.getPrepromptDirs();
+    // std::vector<std::string> scannedFolders;
+    //  
+    // processedFileType = "preprompt";
+    //  
+    // ppDb.scanForPreprompts( &scannedFolders, aiEngines
+    //                       , { "skill", "instruction", "knowledge", "format", "output" }
+    //                       , prepromptReadingErrorHandler, prepromptParsingErrorHandler
+    //                       );
+    //  
+    // PrepromptDatabaseMap              ppDBases;
 
 
 

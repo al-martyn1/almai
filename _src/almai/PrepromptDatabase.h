@@ -33,40 +33,20 @@ namespace almai {
 
 
 //----------------------------------------------------------------------------
-struct PrepromptDatabase
+using PrepromptMapType         = std::unordered_map<std::string, Preprompt>;
+using PrepromptPropsMapType    = std::unordered_map<std::string, PrepromptProps>;
+using PrepromptCategorySetType = std::unordered_set<std::string>;
+
+//----------------------------------------------------------------------------
+
+
+
+//----------------------------------------------------------------------------
+struct AiPreprompts
 {
-
-    //--------------------------------------------------------------------------------------------------------------------
-    using PrepromptMapType         = std::unordered_map<std::string, Preprompt>;
-    using PrepromptPropsMapType    = std::unordered_map<std::string, PrepromptProps>;
-    using PrepromptCategorySetType = std::unordered_set<std::string>;
-
-    using PluralDatabaseSharedPtrType = std::shared_ptr<almai::PluralDatabase>;
-
-
-    //--------------------------------------------------------------------------------------------------------------------
-    PluralDatabaseSharedPtrType                                    pluralDb;
-    std::vector<std::string>                                       prepromptDirs;
     std::unordered_map< std::string, PrepromptMapType >            preprompts;
     std::unordered_map< std::string, PrepromptPropsMapType >       prepromptProps;
     std::unordered_map< std::string, PrepromptCategorySetType >    prepromptCategories;
-
-    //--------------------------------------------------------------------------------------------------------------------
-
-
-    //--------------------------------------------------------------------------------------------------------------------
-    UMBA_RULE_OF_FIVE_DEFAULT(PrepromptDatabase);
-
-    PrepromptDatabase( PluralDatabaseSharedPtrType pluralDb_
-                     , const std::vector<std::string> &prepromptDirs_
-                     )
-    : pluralDb(pluralDb_)
-    , prepromptDirs(prepromptDirs_)
-    {}
-
-    //--------------------------------------------------------------------------------------------------------------------
-    
-
 
     //--------------------------------------------------------------------------------------------------------------------
     template<typename WarningHandler>
@@ -94,24 +74,10 @@ struct PrepromptDatabase
 
     }
 
-
-    // umba::parse_utils::
-    //bool optionStringUpdateSet(std::string opt, SetType &s, OptPrepareHandler optPrepareHandler=OptionPrepareDefault(), CaseOption caseOption=CaseOption::toLower, bool defaultAdd=true)
-    // bool optionStringInsertToSet(const std::string &opt, SetType &s)
-
-
-        // bool bGood = false;
-
-    // std::string makeCompletePpIdErrorMsg( const std::string &requestedPrepromptId
-    //                                     , const std::string &foundPrepromptId
-    //                                     , const PrepromptCategorySetType &ppCategories
-    //                                     , bool *pGood=0
-    //                                     ) const
-
     //--------------------------------------------------------------------------------------------------------------------
-    const Preprompt* findPreprompt(const std::string &prepromptId, std::string *pPrepromptFullName = 0, PrepromptCategorySetType *ppCategories=0) const
+    const Preprompt* findPreprompt(const PluralDatabase* pPluralDb, const std::string &prepromptId, std::string *pPrepromptFullName = 0, PrepromptCategorySetType *ppCategories=0) const
     {
-        auto fullPpId = makeCompletePpId(prepromptId, ppCategories);
+        auto fullPpId = makeCompletePpId(pPluralDb, prepromptId, ppCategories);
         if (pPrepromptFullName)
            *pPrepromptFullName = fullPpId;
 
@@ -139,12 +105,13 @@ struct PrepromptDatabase
         @returns empty string if preprompt not found or exist in multiple categories
         @param ppCategories filled with preprompt categories. 0, 1, or more values, 0 or more than one if returns empty string
     */
-    std::string makeCompletePpId(std::string prepromptId, PrepromptCategorySetType *ppCategories=0) const
+    std::string makeCompletePpId(const PluralDatabase *pPluralDb, std::string prepromptId, PrepromptCategorySetType *ppCategories=0) const
     {
         if (ppCategories)
             ppCategories->clear();
 
-        prepromptId = utils::normalizePrepromptId(*pluralDb.get(), prepromptId);
+        // *pluralDb.get()
+        prepromptId = utils::normalizePrepromptId(*pPluralDb, prepromptId);
 
         std::string category, name;
         if (splitPrepromptId(prepromptId, category, name))
@@ -260,6 +227,128 @@ struct PrepromptDatabase
 
     //--------------------------------------------------------------------------------------------------------------------
 
+};
+
+//----------------------------------------------------------------------------
+
+
+
+//----------------------------------------------------------------------------
+struct PrepromptDatabase
+{
+
+    //--------------------------------------------------------------------------------------------------------------------
+
+    using PluralDatabaseSharedPtrType = std::shared_ptr<PluralDatabase>;
+
+
+
+    //--------------------------------------------------------------------------------------------------------------------
+    PluralDatabaseSharedPtrType                       pluralDb;
+    std::vector<std::string>                          prepromptDirs;
+    std::unordered_map< std::string, AiPreprompts>    preprompts;  // aiEngine -> aiPreprompts
+    
+
+    //--------------------------------------------------------------------------------------------------------------------
+
+
+    //--------------------------------------------------------------------------------------------------------------------
+    UMBA_RULE_OF_FIVE_DEFAULT(PrepromptDatabase);
+
+    PrepromptDatabase( PluralDatabaseSharedPtrType pluralDb_
+                     , const std::vector<std::string> &prepromptDirs_
+                     )
+    : pluralDb(pluralDb_)
+    , prepromptDirs(prepromptDirs_)
+    {}
+
+    //--------------------------------------------------------------------------------------------------------------------
+    
+
+
+    //--------------------------------------------------------------------------------------------------------------------
+    #if 0
+    template<typename WarningHandler>
+    bool expandPrepromptDependenciesImpl(const std::string &prepromptId, const std::vector<std::string> &expanded, std::set<std::string> &alreadyUsed, WarningHandler warningHandler)
+    {
+        std::string ppFullName;
+        PrepromptCategorySetType ppCategories;
+
+        const Preprompt* pPreprompt = findPreprompt(prepromptId, ppFullName, &ppCategories);
+        if (!pPreprompt)
+        {
+            std::string msg = makeCompletePpIdErrorMsg( prepromptId, ppFullName, ppCategories, 0 /* pGood */ );
+            warningHandler(msg);
+            return false;
+        }
+
+        if (alreadyUsed.find(ppFullName)!=alreadyUsed.end())
+            return true;
+
+        alreadyUsed.insert(ppFullName);
+        
+        // pPreprompt->description.requiresList // std::vector< std::vector<std::string> >     requiresList;
+
+        return true;
+
+    }
+    #endif
+
+    //--------------------------------------------------------------------------------------------------------------------
+    const Preprompt* findPreprompt(const std::string &aiEngine, const std::string &prepromptId, std::string *pPrepromptFullName = 0, PrepromptCategorySetType *ppCategories=0) const
+    {
+        auto it = preprompts.find(aiEngine);
+        if (it==preprompts.end())
+            return 0;
+
+        return it->second.findPreprompt(pluralDb.get(), prepromptId, pPrepromptFullName, ppCategories);
+    }
+
+    //--------------------------------------------------------------------------------------------------------------------
+    /*! Makes full preprompt name. Checks preprompt exist or defined in multiple categories
+        @returns empty string if preprompt not found or exist in multiple categories
+        @param ppCategories filled with preprompt categories. 0, 1, or more values, 0 or more than one if returns empty string
+    */
+    std::string makeCompletePpId(const std::string &aiEngine, const std::string &prepromptId, PrepromptCategorySetType *ppCategories=0) const
+    {
+        auto it = preprompts.find(aiEngine);
+        if (it==preprompts.end())
+            return std::string();
+
+        return it->second.makeCompletePpId(pluralDb.get(), prepromptId, ppCategories);
+    }
+
+    //--------------------------------------------------------------------------------------------------------------------
+    std::string makeCompletePpIdErrorMsg( const std::string &aiEngine
+                                        , const std::string &requestedPrepromptId
+                                        , const std::string &foundPrepromptId
+                                        , const PrepromptCategorySetType &ppCategories
+                                        , bool *pGood=0
+                                        ) const
+    {
+        auto it = preprompts.find(aiEngine);
+        if (it==preprompts.end())
+            return std::string();
+
+        return it->second.makeCompletePpIdErrorMsg( requestedPrepromptId, foundPrepromptId, ppCategories, pGood);
+    }
+
+    //--------------------------------------------------------------------------------------------------------------------
+    static
+    bool splitPrepromptId(const std::string prepromptId, std::string &category, std::string &id)
+    {
+         return AiPreprompts::splitPrepromptId(prepromptId, category, id);
+    }
+
+    //--------------------------------------------------------------------------------------------------------------------
+    static
+    std::string mergePrepromptId(const std::string &category, const std::string &id)
+    {
+        return AiPreprompts::mergePrepromptId(category, id);
+    }
+
+    //--------------------------------------------------------------------------------------------------------------------
+
 
 
     //--------------------------------------------------------------------------------------------------------------------
@@ -287,12 +376,16 @@ struct PrepromptDatabase
                                , std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > &scannedPrepromptProps
                                , std::unordered_map< std::string, std::unordered_set<std::string> > &scannedPrepromptCategories
                                , const almai::PluralDatabase    &pluralDb_
-                               , std::vector<std::string>       aiEngines
+                               //, std::vector<std::string>       aiEngines
+                               , const std::string              &aiEngine_
                                , const std::vector<std::string> &ppDirs
                                , std::vector<std::string>       prepromptCategoriesToScan
                                )
     {
-        aiEngines.insert(aiEngines.begin(), std::string());
+        std::vector<std::string> aiEngines;
+        aiEngines.push_back(std::string());
+        if (!aiEngine_.empty())
+            aiEngines.push_back(aiEngine_);
 
         {
             std::vector<std::string> pptsTmp; pptsTmp.reserve(prepromptCategoriesToScan.size());
@@ -336,6 +429,13 @@ struct PrepromptDatabase
 
     }
 
+    // struct AiPreprompts
+    // {
+    //     std::unordered_map< std::string, PrepromptMapType >            preprompts;
+    //     std::unordered_map< std::string, PrepromptPropsMapType >       prepromptProps;
+    //     std::unordered_map< std::string, PrepromptCategorySetType >    prepromptCategories;
+    // };
+    // std::unordered_map< std::string, AiPreprompts>    preprompts;  // aiEngine -> aiPreprompts
 
     //--------------------------------------------------------------------------------------------------------------------
     template<typename PrepromptReadingErrorHandler, typename PrepromptParsingErrorHandler>
@@ -347,62 +447,71 @@ struct PrepromptDatabase
                           )
     {
         // prepromptDirs.clear();
-        preprompts.clear();
-        prepromptProps.clear();
-        prepromptCategories.clear();
+        // preprompts.clear();
+        // prepromptProps.clear();
+        // prepromptCategories.clear();
 
-        scanForPrepromptsProps( pScannedFolders
-                              , prepromptProps
-                              , prepromptCategories
-                              , *pluralDb.get()
-                              , aiEngines
-                              , prepromptDirs
-                              , prepromptCategoriesToScan
-                              );
+        aiEngines.insert(aiEngines.begin(), std::string());
 
-        for(const auto &[ppTypeStr, ppNameMap] : prepromptProps)
+        for(const auto &aiEngine: aiEngines)
         {
-            for(const auto &[ppName, ppProps] : ppNameMap)
+            AiPreprompts aiPrepromptsItem;
+    
+            scanForPrepromptsProps( pScannedFolders
+                                  , aiPrepromptsItem.prepromptProps
+                                  , aiPrepromptsItem.prepromptCategories
+                                  , *pluralDb.get()
+                                  , aiEngine
+                                  , prepromptDirs
+                                  , prepromptCategoriesToScan
+                                  );
+    
+            for(const auto &[ppTypeStr, ppNameMap] : aiPrepromptsItem.prepromptProps)
             {
-                std::vector<std::string> inputFileLines;
-
-                if (!utils::readFile(ppProps.file, inputFileLines))
+                for(const auto &[ppName, ppProps] : ppNameMap)
                 {
-                    readingErrHandler(ppProps.file);
-                    continue;
-                }
-
-                Preprompt preprompt;
-
-                try
-                {
-                    preprompt = Preprompt::parse(inputFileLines, true /* throwErrors */ );
-                }
-                catch(const std::exception &e)
-                {
-                    parsingErrorHandler(ppProps.file, e);
-
-                    // Пробуем игнорировать ошибки
-                    // Но исключение всё равно может вылететь. Но мы его уже не ловим, пусть летит
-                    preprompt = Preprompt::parse(inputFileLines, false /* !throwErrors */ );
-                }
-
-                preprompt.props = ppProps;
-
-                // Если до сюда не вылетели, то можно добавлять в результаты
-
-                // !!! Нужно поправить зависимости, привести всё в plural
-                for(auto &require : preprompt.description.requiresList)
-                {
-                    for(auto &r: require)
+                    std::vector<std::string> inputFileLines;
+    
+                    if (!utils::readFile(ppProps.file, inputFileLines))
                     {
-                        r = utils::normalizePrepromptId(*pluralDb.get(), r);
+                        readingErrHandler(ppProps.file);
+                        continue;
                     }
+    
+                    Preprompt preprompt;
+    
+                    try
+                    {
+                        preprompt = Preprompt::parse(inputFileLines, true /* throwErrors */ );
+                    }
+                    catch(const std::exception &e)
+                    {
+                        parsingErrorHandler(ppProps.file, e);
+    
+                        // Пробуем игнорировать ошибки
+                        // Но исключение всё равно может вылететь. Но мы его уже не ловим, пусть летит
+                        preprompt = Preprompt::parse(inputFileLines, false /* !throwErrors */ );
+                    }
+    
+                    preprompt.props = ppProps;
+    
+                    // Если до сюда не вылетели, то можно добавлять в результаты
+    
+                    // !!! Нужно поправить зависимости, привести всё в plural
+                    for(auto &require : preprompt.description.requiresList)
+                    {
+                        for(auto &r: require)
+                        {
+                            r = utils::normalizePrepromptId(*pluralDb.get(), r);
+                        }
+                    }
+    
+                    aiPrepromptsItem.preprompts[ppTypeStr][ppName] = preprompt;
                 }
-
-                preprompts[ppTypeStr][ppName] = preprompt;
-
             }
+
+            preprompts[aiEngine] = aiPrepromptsItem;
+
         }
 
     }

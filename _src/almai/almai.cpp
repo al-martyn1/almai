@@ -108,12 +108,12 @@ UMBA_APP_MAIN()
     }
     catch(const std::exception& e)
     {
-        std::cout << "Error: " << e.what() << "\n";
+        LOG_ERR << "Error: " << e.what() << "\n";
         return 1;
     }
     catch(...)
     {
-        std::cout << "Unknown error\n";
+        LOG_ERR << "Unknown error\n";
         return 2;
     }
 
@@ -145,8 +145,8 @@ int unsafeMain(int argc, char* argv[])
 
         std::string cwd;
         std::string rootPath = umba::shellapi::getDebugAppRootFolder(&cwd);
-        std::cout << "App Root Path: " << rootPath << "\n";
-        std::cout << "Working Dir  : " << cwd << "\n";
+        LOG_MSG << "App Root Path: " << rootPath << "\n";
+        LOG_MSG << "Working Dir  : " << cwd << "\n";
 
     } // if (umba::isDebuggerPresent())
 
@@ -251,13 +251,13 @@ int unsafeMain(int argc, char* argv[])
 
     appConfig.readProjectFile(prepromptReadingErrorHandler, prepromptParsingErrorHandler);
 
-    std::cout << appConfig.almaiProject <<"\n";
+    LOG_MSG << appConfig.almaiProject <<"\n";
     
     // appConfig.curAiEngine = "deepseek"; // !!! Должно вычитываться из настроек проекта
     std::vector<std::string> aiEngines = {"deepseek", "qwen"};
 
     almai::PrepromptDatabase ppDb = almai::PrepromptDatabase(appConfig.pluralDb, appConfig.getPrepromptDirs());
-    ppDb.prepromptDirs = appConfig.getPrepromptDirs();
+    //ppDb.prepromptDirs = appConfig.getPrepromptDirs();
     std::vector<std::string> scannedFolders;
 
     processedFileType = "preprompt";
@@ -291,32 +291,48 @@ int unsafeMain(int argc, char* argv[])
         LOG_MSG << "\n";
 
 
-        LOG_MSG << "Found preprompts:\n";
+    // struct AiPreprompts
+    // {
+    //     std::unordered_map< std::string, PrepromptMapType >            preprompts;
+    //     std::unordered_map< std::string, PrepromptPropsMapType >       prepromptProps;
+    //     std::unordered_map< std::string, PrepromptCategorySetType >    prepromptCategories;
+    // };
+    // std::unordered_map< std::string, AiPreprompts>    preprompts;  // aiEngine -> aiPreprompts
 
-        for(const auto &[ppTypeStr, ppNameMap] : ppDb.prepromptProps)
+        for(const auto &[aiEngine, aiPreprompts] : ppDb.preprompts)
         {
-            LOG_MSG << "  " << ppTypeStr << ":\n";
+            LOG_MSG << "\n";
+            LOG_MSG << "AiEngine: " << (!aiEngine.empty() ? aiEngine : std::string("<NONAME>")) << "\n";
 
-            for(const auto &[ppName, ppProps] : ppNameMap)
+            LOG_MSG << "\n  Found preprompts:\n";
+    
+            for(const auto &[ppTypeStr, ppNameMap] : aiPreprompts.prepromptProps)
             {
-                LOG_MSG << "    " << ppProps << "\n";
+                LOG_MSG << "    " << ppTypeStr << ":\n";
+    
+                for(const auto &[ppName, ppProps] : ppNameMap)
+                {
+                    LOG_MSG << "      " << ppProps << "\n";
+                }
             }
-        }
-
-        LOG_MSG << "\n";
-
-        
-        LOG_MSG << "Found preprompt types:\n";
-
-        for(const auto &[ppId, ppTypeSet] : ppDb.prepromptCategories)
-        {
-            std::size_t cnt = 0;
-            LOG_MSG << "  " << ppId; // << ""
-            for(const auto ppType: ppTypeSet)
+    
+            LOG_MSG << "\n";
+    
+            
+            LOG_MSG << "  Found preprompt types:\n";
+    
+            for(const auto &[ppId, ppTypeSet] : aiPreprompts.prepromptCategories)
             {
-                LOG_MSG << (cnt ? ", " : ": ") << ppType;
-                ++cnt;
+                std::size_t cnt = 0;
+                LOG_MSG << "    " << ppId; // << ""
+                for(const auto ppType: ppTypeSet)
+                {
+                    LOG_MSG << (cnt ? ", " : ": ") << ppType;
+                    ++cnt;
+                }
+                LOG_MSG << "\n";
             }
+
             LOG_MSG << "\n";
         }
 

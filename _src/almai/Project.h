@@ -49,7 +49,7 @@ struct Project
         {
             for(auto &skill : roleSkills)
             {
-                PrepromptDatabase::PrepromptCategorySetType skillCategories;
+                PrepromptCategorySetType skillCategories;
 
                 std::string completeSkillName = ppDb.makeCompletePpId(skill, &skillCategories);
                 bool bGood = false;

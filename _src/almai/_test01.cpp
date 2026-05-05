@@ -72,6 +72,13 @@ void performFormatFileSizeTests(bool dec)
 }
 
 //----------------------------------------------------------------------------
+void testGetPath(const std::string &name)
+{
+    cout << "Path from '" << name << "': '" << umba::filename::getPath(name) << "'\n";
+}
+
+
+//----------------------------------------------------------------------------
 
 
 
@@ -80,6 +87,17 @@ int main(int argc, char* argv[])
 {
     UMBA_USED(argc);
     UMBA_USED(argv);
+
+    testGetPath("c:\\windows\\temp\\tmp.txt");
+    testGetPath("c:\\windows\\temp\\\\tmp.txt");
+    testGetPath("c:\\windows\\temp\\\\tmp.txt");
+    testGetPath("c:\\windows\\temp/tmp.txt");
+    testGetPath("c:\\windows\\temp//tmp.txt");
+    testGetPath("c:\\windows\\temp///tmp.txt");
+    testGetPath("c:tmp.txt");
+    testGetPath("/");
+    testGetPath("//");
+
 
     performMakeNormalizedRelativePathTests();
     performFormatFileSizeTests(false);

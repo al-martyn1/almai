@@ -51,9 +51,9 @@ struct Project
             {
                 PrepromptCategorySetType skillCategories;
 
-                std::string completeSkillName = ppDb.makeCompletePpId(skill, &skillCategories);
+                std::string completeSkillName = ppDb.makeCompletePpId("", skill, &skillCategories);
                 bool bGood = false;
-                auto msg = ppDb.makeCompletePpIdErrorMsg(skill, completeSkillName, skillCategories, &bGood);
+                auto msg = ppDb.makeCompletePpIdErrorMsg("", skill, completeSkillName, skillCategories, &bGood);
 
                 if (bGood)
                 {

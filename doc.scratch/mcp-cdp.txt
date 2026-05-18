@@ -1,0 +1,5 @@
+MCP/CDP - https://chat.deepseek.com/share/ob0ii9pkpqsvsw02q9
+  Chrome DevTools MCP Server - это отдельная шляпа, которая отдельно устанавливается
+
+
+LSP basics - https://chat.deepseek.com/share/ywyg80pwiyjldsrdg5

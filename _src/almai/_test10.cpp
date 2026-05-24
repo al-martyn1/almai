@@ -89,6 +89,17 @@ int main(int argc, char* argv[])
     UMBA_USED(argc);
     UMBA_USED(argv);
 
+    // about reparse points - проверить - https://chat.deepseek.com/share/ezcvr9tgm1zxkvvl11
+
+    std::string pathVarValue;
+    umba::env::getVar(std::string("PATH"), pathVarValue);
+    cout << "PATH: " << pathVarValue << "\n\n";
+
+    cout << "isPathFile(C:\\Users\\martinov\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe): " 
+         << umba::filesys::isPathFile("C:\\Users\\martinov\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe") 
+         << "\n\n";
+
+
     // HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths
     // HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths
 

@@ -290,41 +290,53 @@ int unsafeMain(int argc, char* argv[])
 
         LOG_MSG << "Found preprompts:\n";
 
-        for(const auto &[ppTypeStr, ppNameMap] : ppDb.prepromptProps)
+        for(const auto &[aiEngine, aiPreprompts] : ppDb.preprompts)
         {
-            LOG_MSG << "  " << ppTypeStr << ":\n";
+            LOG_MSG << "\n";
+            LOG_MSG << "AiEngine: " << (!aiEngine.empty() ? aiEngine : std::string("<NONAME>")) << "\n";
 
-            for(const auto &[ppName, ppProps] : ppNameMap)
+            LOG_MSG << "\n  Found preprompts:\n";
+    
+            for(const auto &[ppTypeStr, ppNameMap] : aiPreprompts.prepromptProps)
             {
-                LOG_MSG << "    " << ppProps << "\n";
+                LOG_MSG << "    " << ppTypeStr << ":\n";
+    
+                for(const auto &[ppName, ppProps] : ppNameMap)
+                {
+                    LOG_MSG << "      " << ppProps << "\n";
+                }
             }
+    
+            LOG_MSG << "\n";
+    
+            
+            LOG_MSG << "  Found preprompt types:\n";
+    
+            for(const auto &[ppId, ppTypeSet] : aiPreprompts.prepromptCategories)
+            {
+                std::size_t cnt = 0;
+                LOG_MSG << "    " << ppId; // << ""
+                for(const auto ppType: ppTypeSet)
+                {
+                    LOG_MSG << (cnt ? ", " : ": ") << ppType;
+                    ++cnt;
+                }
+                LOG_MSG << "\n";
+            }
+
+            LOG_MSG << "\n";
         }
 
         LOG_MSG << "\n";
-
-        
-        LOG_MSG << "Found preprompt types:\n";
-
-        for(const auto &[ppId, ppTypeSet] : ppDb.prepromptCategories)
-        {
-            std::size_t cnt = 0;
-            LOG_MSG << "  " << ppId; // << ""
-            for(const auto ppType: ppTypeSet)
-            {
-                LOG_MSG << (cnt ? ", " : ": ") << ppType;
-                ++cnt;
-            }
-            LOG_MSG << "\n";
-        }
 
     }
 
 
     auto checkPreprompt = [&](auto ppName)
     {
-        almai::PrepromptDatabase::PrepromptCategorySetType ppCatSet;
+        almai::PrepromptCategorySetType ppCatSet;
 
-        auto completePpName = ppDb.makeCompletePpId(ppName, &ppCatSet);
+        auto completePpName = ppDb.makeCompletePpId("", ppName, &ppCatSet);
 
         if (!completePpName.empty())
         {
@@ -366,13 +378,13 @@ int unsafeMain(int argc, char* argv[])
 
     auto checkPreprompt2 = [&](auto ppName)
     {
-        almai::PrepromptDatabase::PrepromptCategorySetType ppCatSet;
+        almai::PrepromptCategorySetType ppCatSet;
 
-        auto completePpName = ppDb.makeCompletePpId(ppName, &ppCatSet);
+        auto completePpName = ppDb.makeCompletePpId("", ppName, &ppCatSet);
 
         bool bGood = false;
 
-        auto msg = ppDb.makeCompletePpIdErrorMsg(ppName, completePpName, ppCatSet, &bGood);
+        auto msg = ppDb.makeCompletePpIdErrorMsg("", ppName, completePpName, ppCatSet, &bGood);
 
         LOG_MSG << (bGood ? "+" : "-" ) << " " << msg << "\n";
     };

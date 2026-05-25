@@ -12,6 +12,8 @@
 %TEST_EXE% --wiki --help >"%~dp0\%~n0-help-wiki.txt"
 %TEST_EXE% --wiki --message --help >"%~dp0\%~n0-help-on-message-wiki.txt"
 %TEST_EXE% --ule-ule --help >"%~dp0\%~n0-help-on-ule-ule.txt"
+%TEST_EXE% submodule add --help >"%~dp0\%~n0-help-on-submodule-add.txt"
+%TEST_EXE% submodule add --md --help >"%~dp0\%~n0-help-on-submodule-add.md"
 
 @rem %TEST_EXE% submodule foreach git pull submodule --init --recursive update
 @rem %TEST_EXE% branch

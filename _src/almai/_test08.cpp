@@ -136,6 +136,7 @@ int unsafeMain(int argc, char* argv[])
                                                         );
 
     // Force set CLI arguments while running under debugger
+    #if 0
     if (umba::isDebuggerPresent())
     {
         // argsParser.args.clear();
@@ -180,7 +181,7 @@ int unsafeMain(int argc, char* argv[])
         // argsParser.args.push_back("--help");
 
     } // if (umba::isDebuggerPresent())
-
+    #endif
 
     if (argsParser.mustExit)
         return 0;

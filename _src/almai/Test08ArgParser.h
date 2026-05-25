@@ -558,7 +558,7 @@ int operator()( const StringType                                &a           //!
         if (!argsParser.quet)
         {
             #if !defined(NDEBUG)
-            // std::cout << "Processing options file: " << optFileName << "\n";
+            // LOG_MSG << "Processing options file: " << optFileName << "\n";
             #endif
         }
 

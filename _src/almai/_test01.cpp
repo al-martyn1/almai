@@ -72,6 +72,124 @@ void performFormatFileSizeTests(bool dec)
 }
 
 //----------------------------------------------------------------------------
+inline
+void performGetPathNameFileExtTest(const std::string &pathIn)
+{
+    cout << "Full name: '" << pathIn << "'\n";
+
+// getFileName - Извлекает из полного пути имя файла + расширение
+// getPathFile - Извлекает из полного пути путь и имя файла без расширения
+// getFileExtention - Извлекает из имени расширение
+// getName - Извлекает из имени имя файла без пути и расширения
+
+    auto path     = umba::filename::getPath(pathIn)         ;
+    auto fileName = umba::filename::getFileName(pathIn)     ;
+    auto pathFile = umba::filename::getPathFile(pathIn)     ;
+    auto fileExt  = umba::filename::getFileExtention(pathIn);
+    auto nme      = umba::filename::getName(pathIn)         ;
+
+    cout << "  path     : '" << path     << "'\n";
+    cout << "  file name: '" << fileName << "'\n";
+    cout << "  path file: '" << pathFile << "'\n";
+    cout << "  ext      : '" << fileExt  << "'\n";
+    cout << "  name     : '" << nme      << "'\n";
+
+    cout << "\n";
+}
+
+inline
+void performGetPathNameFileExtTests()
+{
+    std::vector<std::string> localNames =
+    { "//"
+    , "c:tmp.txt"
+    , "c:\\windows\\temp\\tmp.txt"
+    , "c:\\windows\\temp\\\\tmp.txt"
+    , "c:\\windows\\temp\\\\tmp.txt"
+    , "c:\\windows\\temp/tmp.txt"
+    , "c:\\windows\\temp//tmp.txt"
+    , "c:\\windows\\temp///tmp.txt"
+    , "c:\\tmp.txt"
+    , "c:\\\\tmp.txt"
+    , "c:/tmp.txt"
+    , "c://tmp.txt"
+    , "/"
+    };
+
+    std::vector<std::string> networkNames =
+    { "c\\tmp.txt"
+    , "c\\windows\\temp\\tmp.txt"
+    , "c\\windows\\temp\\\\tmp.txt"
+    , "c\\windows\\temp\\\\tmp.txt"
+    , "c\\windows\\temp/tmp.txt"
+    , "c\\windows\\temp//tmp.txt"
+    , "c\\windows\\temp///tmp.txt"
+    , "c\\tmp.txt"
+    , "c\\\\tmp.txt"
+    , "c/tmp.txt"
+    , "c//tmp.txt"
+    , "/"
+    , "//"
+    };
+
+    std::vector<std::string> testNames;
+
+    for(const auto &n : localNames)
+    {
+        testNames.push_back(n);
+        testNames.push_back(n + ".zip");
+        testNames.push_back(n + ":stream");
+        testNames.push_back(n + ":stream.txt");
+        testNames.push_back(n + ".zip:stream");
+        testNames.push_back(n + ".zip:stream.txt");
+
+        testNames.push_back("\\\\?\\" + n);
+        testNames.push_back("\\\\?\\" + n + ".zip");
+        testNames.push_back("\\\\?\\" + n + ":stream");
+        testNames.push_back("\\\\?\\" + n + ":stream.txt");
+        testNames.push_back("\\\\?\\" + n + ".zip:stream");
+        testNames.push_back("\\\\?\\" + n + ".zip:stream.txt");
+
+        testNames.push_back("\\\\.\\" + n);
+        testNames.push_back("\\\\.\\" + n + ".zip");
+        testNames.push_back("\\\\.\\" + n + ":stream");
+        testNames.push_back("\\\\.\\" + n + ":stream.txt");
+        testNames.push_back("\\\\.\\" + n + ".zip:stream");
+        testNames.push_back("\\\\.\\" + n + ".zip:stream.txt");
+    }
+
+
+    std::string serverShare       = "server\\share";
+    std::string dotServerShare    = "ser.ver\\share";
+    std::string serverDotShare    = "server\\sh.are";
+    std::string dotServerDotShare = "ser.ver\\sh.are";
+
+    for(const auto &n : networkNames)
+    {
+        testNames.push_back(serverShare       + n);
+        testNames.push_back(dotServerShare    + n);
+        testNames.push_back(serverDotShare    + n);
+        testNames.push_back(dotServerDotShare + n);
+
+        testNames.push_back(serverShare       + n + ".zip");
+        testNames.push_back(dotServerShare    + n + ".zip");
+        testNames.push_back(serverDotShare    + n + ".zip");
+        testNames.push_back(dotServerDotShare + n + ".zip");
+    }
+    
+
+
+    cout << "**test01/getPathNameFileExt.txt**\n";
+    cout << "```\n";
+
+    for(const auto n: testNames)
+        performGetPathNameFileExtTest(n);
+
+    cout << "```\n";
+
+}
+
+//----------------------------------------------------------------------------
 
 
 
@@ -80,6 +198,8 @@ int main(int argc, char* argv[])
 {
     UMBA_USED(argc);
     UMBA_USED(argv);
+
+    performGetPathNameFileExtTests();
 
     performMakeNormalizedRelativePathTests();
     performFormatFileSizeTests(false);

@@ -167,10 +167,10 @@ int unsafeMain(int argc, char* argv[])
         // argsParser.args.push_back("--clink");
         //argsParser.args.push_back("--md");
 
-        argsParser.args.push_back("branch");
+        // argsParser.args.push_back("branch");
         // argsParser.args.push_back("--delete");
 
-        argsParser.args.push_back("stash");
+        // argsParser.args.push_back("stash");
         //argsParser.args.push_back("list");
 
         argsParser.args.push_back("--help");

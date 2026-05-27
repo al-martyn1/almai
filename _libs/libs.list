@@ -22,5 +22,6 @@ nlohmann         forks-nlohmann-json
 sfmt
 #umba             umba_mm_mod_umba
 umba
+umba_cbp
 umba_tokenizer
 yaml-cpp        forks-jbeder-yaml-cpp

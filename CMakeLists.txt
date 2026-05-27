@@ -30,6 +30,7 @@ add_subdirectory(${LIB_ROOT}/nlohmann)    # https://json.nlohmann.me/integration
 # add_subdirectory(${LIB_ROOT}/pugixml)
 add_subdirectory(${LIB_ROOT}/sfmt)
 add_subdirectory(${LIB_ROOT}/umba)
+add_subdirectory(${LIB_ROOT}/umba_cbp)
 add_subdirectory(${LIB_ROOT}/umba_tokenizer)
 add_subdirectory(${LIB_ROOT}/yaml-cpp)
 
@@ -48,6 +49,7 @@ set(COMMON_LIBS
     marty::yaml_toml_json
     sfmt::sfmt
     umba::umba
+    umba::cbp
     umba::tokenizer
     nlohmann_json::nlohmann_json
     yaml-cpp::yaml-cpp

@@ -132,7 +132,11 @@ int main(int argc, char* argv[])
     testFindExe("g++");
     testFindExe("vswhere");
     testFindExe("umba-md-pp");
-    
+
+
+    // auto folderName = umba::filename::flattenPath("F:\\_github\\umba-tools\\almai");
+    // umba::filesys::getTempFolderPath
+
 
 
     std::string errMsg;

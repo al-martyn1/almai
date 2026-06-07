@@ -6,6 +6,7 @@
 //
 #include "umba/shellapi.h"
 #include "umba/win32_utils.h"
+#include "umba/cbp/utils.h"
 //
 #include <iostream>
 
@@ -132,11 +133,19 @@ int main(int argc, char* argv[])
     testFindExe("g++");
     testFindExe("vswhere");
     testFindExe("umba-md-pp");
+    testFindExe("git");
 
 
-    // auto folderName = umba::filename::flattenPath("F:\\_github\\umba-tools\\almai");
-    // umba::filesys::getTempFolderPath
+    auto curDir = umba::filesys::getCurrentDirectory();
+    auto userProfileFolderProject = umba::cdp::utils::generateChromeUserProfileFolderForProject(curDir, std::string(), std::string(".almai-working-files"));
+    auto userCacheFolderProject   = umba::cdp::utils::generateChromeUserCacheFolderForProject  (curDir, std::string(), std::string(".almai-working-files"));
+    auto userProfileFolderGlobal  = umba::cdp::utils::generateChromeUserProfileFolderForProject(curDir, std::string(), std::string());
+    auto userCacheFolderGlobal    = umba::cdp::utils::generateChromeUserCacheFolderForProject  (curDir, std::string(), std::string());
 
+    cout << "userProfileFolderProject: " << userProfileFolderProject << "\n";
+    cout << "userCacheFolderProject  : " << userCacheFolderProject   << "\n";
+    cout << "userProfileFolderGlobal : " << userProfileFolderGlobal  << "\n";
+    cout << "userCacheFolderGlobal   : " << userCacheFolderGlobal    << "\n";
 
 
     std::string errMsg;

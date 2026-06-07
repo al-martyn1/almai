@@ -68,8 +68,8 @@ public:
 
     static
     FileSystemScanInfo parse( const std::string &fullName
-                            , const std::string &rootPath = umba::filesys::internal::getCurrentDirectory<std::string>()
-                            , const std::string &dotPath  = umba::filesys::internal::getCurrentDirectory<std::string>()
+                            , const std::string &rootPath = umba::filesys:: /* internal:: */ getCurrentDirectory /* <std::string> */ ()
+                            , const std::string &dotPath  = umba::filesys:: /* internal:: */ getCurrentDirectory /* <std::string> */ ()
                             )
     {
         using namespace umba::filename;

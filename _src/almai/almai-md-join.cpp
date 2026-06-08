@@ -312,7 +312,7 @@ int unsafeMain(int argc, char* argv[])
 
     auto mdLines = marty_cpp::splitToLinesSimple(oss.str());
 
-    auto resLines = appConfig.headerLines;
+    auto resLines = almai::utils::simpleReplaceClipboardMarkerLine(appConfig.headerLines);
 
     if (!resLines.empty())
     {
@@ -330,7 +330,8 @@ int unsafeMain(int argc, char* argv[])
         resLines.push_back(std::string());
     }
 
-    resLines.insert(resLines.end(), appConfig.footerLines.begin(), appConfig.footerLines.end());
+    auto footerLines = almai::utils::simpleReplaceClipboardMarkerLine(appConfig.footerLines);
+    resLines.insert(resLines.end(), footerLines.begin(), footerLines.end());
 
 
     std::string fullName;

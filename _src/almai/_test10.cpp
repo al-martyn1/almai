@@ -134,6 +134,7 @@ int main(int argc, char* argv[])
     testFindExe("vswhere");
     testFindExe("umba-md-pp");
     testFindExe("git");
+    testFindExe("powershell");
 
 
     auto curDir = umba::filesys::getCurrentDirectory();

@@ -15,6 +15,11 @@
 #include "umba/string.h"
 #include "umba/filename.h"
 #include "umba/filesys.h"
+
+#if defined(WIN32) || defined(_WIN32)
+    #include "umba/clipboard_win32.h"
+#endif
+
 //
 #include "marty_cpp/src_normalization.h"
 //
@@ -758,6 +763,47 @@ std::string normalizePrepromptId(const PluralDatabase &pluralDb, std::string pre
 }
 
 //----------------------------------------------------------------------------
+
+
+
+//----------------------------------------------------------------------------
+inline
+std::vector<std::string> simpleReplaceClipboardMarkerLine(const std::vector<std::string> &lines)
+{
+    std::vector<std::string> resLines; resLines.reserve(lines.size());
+
+    bool clipboardInserted = false;
+    for(const auto &line : lines)
+    {
+        auto lineLower = umba::string::tolower_copy(umba::string::ltrim_copy(line));
+        if (lineLower=="<clibboard>" || lineLower=="<clibboard/>" || lineLower=="<clibbrd>" || lineLower=="<clibbrd/>")
+        {
+            if (!clipboardInserted)
+            {
+                clipboardInserted = true;
+
+                #if defined(WIN32) || defined(_WIN32)
+
+                std::wstring clpbText;
+                if (umba::win32::clipboardTextGet(clpbText))
+                {
+                    auto clpbTextUtf = umba::toUtf8(clpbText);
+                    auto clpbLines   = marty_cpp::splitToLinesSimple(clpbTextUtf);
+                    resLines.insert(resLines.end(), clpbLines.begin(), clpbLines.end());
+                }
+
+                #endif
+
+            }
+        }
+        else
+        {
+            resLines.push_back(line);
+        }
+    }
+
+    return resLines;
+}
 
 
 

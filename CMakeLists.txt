@@ -42,6 +42,9 @@ add_subdirectory(${LIB_ROOT}/yaml-cpp)
 # add_compile_definitions("UMBA_TOKEN_TRIE_FIND_NEXT_BINARY_SEARCH_DISABLED")
 
 
+message(STATUS "PROJECT: Z_VCPKG_POWERSHELL_PATH: ${Z_VCPKG_POWERSHELL_PATH}")
+
+
 # Configure libraries here
 set(COMMON_LIBS 
     encoding::encoding

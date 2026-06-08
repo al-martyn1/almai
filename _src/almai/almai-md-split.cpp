@@ -83,6 +83,8 @@ bool umbaLogSourceInfo  = false;
 
 // bool bOverwrite         = false;
 
+std::size_t mdArchivePartSeparatorLen = 5;
+
 //
 #include "log.h"
 //
@@ -101,7 +103,9 @@ unsigned lineNo = 0;
 
 //----------------------------------------------------------------------------
 inline
-bool splitLinesAndSaveContent(std::vector<std::string> mdLines)
+bool splitLinesAndSaveContent( std::vector<std::string> mdLines
+                             , std::size_t partSeparatorLen=0 // по умолчанию - не используем разделение на части, считаем весь файл просто md-архивом, иначе - md-fh[bd - только последняя часть
+                             )
 {
     std::vector<std::string> lastSignificantLines;
 
@@ -110,6 +114,9 @@ bool splitLinesAndSaveContent(std::vector<std::string> mdLines)
     std::size_t codeMarkerLen = 0;
     std::string codeLang;
     std::vector<std::string> codeLines;
+
+    if (partSeparatorLen!=0 && partSeparatorLen<3) // Если задан, то не менее трёх символов
+        partSeparatorLen = 3;
 
     std::vector<almai::ListingInfo> foundListings;
 
@@ -222,11 +229,20 @@ bool splitLinesAndSaveContent(std::vector<std::string> mdLines)
 
         else // обычный режим
         {
-            if ( mdLineType==MdLineType::emptyLine
-              || mdLineType==MdLineType::headerAtx
-              || mdLineType==MdLineType::headerSetext
-              || mdLineType==MdLineType::quotation
-               )
+            if ( mdLineType==MdLineType::headerSetext ) // '-'/'='
+            {
+                lastSignificantLines.clear();
+
+                // Если обнаружен разделитель --- или === (или более длинный)
+                if (partSeparatorLen!=0 && markerLen>=partSeparatorLen)
+                {
+                    foundListings.clear(); // найденное ранее очищаем, листинги md-архива только в последней части
+                }
+            }
+            else if ( mdLineType==MdLineType::emptyLine
+                   || mdLineType==MdLineType::headerAtx
+                   || mdLineType==MdLineType::quotation
+                    )
             {
                 lastSignificantLines.clear();
             }
@@ -325,7 +341,9 @@ bool splitLinesAndSaveContent(std::vector<std::string> mdLines)
 }
 
 inline
-bool splitFileAndSaveContent(const std::string &fileName)
+bool splitFileAndSaveContent( const std::string &fileName
+                            , std::size_t partSeparatorLen=0 // по умолчанию - не используем разделение на части, считаем весь файл просто md-архивом, иначе - md-fh[bd - только последняя часть
+                            )
 {
     std::vector<std::string> mdLines;
 
@@ -337,7 +355,7 @@ bool splitFileAndSaveContent(const std::string &fileName)
 
     curFile = fileName;
 
-    return splitLinesAndSaveContent(mdLines);
+    return splitLinesAndSaveContent(mdLines, partSeparatorLen);
 }
 //----------------------------------------------------------------------------
 
@@ -350,7 +368,8 @@ UMBA_APP_MAIN()
 {
     try
     {
-        return unsafeMain(argc, argv);
+        auto res = unsafeMain(argc, argv);
+        return res;
     }
     catch(const std::exception& e)
     {
@@ -455,7 +474,7 @@ int unsafeMain(int argc, char* argv[])
         else
         {
             std::vector<std::string> lines = almai::utils::splitTextToLines(clpbText);
-            if (!splitLinesAndSaveContent(lines))
+            if (!splitLinesAndSaveContent(lines, mdArchivePartSeparatorLen))
             {
                 hasErrors = true;
             }
@@ -467,7 +486,7 @@ int unsafeMain(int argc, char* argv[])
 
     for(const auto &inputFileName : appConfig.inputFiles)
     {
-        if (!splitFileAndSaveContent(inputFileName))
+        if (!splitFileAndSaveContent(inputFileName, mdArchivePartSeparatorLen))
         {
             hasErrors = true;
         }

@@ -304,12 +304,6 @@ int unsafeMain(int argc, char* argv[])
         appConfig.generateMarkdownListing(oss, ffi.displayName, ffi.fileLines);
     }
 
-    if (appConfig.output.empty())
-    {
-        std::cout << oss.str() << "\n";
-        return 0;
-    }
-
     auto mdLines = marty_cpp::splitToLinesSimple(oss.str());
 
     auto resLines = almai::utils::simpleReplaceClipboardMarkerLine(appConfig.headerLines);
@@ -333,14 +327,36 @@ int unsafeMain(int argc, char* argv[])
     auto footerLines = almai::utils::simpleReplaceClipboardMarkerLine(appConfig.footerLines);
     resLines.insert(resLines.end(), footerLines.begin(), footerLines.end());
 
+    bool printToStdOut = appConfig.output.empty();
+    if (appConfig.useClipboard)
+        printToStdOut = false;
+
+    bool writeToFile = !appConfig.output.empty();
+
+    // if (appConfig.output.empty())
+    // {
+    //     std::cout << oss.str() << "\n";
+    //     return 0;
+    // }
+    //  
 
     std::string fullName;
     std::size_t sizeTotal = 0;
 
-    if (!appConfig.writeFile(appConfig.output, resLines, &fullName, &sizeTotal))
+    if (writeToFile)
     {
-        LOG_ERR << "failed to write file: '" << fullName << "'\n";
-        return 1;
+        if (!appConfig.writeFile(appConfig.output, resLines, &fullName, &sizeTotal))
+        {
+            LOG_ERR << "failed to write file: '" << fullName << "'\n";
+            return 1;
+        }
+    }
+
+    auto allText = appConfig.mergeLines(resLines);
+
+    if (printToStdOut)
+    {
+        std::cout << allText;
     }
 
     if (!argsParser.quet)
@@ -355,19 +371,17 @@ int unsafeMain(int argc, char* argv[])
         LOG_MSG << "\n"; 
     }
 
-
-    #if defined(WIN32) || defined(_WIN32)
     if (appConfig.useClipboard)
     {
-        auto allText = appConfig.mergeLines(resLines);
+        #if defined(WIN32) || defined(_WIN32)
+        //auto allText = appConfig.mergeLines(resLines);
         if (!umba::win32::clipboardTextSet( allText, [](const std::string &t ) { return umba::fromUtf8(t); } /* fromUtfConverter */ , true /* utf */ , umba::win32::clipboardGetConsoleHwnd()))
         {
             LOG_WARN("clipbrd") << "failed to set clipboard text\n";
         }
+        #else
+        #endif
     }
-    #else
-    //if (!clipboardTextSet(text, fromUtfConverter, utfSource))
-    #endif
 
 
     return 0;

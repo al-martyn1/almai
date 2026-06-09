@@ -776,7 +776,7 @@ std::vector<std::string> simpleReplaceClipboardMarkerLine(const std::vector<std:
     for(const auto &line : lines)
     {
         auto lineLower = umba::string::tolower_copy(umba::string::ltrim_copy(line));
-        if (lineLower=="<clibboard>" || lineLower=="<clibboard/>" || lineLower=="<clibbrd>" || lineLower=="<clibbrd/>")
+        if (lineLower=="<clipboard>" || lineLower=="<clipboard/>" || lineLower=="<clipbrd>" || lineLower=="<clipbrd/>")
         {
             if (!clipboardInserted)
             {

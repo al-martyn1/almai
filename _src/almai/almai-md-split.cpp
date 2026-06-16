@@ -506,13 +506,22 @@ int unsafeMain(int argc, char* argv[])
         }
         else
         {
-            std::vector<std::string> lines = almai::utils::splitTextToLines(clpbText);
-            if (!splitLinesAndSaveContent(lines, mdArchivePartSeparatorLen))
+            std::vector<std::string> clpbLines = almai::utils::splitTextToLines(clpbText);
+            if (!splitLinesAndSaveContent(clpbLines, mdArchivePartSeparatorLen))
             {
                 hasErrors = true;
             }
+
+            if (!appConfig.saveClipboard.empty())
+            {
+                std::string fullName;
+                if (!appConfig.writeFile(appConfig.saveClipboard, clpbLines, &fullName))
+                {
+                     hasErrors = true;
+                     LOG_ERR << "failed to write file: '" << fullName << "'\n";
+                }
+            }
         }
-    
     }
 #endif
 

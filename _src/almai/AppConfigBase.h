@@ -37,6 +37,7 @@ struct AppConfigBase
     bool            overwrite         = false;
     bool            quet              = false;
     bool            useClipboard      = false;
+    std::string     saveClipboard;
 
     bool            listOnly          = false; // list files, but don't save them
     std::size_t     listLines         = 5;
@@ -101,6 +102,9 @@ struct AppConfigBase
     static 
     void splitHeaderFooter(const std::vector<std::string> &hefooter, std::vector<std::string> &header, std::vector<std::string> &footer)
     {
+        // header.clear();
+        // footer.clear();
+
         std::vector<std::string> *pResVec = &header;
 
         for(auto line : hefooter)
@@ -113,7 +117,13 @@ struct AppConfigBase
             {
                 std::size_t nChars = almai::utils::getNumberOfFirstSameChars(line);
                 if (line[0]=='-' && nChars>=3)
+                {
                     foundSep = true;
+                }
+                else if (line[0]==';')
+                {
+                    continue; // строка закоментированна
+                }
             }
 
             if (foundSep)

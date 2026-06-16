@@ -84,6 +84,7 @@ int operator()( const StringType                                &a           //!
 #include "cli_opt_parsers/dict.h"
 #include "cli_opt_parsers/output-dir.h"
 #include "cli_opt_parsers/clipboard.h"
+#include "cli_opt_parsers/description_filename.h"
 
         if (opt.isHelpStyleOption())
         {

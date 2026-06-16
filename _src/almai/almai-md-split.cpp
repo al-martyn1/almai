@@ -104,10 +104,11 @@ unsigned lineNo = 0;
 //----------------------------------------------------------------------------
 inline
 bool splitLinesAndSaveContent( std::vector<std::string> mdLines
-                             , std::size_t partSeparatorLen=0 // по умолчанию - не используем разделение на части, считаем весь файл просто md-архивом, иначе - md-fh[bd - только последняя часть
+                             , std::size_t partSeparatorLen=0 // по умолчанию - не используем разделение на части, считаем весь файл просто md-архивом, иначе - md-архив - только последняя часть
                              )
 {
     std::vector<std::string> lastSignificantLines;
+    unsigned lastSeparatorLineNo = (unsigned)-1;
 
     bool readingCode = false;
     char codeMarkerChar = 0;
@@ -237,6 +238,7 @@ bool splitLinesAndSaveContent( std::vector<std::string> mdLines
                 if (partSeparatorLen!=0 && markerLen>=partSeparatorLen)
                 {
                     foundListings.clear(); // найденное ранее очищаем, листинги md-архива только в последней части
+                    lastSeparatorLineNo = lineNo; // Запоминаем последний сепаратор
                 }
             }
             else if ( mdLineType==MdLineType::emptyLine
@@ -269,10 +271,15 @@ bool splitLinesAndSaveContent( std::vector<std::string> mdLines
                 codeLines.clear();
                 codeLang.clear();
             }
+            else if (mdLineType==MdLineType::unorderedList || mdLineType==MdLineType::orderedList)
+            {
+                // ничего не делаем
+            }
             else
             {
-                LOG_WARN_INPUT("unk-line-type") << "unknown line type found\n";
+                LOG_WARN_INPUT("unk-line-type") << "unknown line type found, mdLineType: " << (unsigned)mdLineType << ", line: '" << line << "'\n";
             }
+
         }
 
     }
@@ -322,6 +329,7 @@ bool splitLinesAndSaveContent( std::vector<std::string> mdLines
         return true;
     }
 
+
     bool hasErrors = false;
 
     for(const auto &listingInfo : foundListings)
@@ -336,6 +344,31 @@ bool splitLinesAndSaveContent( std::vector<std::string> mdLines
             }
         }
     }
+
+    if (lastSeparatorLineNo!=(unsigned)-1 && lastSeparatorLineNo<(unsigned)mdLines.size())
+    {
+        MdLineType mdLineType = almai::utils::detectMarkdownLineType(mdLines[lastSeparatorLineNo], 0, 0 /* &markerChar, &markerLen */ );
+        while(lastSeparatorLineNo && (mdLineType==MdLineType::emptyLine || mdLineType==MdLineType::headerSetext))
+        {
+            --lastSeparatorLineNo;
+            mdLineType = almai::utils::detectMarkdownLineType(mdLines[lastSeparatorLineNo], 0, 0 /* &markerChar, &markerLen */ );
+        }
+
+        // if (lastSeparatorLineNo)
+        //     --lastSeparatorLineNo;
+
+        auto descriptionLines = std::vector<std::string>(&mdLines[0], &mdLines[std::size_t(lastSeparatorLineNo)]);
+        if (!descriptionLines.empty())
+        {
+            std::string fullName;
+            if (!appConfig.writeFile(appConfig.descriptionFilename, descriptionLines, &fullName))
+            {
+                 hasErrors = true;
+                 LOG_ERR << "failed to write file: '" << fullName << "'\n";
+            }
+        }
+    }
+
 
     return !hasErrors;
 }

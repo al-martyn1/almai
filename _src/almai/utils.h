@@ -9,6 +9,7 @@
 //
 #include "umba/umba.h"
 #include "umba/parse_utils.h"
+#include "umba/filename.h"
 //
 #include "encoding/encoding.h"
 //
@@ -345,12 +346,91 @@ std::string unescapeMarkdownString(const std::string &str)
 }
 
 //----------------------------------------------------------------------------
+// Возвращает имя файла, очищенное от коментариев тупого болванчика
 inline
-std::size_t stripFilenameEdging(std::string &name, std::string *pEdging=0) // Возвращает индекс обрамления, есди было или std::size_t(-1)
+std::string tryRemoveCommentsFromFilename(std::string name, std::string *pCommentStr=0)
+{
+    auto ext = umba::filename::getExt(name);
+
+    auto bracePos = ext.rfind('('); // тупой болванчик обычно заключает свои коментарии в круглые скобки
+    auto spacePos = ext.rfind(' '); // но если нет скобок, то болванчик просто отделил свой коментарий пробелом - ну не может же он лепить без пробела же
+    // Так или иначе, но в расширениях пробел недопустим (но болванчик может прилепить в скобках без пробела)
+
+    if (bracePos==ext.npos && spacePos==ext.npos) // ничего не нашлось
+    {
+        if (pCommentStr)
+            pCommentStr->clear();
+        return name;
+    }
+
+    std::size_t extCommentStartPos = std::size_t(-1);
+
+    if (bracePos!=ext.npos && spacePos!=ext.npos)
+    {
+        // найдены оба
+        extCommentStartPos = spacePos<bracePos ? spacePos : bracePos;
+    }
+    else
+    {
+        // нашлось только одно, выбираем найденное
+        extCommentStartPos = spacePos!=ext.npos ? spacePos : bracePos;
+    }
+
+    // if (extCommentStartPos==std::size_t(-1)) // на всякий случай
+    // {
+    //     if (pCommentStr)
+    //         pCommentStr->clear();
+    //     return name;
+    // }
+
+    auto commentStr = std::string(ext, extCommentStartPos); // от найденной позиции в расширении имени файла до конца
+
+    auto commentPos = name.rfind(commentStr);
+    if (commentPos==name.npos)
+    {
+        if (pCommentStr)
+            pCommentStr->clear();
+        return name;
+    }
+
+    auto commentText = std::string(name, commentPos);
+    umba::string::trim(commentText);
+
+    name.erase(commentPos);
+    umba::string::trim(name);
+
+    if (pCommentStr)
+        *pCommentStr = commentText;
+
+    return name;
+}
+
+//----------------------------------------------------------------------------
+inline
+std::size_t stripFilenameEdging( std::string &name
+                               , std::string *pEdging=0 // Возвращает индекс обрамления, если было или std::size_t(-1)
+                               , bool bCommentPrependName=true // поместить коментарий в начало имени файла, если коментарий есть
+                               ) 
 {
     umba::string::trim(name);
 
     const auto& edgings = getAllowedFilenameEdgings();
+
+    std::string commentString;
+
+    auto prepentComment = [&](const auto &str) -> std::string
+    {
+        if (!bCommentPrependName)
+           return str;
+
+        if (commentString.empty())
+           return str;
+
+        auto p = umba::filename::getPath(str);
+        auto n = umba::filename::getFileName(str);
+
+        return umba::filename::appendPath(p, commentString + " " + n);
+    };
 
     for(auto i=0u; i!=edgings.size(); ++i)
     {
@@ -366,7 +446,9 @@ std::size_t stripFilenameEdging(std::string &name, std::string *pEdging=0) // В
             {
                 umba::string::starts_with_and_strip(name, e);
                 umba::string::trim(name);
+                name = tryRemoveCommentsFromFilename(name, &commentString);
                 name = unescapeMarkdownString(name);
+                name = prepentComment(name);
                 if (pEdging)
                    *pEdging = e;
                 return i;
@@ -379,7 +461,9 @@ std::size_t stripFilenameEdging(std::string &name, std::string *pEdging=0) // В
                 name.erase(lastEdgingPos); // до конца
                 umba::string::starts_with_and_strip(name, e);
                 umba::string::trim(name);
+                name = tryRemoveCommentsFromFilename(name, &commentString);
                 name = unescapeMarkdownString(name);
+                name = prepentComment(name);
                 if (pEdging)
                    *pEdging = e;
                 return i;
@@ -423,6 +507,7 @@ inline
 bool findListingFilenames( std::vector<std::string>::const_iterator b
                          , std::vector<std::string>::const_iterator e
                          , std::vector<std::string> &resNames
+                         , bool bCommentPrependName
                          ) 
 {
 /*
@@ -451,7 +536,7 @@ bool findListingFilenames( std::vector<std::string>::const_iterator b
     for(auto it=b; it!=e; ++it)
     {
         std::string str = *it;
-        edgings.emplace_back(stripFilenameEdging(str));
+        edgings.emplace_back(stripFilenameEdging(str, 0, bCommentPrependName));
         resNames.emplace_back(str);
     }
 
@@ -504,9 +589,10 @@ bool findListingFilenames( std::vector<std::string>::const_iterator b
 inline
 bool findListingFilenames( std::vector<std::string> textLines
                          , std::vector<std::string> &resNames
+                         , bool bCommentPrependName
                          ) 
 {
-    return findListingFilenames(textLines.begin(), textLines.end(), resNames);
+    return findListingFilenames(textLines.begin(), textLines.end(), resNames, bCommentPrependName);
 }
 
 //----------------------------------------------------------------------------

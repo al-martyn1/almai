@@ -197,7 +197,7 @@ void performExtractListingFilenamesTest(const std::string &lines)
     auto lastSignificantLines = almai::utils::splitTextToLines(lines);
 
     std::vector<std::string> filenames;
-    bool hasEdging = almai::utils::findListingFilenames(lastSignificantLines, filenames);
+    bool hasEdging = almai::utils::findListingFilenames(lastSignificantLines, filenames, true /*bCommentPrependName*/);
 
     for(auto &name : filenames)
     {
@@ -214,7 +214,10 @@ void performExtractListingFilenamesTests()
 
     cout << "**test01/ExtractListingFilenamesTests**" << "\n";
 
-    performExtractListingFilenamesTest("Some text\n**\\_src/lsp\\_tests/lsp\\_test\\_server.cpp** (новый тестовый файл)\n");
+    performExtractListingFilenamesTest("Some text\n" 
+                                       "**\\_src/lsp\\_tests/lsp\\_test\\_server2.cpp (новый тестовый файл)**\n"
+                                       "**\\_src/lsp\\_tests/lsp\\_test\\_server.cpp** (новый тестовый файл)\n"
+                                      );
 
     std::cout << "\n";
 }

@@ -29,7 +29,7 @@ struct AppConfig : public AppConfigBase
 
     std::vector<std::string>                         inputFiles;
     std::string                                      descriptionFilename = "__description__.md";
-
+    bool                                             keepFilenameComment = true;
 
 }; // struct AppConfig
 

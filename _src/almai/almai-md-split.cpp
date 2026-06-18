@@ -206,7 +206,7 @@ bool splitLinesAndSaveContent( std::vector<std::string> mdLines
                 listingInfo.foundLangName    = codeLang;
 
                 std::vector<std::string> filenames;
-                bool hasEdging = almai::utils::findListingFilenames(lastSignificantLines, filenames);
+                bool hasEdging = almai::utils::findListingFilenames(lastSignificantLines, filenames, appConfig.keepFilenameComment);
 
                 for(auto &name : filenames)
                 {

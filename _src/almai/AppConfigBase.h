@@ -321,8 +321,36 @@ struct AppConfigBase
         }
     }
 
-    std::string makeFilenameTextDecorated(const std::string &fileName) const
+    std::string makeFilenameTextDecorated(const std::string &fileName_) const
     {
+        // Все символы декорирования надо предварить обратным слэшем
+        // Все обратные слэши надо заменить на прямой
+        std::string fileName;
+        for(auto ch: fileName_)
+        {
+            if ( ch=='\"'
+              || ch=='\''
+              || ch=='*' 
+              || ch=='_' 
+              || ch=='*' 
+              || ch=='_' 
+              || ch=='~' 
+               )
+            {
+                fileName.append(1, '\\');
+                fileName.append(1, ch);
+                continue;
+            }
+
+            if ( ch=='\\')
+            {
+                fileName.append(1, '/');
+                continue;
+            }
+
+            fileName.append(1, ch);
+        }
+
         auto decoration = getFilenameTextDecoration();
         return decoration + fileName + decoration;
     }

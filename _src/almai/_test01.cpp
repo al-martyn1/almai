@@ -190,6 +190,41 @@ void performGetPathNameFileExtTests()
 }
 
 //----------------------------------------------------------------------------
+void performExtractListingFilenamesTest(const std::string &lines)
+{
+    std::cout << "\n";
+
+    auto lastSignificantLines = almai::utils::splitTextToLines(lines);
+
+    std::vector<std::string> filenames;
+    bool hasEdging = almai::utils::findListingFilenames(lastSignificantLines, filenames);
+
+    for(auto &name : filenames)
+    {
+        name = almai::utils::replaceInvalidPathNameChars(name, !hasEdging);
+        name = almai::utils::makeNormalizedRelativePath(name);
+        std::cout << name << "\n";
+    }
+
+}
+
+void performExtractListingFilenamesTests()
+{
+    std::cout << "\n";
+
+    cout << "**test01/ExtractListingFilenamesTests**" << "\n";
+
+    performExtractListingFilenamesTest("Some text\n**\\_src/lsp\\_tests/lsp\\_test\\_server.cpp** (новый тестовый файл)\n");
+
+    std::cout << "\n";
+}
+// almai::utils::
+// inline
+// std::vector<std::string> splitTextToLines(const std::string &text)
+// {
+//     return marty_cpp::splitToLinesSimple(text);
+// }
+
 
 
 
@@ -198,6 +233,8 @@ int main(int argc, char* argv[])
 {
     UMBA_USED(argc);
     UMBA_USED(argv);
+
+    performExtractListingFilenamesTests();
 
     performGetPathNameFileExtTests();
 

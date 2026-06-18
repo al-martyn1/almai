@@ -320,7 +320,33 @@ const std::vector<std::string>& getAllowedFilenameEdgings()
 
 //----------------------------------------------------------------------------
 inline
-std::size_t stripFilenameEdging(std::string &name) // Возвращает true, если было обрезано обрамление
+std::string unescapeMarkdownString(const std::string &str)
+{
+    std::string resStr; resStr.reserve(str.size());
+
+    bool prevSlash = false;
+    for(auto ch: str)
+    {
+        if (prevSlash)
+        {
+            resStr.append(1, ch);
+            prevSlash = false;
+        }
+        else
+        {
+            if (ch=='\\')
+                prevSlash = true;
+            else
+                resStr.append(1, ch);
+        }
+    }
+
+    return resStr;
+}
+
+//----------------------------------------------------------------------------
+inline
+std::size_t stripFilenameEdging(std::string &name, std::string *pEdging=0) // Возвращает индекс обрамления, есди было или std::size_t(-1)
 {
     umba::string::trim(name);
 
@@ -329,13 +355,40 @@ std::size_t stripFilenameEdging(std::string &name) // Возвращает true,
     for(auto i=0u; i!=edgings.size(); ++i)
     {
         const auto &e = edgings[i];
+        if (e.empty())
+            continue;
 
-        if (umba::string::starts_with(name, e) && umba::string::ends_with(name, e))
+        //if (umba::string::starts_with(name, e) && umba::string::ends_with(name, e))
+        if (umba::string::starts_with(name, e))
         {
-            umba::string::starts_with_and_strip(name, e);
-            umba::string::ends_with_and_strip(name, e);
-            umba::string::trim(name);
-            return i;
+            // Если короткий, то должно заканчиваться строго на него же, и сразу и вырезаем, если заканчивается
+            if (e.size()<2 && umba::string::ends_with_and_strip(name, e)) 
+            {
+                umba::string::starts_with_and_strip(name, e);
+                umba::string::trim(name);
+                name = unescapeMarkdownString(name);
+                if (pEdging)
+                   *pEdging = e;
+                return i;
+            }
+
+            // ищем последнее вхождение эджинга
+            auto lastEdgingPos = name.rfind(e);
+            if (lastEdgingPos!=name.npos && lastEdgingPos!=0) // Позиция найдена, и она не нулевая - не позиция стартового эджинга
+            {
+                name.erase(lastEdgingPos); // до конца
+                umba::string::starts_with_and_strip(name, e);
+                umba::string::trim(name);
+                name = unescapeMarkdownString(name);
+                if (pEdging)
+                   *pEdging = e;
+                return i;
+            }
+
+            // umba::string::starts_with_and_strip(name, e);
+            // umba::string::ends_with_and_strip(name, e);
+            // umba::string::trim(name);
+            // return i;
         }
     }
 
@@ -706,7 +759,7 @@ std::string autoEncodeToUtf(const std::string &text)
 inline
 std::vector<std::string> splitTextToLines(const std::string &text)
 {
-    return marty_cpp::splitToLinesSimple(text);
+    return marty_cpp::splitToLinesSimple(text, false /*!addEmptyLineAfterLastLf*/);
 }
 
 //----------------------------------------------------------------------------

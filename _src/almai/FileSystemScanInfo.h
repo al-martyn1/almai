@@ -81,6 +81,11 @@ public:
         scanInfo.path = getPath(fullName);
         auto name = getFileName(fullName);
 
+        // Проверяем последнее имя каталога в пути
+        // Если оно `**` (путь поиска вида "path/to/**/file*.ext")
+        // то это рекурсивный поиск
+        // Если путь вида "path/to/file*.ext", то в каталоге "path/to" будут
+        // искаться файлы по маске "file*.ext"
         if (isRecurseMarker(getFileName(scanInfo.path)))
         {
             scanInfo.recursive = true;
@@ -119,8 +124,8 @@ public:
                 pList->emplace_back(mask);
             }
     
-            if (scanInfo.includeMaskList.empty())
-                scanInfo.includeMaskList.emplace_back("*.*");
+            // if (scanInfo.includeMaskList.empty())
+            //     scanInfo.includeMaskList.emplace_back("*.*");
         }
 
         if (!scanInfo.path.empty() && scanInfo.path[0]=='.') // '..' or '.'

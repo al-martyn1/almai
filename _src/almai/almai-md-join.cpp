@@ -267,6 +267,7 @@ int unsafeMain(int argc, char* argv[])
 
     std::vector<std::string> readedFiles;
 
+    //std::cerr << "Send files list\n";
     for(auto &ffi: appConfig.foundFileInfos)
     {
         if (!almai::utils::readFile(ffi.fullName, ffi.fileLines))
@@ -276,11 +277,12 @@ int unsafeMain(int argc, char* argv[])
         else
         {
             readedFiles.push_back(ffi.fullName);
+            //std::cerr << "  " << ffi.fullName << "\n";
         }
     }
 
 
-    if (appConfig.listOnly)
+    //if (appConfig.listOnly)
     {
         UMBA_LOG_MSG << "\nFound files:\n";
 
@@ -291,7 +293,8 @@ int unsafeMain(int argc, char* argv[])
 
         UMBA_LOG_MSG << "\n";
 
-        return 0;
+        if (appConfig.listOnly)
+            return 0;
     }
 
     // Теперь надо для каждого файла найти fence

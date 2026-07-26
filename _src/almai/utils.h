@@ -935,6 +935,30 @@ std::vector<std::string> simpleReplaceClipboardMarkerLine(const std::vector<std:
 
             }
         }
+
+        else if (lineLower=="<clipboard-code>" || lineLower=="<clipboard-code/>" || lineLower=="<clipbrd-code>" || lineLower=="<clipbrd-code/>")
+        {
+            if (!clipboardInserted)
+            {
+                clipboardInserted = true;
+
+                #if defined(WIN32) || defined(_WIN32)
+
+                std::wstring clpbText;
+                if (umba::win32::clipboardTextGet(clpbText))
+                {
+                    auto clpbTextUtf = umba::toUtf8(clpbText);
+                    auto clpbLines   = marty_cpp::splitToLinesSimple(clpbTextUtf);
+                    resLines.push_back("~~~Text");
+                    resLines.insert(resLines.end(), clpbLines.begin(), clpbLines.end());
+                    resLines.push_back("~~~");
+                }
+
+                #endif
+
+            }
+        }
+
         else
         {
             resLines.push_back(line);

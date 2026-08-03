@@ -72,9 +72,9 @@ struct AppConfigBase
     }
 
 
-    static std::vector<std::string> stripEmptyHeadLines(const std::vector<std::string> &lines) { return almai::utils::stripEmptyLeadingLines(lines); }
-    static std::vector<std::string> stripEmptyTailLines(std::vector<std::string> lines)        { return almai::utils::stripEmptyTrailingLines(lines); }
-    static std::vector<std::string> stripEmptyHeadTailLines(std::vector<std::string> lines)    { return almai::utils::stripEmptyLeadingTrailingLines(lines); }
+    static std::vector<std::string> stripEmptyHeadLines(const std::vector<std::string> &lines) { return md::stripEmptyLeadingLines(lines); }
+    static std::vector<std::string> stripEmptyTailLines(std::vector<std::string> lines)        { return md::stripEmptyTrailingLines(lines); }
+    static std::vector<std::string> stripEmptyHeadTailLines(std::vector<std::string> lines)    { return md::stripEmptyLeadingTrailingLines(lines); }
 
     static
     void appendLines(std::vector<std::string> &linesAppendTo, const std::vector<std::string> &lines)

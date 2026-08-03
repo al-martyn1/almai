@@ -48,6 +48,8 @@
 #include "umba/time_service.h"
 #include "umba/shellapi.h"
 
+#include "md_utils.h"
+
 //
 #include <iostream>
 #include <iomanip>
@@ -107,204 +109,89 @@ bool splitLinesAndSaveContent( std::vector<std::string> mdLines
                              , std::size_t partSeparatorLen=0 // по умолчанию - не используем разделение на части, считаем весь файл просто md-архивом, иначе - md-архив - только последняя часть
                              )
 {
-    std::vector<std::string> lastSignificantLines;
-    unsigned lastSeparatorLineNo = (unsigned)-1;
+    std::vector<md::MdArchivePart> mdArchiveParts;
+    if (!md::splitMarkdownArchive(mdArchiveParts, mdLines, appConfig.keepFilenameComment, partSeparatorLen))
+        return false;
 
-    bool readingCode = false;
-    char codeMarkerChar = 0;
-    std::size_t codeMarkerLen = 0;
-    std::string codeLang;
-    std::vector<std::string> codeLines;
+    std::vector<std::size_t> autosaveCounters; // по счётчику на часть
+    autosaveCounters.resize(mdArchiveParts.size(), 0);
 
-    if (partSeparatorLen!=0 && partSeparatorLen<3) // Если задан, то не менее трёх символов
-        partSeparatorLen = 3;
+    // std::vector<std::size_t> fileArchPartMarkers; // по счётчику на часть
+    // fileArchPartMarkers.resize(mdArchiveParts.size(), 0);
 
-    std::vector<almai::ListingInfo> foundListings;
 
-    using almai::MdLineType;
-
-    almai::MdLineType listingType = almai::MdLineType::emptyLine;
-
-    lineNo = 0;
-    for(const auto &line : mdLines)
-    {
-        lineNo++;
-
-        char markerChar = 0;
-        std::size_t markerLen = 0;
-
-        MdLineType mdLineType = almai::utils::detectMarkdownLineType(line, &markerChar, &markerLen);
-
-        if (readingCode)
-        {
-            bool unexpectedEndOfListing = false;
-
-            if (listingType==MdLineType::codeTilda || listingType==MdLineType::codeBacktick)
-            {
-                // ИИ может глючить (не хватать токенов), и он может продалбываться
-                // Иногда он может добавить маркер конца листинга в конец строки
-                // потеряв часть содержимого листинга.
-                // Надо просекать такие ситуации
-
-                // !!! Не нужно. Просто был кривоватый документ, в нем были листинги на питоне, и внутри них были 
-                // маркдаун маркеры блоков кода
-
-                // auto blockMarker = std::string(codeMarkerLen, codeMarkerChar);
-                //  
-                // if (line!=blockMarker && umba::string::ends_with(line, blockMarker))
-                // {
-                //     unexpectedEndOfListing = true;
-                //     LOG_WARN_INPUT("unexp-code-block-end") << "found unexpected code block end\n";
-                // }
-                
-            }
-
-            // listingType = mdLineType;
-            if (listingType==MdLineType::codeIndentTab || listingType==MdLineType::codeIndentSpace)
-            {
-                if (listingType==mdLineType)
-                {
-                    // Продолжается чтение листинга с отступом
-                    codeLines.push_back(line);
-                }
-                else
-                {
-                    // Может начаться backtick или tilda листинг
-                    if (mdLineType==MdLineType::codeTilda || mdLineType==MdLineType::codeBacktick)
-                    {
-                        listingType = mdLineType;
-                        readingCode = true;
-                        codeMarkerChar = markerChar;
-                        codeMarkerLen  = markerLen ;
-                        codeLines.clear();
-                        codeLang = almai::utils::extractCodeLangFromFencedCodeBlockMarker(line);
-                    }
-                    else
-                    {
-                        // листинг с отступом закончился
-                        readingCode = false;
-                        lastSignificantLines.clear();
-                        codeLines.clear();
-                    }
-                }
-            }
-
-            else if ( unexpectedEndOfListing
-                  || ((listingType==MdLineType::codeTilda || listingType==MdLineType::codeBacktick) 
-                    && listingType==mdLineType && codeMarkerChar==markerChar && codeMarkerLen==markerLen
-                     )
-                    )
-            {
-                if (codeLang.empty())
-                {
-                    codeLang = almai::utils::extractCodeLangFromFencedCodeBlockMarker(line);
-                }
-
-                // Остальная обработка финализации листинга
-                almai::ListingInfo listingInfo;
-                listingInfo.listingCodeLines = codeLines;
-                listingInfo.foundLangName    = codeLang;
-
-                std::vector<std::string> filenames;
-                bool hasEdging = almai::utils::findListingFilenames(lastSignificantLines, filenames, appConfig.keepFilenameComment);
-
-                for(auto &name : filenames)
-                {
-                    name = almai::utils::replaceInvalidPathNameChars(name, !hasEdging);
-                    name = almai::utils::makeNormalizedRelativePath(name);
-                    listingInfo.listingFilenames.emplace_back(name);
-                }
-
-                foundListings.emplace_back(listingInfo);
-    
-                readingCode = false;
-                lastSignificantLines.clear();
-                codeLines.clear();
-            }
-            else
-            {
-                // продолжаем чтение листинга
-                codeLines.push_back(line);
-            }
-        }
-
-        else // обычный режим
-        {
-            if ( mdLineType==MdLineType::headerSetext ) // '-'/'='
-            {
-                lastSignificantLines.clear();
-
-                // Если обнаружен разделитель --- или === (или более длинный)
-                if (partSeparatorLen!=0 && markerLen>=partSeparatorLen)
-                {
-                    foundListings.clear(); // найденное ранее очищаем, листинги md-архива только в последней части
-                    lastSeparatorLineNo = lineNo; // Запоминаем последний сепаратор
-                }
-            }
-            else if ( mdLineType==MdLineType::emptyLine
-                   || mdLineType==MdLineType::headerAtx
-                   || mdLineType==MdLineType::quotation
-                    )
-            {
-                lastSignificantLines.clear();
-            }
-            else if (mdLineType==MdLineType::regularLine)
-            {
-                lastSignificantLines.push_back(line);
-            }
-            else if (mdLineType==MdLineType::codeTilda || mdLineType==MdLineType::codeBacktick)
-            {
-                listingType = mdLineType;
-                readingCode = true;
-                codeMarkerChar = markerChar;
-                codeMarkerLen  = markerLen ;
-                codeLines.clear();
-                codeLang = almai::utils::extractCodeLangFromFencedCodeBlockMarker(line);
-            }
-            else if (mdLineType==MdLineType::codeIndentTab || mdLineType==MdLineType::codeIndentSpace)
-            {
-                LOG_WARN_INPUT("unsup-code-block-type") << (mdLineType==MdLineType::codeIndentTab ? "tab" : "space") << " indent code blocks not supported\n";
-                listingType = mdLineType;
-                readingCode = true;
-                codeMarkerChar = markerChar;
-                codeMarkerLen  = markerLen ;
-                codeLines.clear();
-                codeLang.clear();
-            }
-            else if (mdLineType==MdLineType::unorderedList || mdLineType==MdLineType::orderedList)
-            {
-                // ничего не делаем
-            }
-            else
-            {
-                LOG_WARN_INPUT("unk-line-type") << "unknown line type found, mdLineType: " << (unsigned)mdLineType << ", line: '" << line << "'\n";
-            }
-
-        }
-
-    }
+// struct MdArchivePart
+// {
+//     std::vector<std::string> textLines;
+//     std::vector<ListingInfo> listings ;
 
     std::unordered_map<std::string, std::size_t>  filenameCounters;
 
-    for(auto &listingInfo : foundListings)
-    {
-        auto ext = appConfig.findLangExtention(listingInfo.foundLangName);
-        if (ext.empty())
-            ext = "txt";
+    md::MdArchivePart collectedData;
 
-        if (listingInfo.listingFilenames.empty())
-            listingInfo.listingFilenames.emplace_back("autosave");
-        
-        listingInfo.checkAddExtention(ext);
-        listingInfo.checkAutoEnumerate(filenameCounters);
+    std::size_t partNo = 0;
+    for(auto& archivePart: mdArchiveParts)
+    {
+        for(auto &listingInfo : archivePart.listings)
+        {
+            auto ext = appConfig.findLangExtention(listingInfo.foundLangName);
+            if (ext.empty())
+                ext = "txt";
+    
+            if (listingInfo.listingFilenames.empty())
+            {
+                listingInfo.listingFilenames.emplace_back("autosave");
+                ++autosaveCounters[partNo];
+            }
+
+            listingInfo.checkAddExtention(ext);
+            listingInfo.checkAutoEnumerate(filenameCounters);
+        }
+
+
+        std::size_t autosavePercent = 100;
+        if (!archivePart.listings.empty())
+        {
+            // Только если листинги присутствуют
+
+            // Если большинство листингов в части - autosave, то весьма вероятно
+            // что это текстовая часть с примерами кода
+            // Если autosave мало, то это - часть с кодом
+
+            auto autosavePercent = 100*autosaveCounters[partNo]/archivePart.listings.size();
+        }
+
+        if (autosavePercent<20)
+        {
+            // Эта часть - с листингами
+        //    fileArchPartMarkers[partNo] = 1;
+            collectedData.listings.insert(collectedData.listings.end(), archivePart.listings.begin(), archivePart.listings.end());
+
+            if (!collectedData.allText.empty() && archivePart.textLines.empty())
+                collectedData.allText.emplace_back();
+
+            collectedData.allText.insert(collectedData.allText.end(), archivePart.textLines.begin(), archivePart.textLines.end());
+        }
+        else // без листингов
+        {
+            if (!collectedData.allText.empty() && archivePart.allText.empty())
+                collectedData.allText.emplace_back();
+
+            // тут мы просто весь текст добавлем, е не только выкусанную часть без кода
+            collectedData.allText.insert(collectedData.allText.end(), archivePart.allText.begin(), archivePart.allText.end());
+        }
+
+        ++partNo;
     }
+    
+
 
     if (appConfig.listOnly)
     {
         // std::cout 
         UMBA_LOG_MSG << "\nFound listings:\n";
 
-        for(const auto &listingInfo : foundListings)
+        for(const auto &listingInfo : collectedData.listings)
         {
             for(const auto &name : listingInfo.listingFilenames)
             {
@@ -332,7 +219,7 @@ bool splitLinesAndSaveContent( std::vector<std::string> mdLines
 
     bool hasErrors = false;
 
-    for(const auto &listingInfo : foundListings)
+    for(const auto &listingInfo : collectedData.listings)
     {
         for(const auto &name : listingInfo.listingFilenames)
         {
@@ -357,7 +244,8 @@ bool splitLinesAndSaveContent( std::vector<std::string> mdLines
         // if (lastSeparatorLineNo)
         //     --lastSeparatorLineNo;
 
-        auto descriptionLines = std::vector<std::string>(&mdLines[0], &mdLines[std::size_t(lastSeparatorLineNo)]);
+        //auto descriptionLines = std::vector<std::string>(&mdLines[0], &mdLines[std::size_t(lastSeparatorLineNo)]);
+        auto descriptionLines = collectedData.allText;
         if (!descriptionLines.empty())
         {
             std::string fullName;

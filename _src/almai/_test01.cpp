@@ -3,7 +3,8 @@
  */
 
 #include "utils.h"
-//
+#include "md_utils.h"
+ //
 
 #include <iostream>
 
@@ -15,7 +16,7 @@ using namespace almai;
 inline 
 void performMakeNormalizedRelativePathTest(const std::string &name)
 {
-    cout << "  [" << name << "] - [" << almai::utils::makeNormalizedRelativePath(name) << "]\n";
+    cout << "  [" << name << "] - [" << md::makeNormalizedRelativePath(name) << "]\n";
 }
 
 //----------------------------------------------------------------------------
@@ -197,12 +198,12 @@ void performExtractListingFilenamesTest(const std::string &lines)
     auto lastSignificantLines = almai::utils::splitTextToLines(lines);
 
     std::vector<std::string> filenames;
-    bool hasEdging = almai::utils::findListingFilenames(lastSignificantLines, filenames, true /*bCommentPrependName*/);
+    bool hasEdging = md::findListingFilenames(lastSignificantLines, filenames, true /*bCommentPrependName*/);
 
     for(auto &name : filenames)
     {
-        name = almai::utils::replaceInvalidPathNameChars(name, !hasEdging);
-        name = almai::utils::makeNormalizedRelativePath(name);
+        name = md::replaceInvalidPathNameChars(name, !hasEdging);
+        name = md::makeNormalizedRelativePath(name);
         std::cout << name << "\n";
     }
 

@@ -10,6 +10,7 @@
 #include "umba/html_base.h"
 //
 #include "utils.h"
+#include "md_utils.h"
 
 //
 #include <string>
@@ -61,7 +62,7 @@ void stripEmptyLeadingTrailingLines(XmlTag &xmlTag)
 {
     for(auto &child : xmlTag.childs)
     {
-        child.text = utils::stripEmptyLeadingTrailingLines(child.text);
+        child.text = md::stripEmptyLeadingTrailingLines(child.text);
     }
 }
 
@@ -115,7 +116,7 @@ LineIterator parseMarkdownXml(XmlTag &parseTo, LineIterator b, LineIterator e, b
             char mdChar = 0;
             std::size_t numChars = 0;
 
-            MdLineType mdLineType = utils::detectMarkdownLineType(*b, &mdChar, &numChars);
+            MdLineType mdLineType = md::detectMarkdownLineType(*b, &mdChar, &numChars);
             if ((mdLineType== MdLineType::codeTilda || mdLineType== MdLineType::codeBacktick) && codeType==mdLineType && numChars==codeMarkerLen)
             {
                 // Найден завершающий маркер листинга
@@ -134,7 +135,7 @@ LineIterator parseMarkdownXml(XmlTag &parseTo, LineIterator b, LineIterator e, b
             char mdChar = 0;
             std::size_t numChars = 0;
 
-            MdLineType mdLineType = utils::detectMarkdownLineType(*b, &mdChar, &numChars);
+            MdLineType mdLineType = md::detectMarkdownLineType(*b, &mdChar, &numChars);
             if ((mdLineType==MdLineType::codeTilda || mdLineType==MdLineType::codeBacktick) && numChars>=3)
             {
                 codeType = mdLineType;

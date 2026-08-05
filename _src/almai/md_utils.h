@@ -858,8 +858,8 @@ struct ListingInfo
 //----------------------------------------------------------------------------
 struct MdArchivePart
 {
-    std::vector<std::string> allText  ;
-    std::vector<std::string> textLines;
+    std::vector<std::string> allText  ; // Текст с листингами
+    std::vector<std::string> textLines; // Только текст, без листингов
     std::vector<ListingInfo> listings ;
 
     //std::size_t              aitosaveCounter;
@@ -901,6 +901,9 @@ bool splitMarkdownArchive( std::vector<MdArchivePart> mdArchiveParts
     if (partSeparatorLen!=0 && partSeparatorLen<3) // Если задан, то не менее трёх символов
         partSeparatorLen = 3;
 
+    // auto
+    // lastSignificantLines
+    // textLines
 
     almai::MdLineType listingType = almai::MdLineType::emptyLine;
 

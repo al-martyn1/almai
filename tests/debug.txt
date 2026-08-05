@@ -1,0 +1,15 @@
+
+
+Working Directory
+  $(ProjectDir)\..\..\..\tests
+
+Command Arguments
+
+  --list --overwrite -o=almai-md-split-test01       almai-md-split.md
+  --list --overwrite --o=almai-md-split-ai-result2  almai-md-split-ai-result2.md
+  --list --overwrite -o=almai-md-split-ai-result3   almai-md-split-ai-result3.md
+
+  --overwrite -o=almai-md-split-test01       almai-md-split.md
+  --overwrite --o=almai-md-split-ai-result2  almai-md-split-ai-result2.md
+  --overwrite -o=almai-md-split-ai-result3   almai-md-split-ai-result3.md
+

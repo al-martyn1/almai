@@ -8,6 +8,7 @@
 //----------------------------------------------------------------------------
 #include "enums.h"
 #include "utils.h"
+#include "md_utils.h"
 #include "FileSystemScanInfo.h"
 #include "FoundFileInfo.h"
 //
@@ -115,7 +116,7 @@ struct AppConfigBase
 
             if (!line.empty())
             {
-                std::size_t nChars = almai::utils::getNumberOfFirstSameChars(line);
+                std::size_t nChars = md::getNumberOfFirstSameChars(line);
                 if (line[0]=='-' && nChars>=3)
                 {
                     foundSep = true;
@@ -234,7 +235,7 @@ struct AppConfigBase
         std::unordered_map<std::string, std::string>::const_iterator it = langExtDict.find(langName);
         if (it==langExtDict.end())
         {
-            return almai::utils::replaceInvalidFileNameChars(langName, true /* replaceSpaceAlso */ );
+            return md::replaceInvalidFileNameChars(langName, true /* replaceSpaceAlso */ );
         }
 
         return it->second;
@@ -367,7 +368,7 @@ struct AppConfigBase
             oss << makeFilenameTextDecorated(displayFileName) << "\n";
         }
 
-        std::string fence = almai::utils::generateFence(fenceStyle, fileLines);
+        std::string fence = md::generateFence(fenceStyle, fileLines);
 
         oss << fence << makeLangMarker(displayFileName);
 

@@ -158,7 +158,7 @@ bool splitLinesAndSaveContent( std::vector<std::string> mdLines
             // что это текстовая часть с примерами кода
             // Если autosave мало, то это - часть с кодом
 
-            auto autosavePercent = 100*autosaveCounters[partNo]/archivePart.listings.size();
+            autosavePercent = 100*autosaveCounters[partNo]/archivePart.listings.size();
         }
 
         if (autosavePercent<20)
@@ -232,13 +232,16 @@ bool splitLinesAndSaveContent( std::vector<std::string> mdLines
         }
     }
 
+
+#if 0
+
     if (lastSeparatorLineNo!=(unsigned)-1 && lastSeparatorLineNo<(unsigned)mdLines.size())
     {
-        MdLineType mdLineType = almai::utils::detectMarkdownLineType(mdLines[lastSeparatorLineNo], 0, 0 /* &markerChar, &markerLen */ );
-        while(lastSeparatorLineNo && (mdLineType==MdLineType::emptyLine || mdLineType==MdLineType::headerSetext))
+        almai::MdLineType mdLineType = md::detectMarkdownLineType(mdLines[lastSeparatorLineNo], 0, 0 /* &markerChar, &markerLen */ );
+        while(lastSeparatorLineNo && (mdLineType== almai::MdLineType::emptyLine || mdLineType== almai::MdLineType::headerSetext))
         {
             --lastSeparatorLineNo;
-            mdLineType = almai::utils::detectMarkdownLineType(mdLines[lastSeparatorLineNo], 0, 0 /* &markerChar, &markerLen */ );
+            mdLineType = md::detectMarkdownLineType(mdLines[lastSeparatorLineNo], 0, 0 /* &markerChar, &markerLen */ );
         }
 
         // if (lastSeparatorLineNo)
@@ -256,6 +259,23 @@ bool splitLinesAndSaveContent( std::vector<std::string> mdLines
             }
         }
     }
+
+#else
+
+    if (!collectedData.allText.empty())
+    {
+        std::string fullName;
+        if (!appConfig.writeFile(appConfig.descriptionFilename, collectedData.allText, &fullName))
+        {
+             hasErrors = true;
+             LOG_ERR << "failed to write file: '" << fullName << "'\n";
+        }
+    }
+
+
+#endif
+
+
 
 
     return !hasErrors;

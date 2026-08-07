@@ -6,16 +6,17 @@ call "%~dp0\.find_test_exe.bat" %TEST_NAME%
 @set TEST_EXE="%FOUND_EXE%"
 
 %TEST_EXE% --list       -o=almai-md-split-test01    almai-md-split.md
-@rem %TEST_EXE%              -o=almai-md-split-test01    almai-md-split.md
-@rem %TEST_EXE% --overwrite  -o=almai-md-split-test01    almai-md-split.md
+@rem exit /B 0
+%TEST_EXE%              -o=almai-md-split-test01    almai-md-split.md
+%TEST_EXE% --overwrite  -o=almai-md-split-test01    almai-md-split.md
 
 %TEST_EXE% --list       -o=almai-md-split-ai-result2 almai-md-split-ai-result2.md
-@rem %TEST_EXE%              -o=almai-md-split-ai-result2 almai-md-split-ai-result2.md
-@rem %TEST_EXE% --overwrite  -o=almai-md-split-ai-result2 almai-md-split-ai-result2.md
+%TEST_EXE%              -o=almai-md-split-ai-result2 almai-md-split-ai-result2.md
+%TEST_EXE% --overwrite  -o=almai-md-split-ai-result2 almai-md-split-ai-result2.md
 
 %TEST_EXE% --list       -o=almai-md-split-ai-result3 almai-md-split-ai-result3.md
-@rem %TEST_EXE%              -o=almai-md-split-ai-result3 almai-md-split-ai-result3.md
-@rem %TEST_EXE% --overwrite  -o=almai-md-split-ai-result3 almai-md-split-ai-result3.md
+%TEST_EXE%              -o=almai-md-split-ai-result3 almai-md-split-ai-result3.md
+%TEST_EXE% --overwrite  -o=almai-md-split-ai-result3 almai-md-split-ai-result3.md
 
 exit /B 0
 :NOT_FOUND

@@ -188,29 +188,36 @@ bool splitLinesAndSaveContent( std::vector<std::string> mdLines
 
     if (appConfig.listOnly)
     {
-        // std::cout 
-        UMBA_LOG_MSG << "\nFound listings:\n";
-
-        for(const auto &listingInfo : collectedData.listings)
+        // std::cout
+        if (collectedData.listings.empty())
         {
-            for(const auto &name : listingInfo.listingFilenames)
+            UMBA_LOG_MSG << "\nNo listings found\n";
+        }
+        else
+        {
+            UMBA_LOG_MSG << "\nFound listings:\n";
+    
+            for(const auto &listingInfo : collectedData.listings)
             {
+                for(const auto &name : listingInfo.listingFilenames)
+                {
+                    // std::cout 
+                    UMBA_LOG_MSG << "  " << name << "\n";
+                }
+    
+                std::size_t printLines = listingInfo.listingCodeLines.size();
+                if (printLines>appConfig.listLines)
+                    printLines = appConfig.listLines;
+    
+                for(std::size_t i=0u; i!=printLines; ++i)
+                {
+                    //std::cout 
+                    UMBA_LOG_MSG << "    >" << listingInfo.listingCodeLines[i] << "\n";
+                }
+    
                 // std::cout 
-                UMBA_LOG_MSG << "  " << name << "\n";
+                UMBA_LOG_MSG << "\n";
             }
-
-            std::size_t printLines = listingInfo.listingCodeLines.size();
-            if (printLines>appConfig.listLines)
-                printLines = appConfig.listLines;
-
-            for(std::size_t i=0u; i!=printLines; ++i)
-            {
-                //std::cout 
-                UMBA_LOG_MSG << "    >" << listingInfo.listingCodeLines[i] << "\n";
-            }
-
-            // std::cout 
-            UMBA_LOG_MSG << "\n";
         }
 
         return true;

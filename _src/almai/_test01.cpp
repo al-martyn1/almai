@@ -198,7 +198,7 @@ void performExtractListingFilenamesTest(const std::string &lines)
     auto lastSignificantLines = almai::utils::splitTextToLines(lines);
 
     std::vector<std::string> filenames;
-    bool hasEdging = md::findListingFilenames(lastSignificantLines, filenames, true /*bCommentPrependName*/);
+    bool hasEdging = md::findListingFilenames(lastSignificantLines, true /*bCommentPrependName*/, &filenames);
 
     for(auto &name : filenames)
     {

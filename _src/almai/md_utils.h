@@ -513,8 +513,11 @@ std::size_t testFilenameEdging(std::string name) // Возвращает true, �
 inline
 bool findListingFilenames( std::vector<std::string>::const_iterator b
                          , std::vector<std::string>::const_iterator e
-                         , std::vector<std::string> &resNames
-                         , bool bCommentPrependName
+                         , bool                      bCommentPrependName
+                         , std::vector<std::string> *pResNames          = 0
+                         , std::vector<std::string> *pRemainedTextLines = 0
+                         , size_t                   *pNumEdgings        = 0
+                         , size_t                   *pFoundEdgingType   = 0
                          ) 
 {
 /*
@@ -531,8 +534,10 @@ bool findListingFilenames( std::vector<std::string>::const_iterator b
 
     Если таких строк нет вообще, считаем последнюю строку не именем файла, а описанием (но это делаем на уровне выше).
 */
+    // if (pResNames)
+    //     pResNames->clear();
 
-    resNames.clear();
+    std::vector<std::string> resNames;
 
     if (b==e)
         return false;
@@ -584,22 +589,39 @@ bool findListingFilenames( std::vector<std::string>::const_iterator b
     if (!numEqualEdgings)
         numEqualEdgings = 1;
 
-    resNames.erase( std::next(resNames.begin(), std::ptrdiff_t(numEqualEdgings)), resNames.end() );
+    if (pRemainedTextLines)
+    {
+        pRemainedTextLines->insert( pRemainedTextLines->end(), std::next(resNames.begin(), std::ptrdiff_t(numEqualEdgings)), resNames.end() );
+        std::reverse(pRemainedTextLines->begin(), pRemainedTextLines->end());
+    }
 
+    resNames.erase( std::next(resNames.begin(), std::ptrdiff_t(numEqualEdgings)), resNames.end() );
     // Реверсим обратно
     std::reverse(resNames.begin(), resNames.end());
+
+    if (pFoundEdgingType)
+       *pFoundEdgingType = edgingType;
+
+    if (pNumEdgings)
+       *pNumEdgings = numEqualEdgings;
+
+    if (pResNames)
+       *pResNames = resNames;
 
     return edgingType!=std::size_t(-1);
 }
 
 //----------------------------------------------------------------------------
 inline
-bool findListingFilenames( std::vector<std::string> textLines
-                         , std::vector<std::string> &resNames
-                         , bool bCommentPrependName
+bool findListingFilenames( std::vector<std::string>  textLines
+                         , bool                      bCommentPrependName
+                         , std::vector<std::string> *pResNames          = 0
+                         , std::vector<std::string> *pRemainedTextLines = 0
+                         , size_t                   *pNumEdgings        = 0
+                         , size_t                   *pFoundEdgingType   = 0
                          ) 
 {
-    return findListingFilenames(textLines.begin(), textLines.end(), resNames, bCommentPrependName);
+    return findListingFilenames(textLines.begin(), textLines.end(), bCommentPrependName, pResNames, pRemainedTextLines, pNumEdgings, pFoundEdgingType);
 }
 
 //----------------------------------------------------------------------------
@@ -882,8 +904,8 @@ struct MdArchivePart
 
 //----------------------------------------------------------------------------
 inline
-bool splitMarkdownArchive( std::vector<MdArchivePart> mdArchiveParts
-                         , std::vector<std::string> mdLines
+bool splitMarkdownArchive( std::vector<MdArchivePart>     &mdArchiveParts
+                         , const std::vector<std::string> &mdLines
                          , bool        keepFilenameComment
                          , std::size_t partSeparatorLen=0 // по умолчанию - не используем разделение на части, считаем весь файл md-архивом
                          )
@@ -901,7 +923,16 @@ bool splitMarkdownArchive( std::vector<MdArchivePart> mdArchiveParts
     if (partSeparatorLen!=0 && partSeparatorLen<3) // Если задан, то не менее трёх символов
         partSeparatorLen = 3;
 
-    // auto
+    auto appendLastSignificanLinesToText = [&]()
+    {
+        lastSignificantLines = stripEmptyLeadingTrailingLines(lastSignificantLines);
+        if (!archiveCurPart.textLines.empty() && !lastSignificantLines.empty())
+        {
+            archiveCurPart.textLines.emplace_back();
+        }
+
+        archiveCurPart.textLines.insert(archiveCurPart.textLines.end(), lastSignificantLines.begin(), lastSignificantLines.end());
+    };
     // lastSignificantLines
     // textLines
 
@@ -967,6 +998,7 @@ bool splitMarkdownArchive( std::vector<MdArchivePart> mdArchiveParts
                     {
                         // листинг с отступом закончился
                         readingCode = false;
+                        appendLastSignificanLinesToText();
                         lastSignificantLines.clear();
                         codeLines.clear();
                     }
@@ -990,7 +1022,16 @@ bool splitMarkdownArchive( std::vector<MdArchivePart> mdArchiveParts
                 listingInfo.foundLangName    = codeLang;
 
                 std::vector<std::string> filenames;
-                bool hasEdging = findListingFilenames(lastSignificantLines, filenames, keepFilenameComment);
+                std::vector<std::string> remLines;
+                bool hasEdging = findListingFilenames(lastSignificantLines, keepFilenameComment, &filenames, &remLines);
+// bool findListingFilenames( std::vector<std::string>  textLines
+//                          , bool                      bCommentPrependName
+//                          , std::vector<std::string> *pResNames          = 0
+//                          , std::vector<std::string> *pRemainedTextLines = 0
+//                          , size_t                   *pNumEdgings        = 0
+//                          , size_t                   *pFoundEdgingType   = 0
+//                          ) 
+
 
                 for(auto &name : filenames)
                 {
@@ -1003,6 +1044,8 @@ bool splitMarkdownArchive( std::vector<MdArchivePart> mdArchiveParts
                 archiveCurPart.listings.emplace_back(listingInfo);
     
                 readingCode = false;
+                lastSignificantLines = remLines;
+                appendLastSignificanLinesToText();
                 lastSignificantLines.clear();
                 codeLines.clear();
             }
@@ -1017,6 +1060,7 @@ bool splitMarkdownArchive( std::vector<MdArchivePart> mdArchiveParts
         {
             if ( mdLineType==MdLineType::headerSetext ) // '-'/'='
             {
+                appendLastSignificanLinesToText();
                 lastSignificantLines.clear();
 
                 // Если обнаружен разделитель --- или === (или более длинный)
@@ -1041,17 +1085,47 @@ bool splitMarkdownArchive( std::vector<MdArchivePart> mdArchiveParts
 
                 }
             }
-            else if ( mdLineType==MdLineType::emptyLine
-                   || mdLineType==MdLineType::headerAtx
+
+            else if ( mdLineType==MdLineType::emptyLine)
+            {
+                // std::vector<std::string> filenames;
+                // std::vector<std::string> remLines;
+                size_t numEdgings        = 0;
+                size_t foundEdgingType   = 0;
+
+                //bool hasEdging = 
+                findListingFilenames(lastSignificantLines, keepFilenameComment, 0, 0, &numEdgings, &foundEdgingType);
+
+                if (foundEdgingType==(std::size_t)-1) // имен файлов не найдено
+                {
+                    appendLastSignificanLinesToText();
+                    archiveCurPart.textLines.push_back(line);
+                    lastSignificantLines.clear();
+                }
+
+// bool findListingFilenames( std::vector<std::string>  textLines
+//                          , bool                      bCommentPrependName
+//                          , std::vector<std::string> *pResNames          = 0
+//                          , std::vector<std::string> *pRemainedTextLines = 0
+//                          , size_t                   *pNumEdgings        = 0
+//                          , size_t                   *pFoundEdgingType   = 0
+//                          ) 
+            }
+
+            else if ( mdLineType==MdLineType::headerAtx
                    || mdLineType==MdLineType::quotation
                     )
             {
+                appendLastSignificanLinesToText();
+                archiveCurPart.textLines.push_back(line);
                 lastSignificantLines.clear();
             }
+
             else if (mdLineType==MdLineType::regularLine)
             {
                 lastSignificantLines.push_back(line);
             }
+
             else if (mdLineType==MdLineType::codeTilda || mdLineType==MdLineType::codeBacktick)
             {
                 listingType = mdLineType;
@@ -1061,6 +1135,7 @@ bool splitMarkdownArchive( std::vector<MdArchivePart> mdArchiveParts
                 codeLines.clear();
                 codeLang = extractCodeLangFromFencedCodeBlockMarker(line);
             }
+
             else if (mdLineType==MdLineType::codeIndentTab || mdLineType==MdLineType::codeIndentSpace)
             {
                 LOG_WARN_INPUT("unsup-code-block-type") << (mdLineType==MdLineType::codeIndentTab ? "tab" : "space") << " indent code blocks not supported\n";
@@ -1070,14 +1145,23 @@ bool splitMarkdownArchive( std::vector<MdArchivePart> mdArchiveParts
                 codeMarkerLen  = markerLen ;
                 codeLines.clear();
                 codeLang.clear();
+                codeLines.push_back(line);
             }
+
             else if (mdLineType==MdLineType::unorderedList || mdLineType==MdLineType::orderedList)
             {
-                lastSignificantLines.push_back(line);
+                //lastSignificantLines.push_back(line);
+                appendLastSignificanLinesToText();
+                archiveCurPart.textLines.push_back(line);
+                lastSignificantLines.clear();
             }
+
             else
             {
                 LOG_WARN_INPUT("unk-line-type") << "unknown line type found, mdLineType: " << (unsigned)mdLineType << ", line: '" << line << "'\n";
+                appendLastSignificanLinesToText();
+                archiveCurPart.textLines.push_back(line);
+                lastSignificantLines.clear();
             }
 
         }

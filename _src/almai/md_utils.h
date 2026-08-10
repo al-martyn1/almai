@@ -313,7 +313,8 @@ inline
 const std::vector<std::string>& getAllowedFilenameEdgings()
 {
     static std::vector<std::string> edgings = 
-    { "**" // жирный
+    { "***" // жирный курсив
+    , "**" // жирный
     , "__" // жирный
     , "~~" // зачеркнутый
     , "*"  // курсив

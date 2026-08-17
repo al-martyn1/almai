@@ -15,28 +15,6 @@ using std::cerr;
 using namespace almai;
 
 //----------------------------------------------------------------------------
-
-
-
-//----------------------------------------------------------------------------
-void testFindExe(const std::string &exeName)
-{
-    std::vector<std::string> foundExes;
-    umba::shellapi::findExecutable(exeName, foundExes);
-
-    if (foundExes.empty())
-    {
-        cout << exeName << " not found\n";
-    }
-    else
-    {
-        cout << "found " << exeName << " executables:\n";
-        for(auto &&chExe : foundExes)
-           cout << "  " << chExe << "\n";
-    }
-}
-
-//----------------------------------------------------------------------------
 /*
     Расширение CMake Tools не полагается исключительно на системный PATH. Оно использует собственную подсистему 
     обнаружения «китов» (Kits), которая агрегирует данные из нескольких источников и затем передаёт CMake 
@@ -80,6 +58,28 @@ void testFindExe(const std::string &exeName)
     Windows не запускает их "напрямую", а делегирует выполнение соответствующему интерпретатору или хосту.
 
 */
+//----------------------------------------------------------------------------
+
+
+
+//----------------------------------------------------------------------------
+void testFindExe(const std::string &exeName)
+{
+    std::vector<std::string> foundExes;
+    umba::shellapi::findExecutable(exeName, foundExes);
+
+    if (foundExes.empty())
+    {
+        cout << exeName << " not found\n";
+    }
+    else
+    {
+        cout << "found " << exeName << " executables:\n";
+        for(auto &&chExe : foundExes)
+           cout << "  " << chExe << "\n";
+    }
+}
+
 //----------------------------------------------------------------------------
 
 

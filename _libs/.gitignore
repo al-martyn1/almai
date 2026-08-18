@@ -10,11 +10,13 @@ marty_expressions
 marty_format
 marty_gdl
 marty_hex
+marty_lsp
 marty_mem
+marty_pugixml
 marty_svg
 marty_tr
 marty_utf
-marty_pugixml
+marty_varint
 pugixml
 marty_yaml_toml_json
 nlohmann

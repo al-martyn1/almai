@@ -27,6 +27,9 @@ set PREFIX=git@%BASE%:%ACC%
 @set "GIT_OPTS=--recurse-submodules"
 @set "MAIN_REPO=%PREFIX%"
 @set "INPUT_FILE=%~dp0\libs.list"
+@set "LIB_ROOT=%~dp0"
+@if "%LIB_ROOT:~-1%"=="\" @set "LIB_ROOT=%LIB_ROOT:~,-1%"
+
 
 for /f "tokens=1,2" %%A in (%INPUT_FILE%) do (
     @echo.
@@ -44,24 +47,29 @@ for /f "tokens=1,2" %%A in (%INPUT_FILE%) do (
 @goto :eof
 
 :process_single
-echo git clone %GIT_OPTS% %MAIN_REPO%/%~1.git %~1
+echo git clone %GIT_OPTS% %MAIN_REPO%/%~1.git "%LIB_ROOT%\%~1"
 git clone %GIT_OPTS% %MAIN_REPO%/%~1.git %~1
+rem git submodule update --progress --init --recursive --merge
 @exit /B 0
 
 :process_double
 @set "value=%~2"
 @if /i "!value:~0,8!"=="https://" (
-  echo git clone %GIT_OPTS% %value%.git %~1
-  git clone %GIT_OPTS% %value%.git %~1
+  echo git clone %GIT_OPTS% %value% %~1
+  git clone %GIT_OPTS% %value% "%LIB_ROOT%\%~1"
+  @rem git submodule update --progress --init --recursive --merge
 ) else if /i "!value:~0,7!"=="http://" (
-  echo git clone %GIT_OPTS% %value%.git %~1
-  git clone %GIT_OPTS% %value%.git %~1
+  echo git clone %GIT_OPTS% %value% "%LIB_ROOT%\%~1"
+  git clone %GIT_OPTS% %value% %~1
+  @rem git submodule update --progress --init --recursive --merge
 ) else if /i "!value:~0,4!"=="git@" (
-  echo git clone %GIT_OPTS% %value%.git %~1
-  git clone %GIT_OPTS% %value%.git %~1
+  echo git clone %GIT_OPTS% %value% "%LIB_ROOT%\%~1"
+  git clone %GIT_OPTS% %value% %~1
+  @rem git submodule update --progress --init --recursive --merge
 ) else (
-  echo git clone %GIT_OPTS% %MAIN_REPO%/%value%.git %~1
+  echo git clone %GIT_OPTS% %MAIN_REPO%/%value%.git "%LIB_ROOT%\%~1"
   git clone %GIT_OPTS% %MAIN_REPO%/%value%.git %~1
+  @rem git submodule update --progress --init --recursive --merge
 )
 
 @exit /B 0

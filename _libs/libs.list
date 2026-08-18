@@ -1,4 +1,5 @@
 encoding         umba_mm_mod_encodings
+# inspector_protocol https://chromium.googlesource.com/deps/inspector_protocol
 #marty_bigint
 #marty_containers
 marty_cpp
@@ -25,3 +26,4 @@ umba
 umba_cbp
 umba_tokenizer
 yaml-cpp        forks-jbeder-yaml-cpp
+

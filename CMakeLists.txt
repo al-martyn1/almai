@@ -1,4 +1,15 @@
 cmake_minimum_required(VERSION 3.21.0)
+
+set(UMBA_STATIC_RUNTIME       ON )
+set(BUILD_SHARED_LIBS         OFF )
+
+set(UMBA_CMAKE_VERBOSE        ON ) # детальный лог CMake
+set(UMBA_CMAKE_TRACE          ON ) # максимально детальный лог CMake
+set(UMBA_CMAKE_TRACE_HOST_TARGET ON ) # Лог детекта host & target
+set(UMBA_CMAKE_TRACE_VCPKG    ON ) # Логи VCPKG
+
+include("${CMAKE_CURRENT_LIST_DIR}/.umba.cmake/umba_vcpkg.cmake")
+
 project(almai VERSION 0.1.0 LANGUAGES C CXX)
 
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -20,6 +31,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/.umba.cmake/umba.cmake)
 
 include_directories(${LIB_ROOT})
 
+find_package(ixwebsocket CONFIG REQUIRED)
+target_link_libraries(your_target_name PRIVATE ixwebsocket::ixwebsocket)
+
 # Import libraries here
 add_subdirectory(${LIB_ROOT}/encoding)
 add_subdirectory(${LIB_ROOT}/marty_cpp)
@@ -40,6 +54,8 @@ add_subdirectory(${LIB_ROOT}/yaml-cpp)
 # add_compile_definitions("USE_UMBA_LOUT_COUT")
 # add_compile_definitions("UMBA_TOKENIZER_DISABLE_UMBA_TOKENIZER_GET_CHAR_CLASS_FUNCTION")
 # add_compile_definitions("UMBA_TOKEN_TRIE_FIND_NEXT_BINARY_SEARCH_DISABLED")
+
+
 
 
 message(STATUS "PROJECT: Z_VCPKG_POWERSHELL_PATH: ${Z_VCPKG_POWERSHELL_PATH}")

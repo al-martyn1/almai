@@ -32,11 +32,19 @@ include(${CMAKE_CURRENT_LIST_DIR}/.umba.cmake/umba.cmake)
 include_directories(${LIB_ROOT})
 
 find_package(ixwebsocket CONFIG REQUIRED)
-target_link_libraries(your_target_name PRIVATE ixwebsocket::ixwebsocket)
+set(IXWEBSOCKET_LIBS ixwebsocket::ixwebsocket)
+if (WIN32)
+    set(IXWEBSOCKET_LIBS ${IXWEBSOCKET_LIBS} bcrypt)
+endif()
+
+
+#target_link_libraries(your_target_name PRIVATE ixwebsocket::ixwebsocket)
 
 # Import libraries here
 add_subdirectory(${LIB_ROOT}/encoding)
+add_subdirectory(${LIB_ROOT}/marty_cdt)
 add_subdirectory(${LIB_ROOT}/marty_cpp)
+add_subdirectory(${LIB_ROOT}/marty_url)
 # add_subdirectory(${LIB_ROOT}/marty_pugixml)
 # add_subdirectory(${LIB_ROOT}/marty_tr)
 add_subdirectory(${LIB_ROOT}/marty_yaml_toml_json)
@@ -44,7 +52,6 @@ add_subdirectory(${LIB_ROOT}/nlohmann)    # https://json.nlohmann.me/integration
 # add_subdirectory(${LIB_ROOT}/pugixml)
 add_subdirectory(${LIB_ROOT}/sfmt)
 add_subdirectory(${LIB_ROOT}/umba)
-add_subdirectory(${LIB_ROOT}/umba_cbp)
 add_subdirectory(${LIB_ROOT}/umba_tokenizer)
 add_subdirectory(${LIB_ROOT}/yaml-cpp)
 
@@ -64,11 +71,11 @@ message(STATUS "PROJECT: Z_VCPKG_POWERSHELL_PATH: ${Z_VCPKG_POWERSHELL_PATH}")
 # Configure libraries here
 set(COMMON_LIBS 
     encoding::encoding
+    marty::cdt
     marty::cpp
     marty::yaml_toml_json
     sfmt::sfmt
     umba::umba
-    umba::cbp
     umba::tokenizer
     nlohmann_json::nlohmann_json
     yaml-cpp::yaml-cpp
@@ -175,3 +182,44 @@ add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" "${headers}")
 umba_add_target_options(${TARGET} ${COMMON_UMBA_OPTIONS} "CONSOLE") 
 target_link_libraries(${TARGET} PRIVATE "${PLATFORM_LIBS}" "${COMMON_LIBS}")
 
+
+set(TARGET _test12)
+add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" "${headers}")
+umba_add_target_options(${TARGET} ${COMMON_UMBA_OPTIONS} "CONSOLE") 
+target_link_libraries(${TARGET} PRIVATE "${PLATFORM_LIBS}" "${COMMON_LIBS}")
+target_link_libraries(${TARGET} PRIVATE ${IXWEBSOCKET_LIBS})
+
+
+set(TARGET _test13)
+add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" "${headers}")
+umba_add_target_options(${TARGET} ${COMMON_UMBA_OPTIONS} "CONSOLE") 
+target_link_libraries(${TARGET} PRIVATE "${PLATFORM_LIBS}" "${COMMON_LIBS}")
+target_link_libraries(${TARGET} PRIVATE ${IXWEBSOCKET_LIBS})
+
+
+set(TARGET _test14)
+add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" "${headers}")
+umba_add_target_options(${TARGET} ${COMMON_UMBA_OPTIONS} "CONSOLE") 
+target_link_libraries(${TARGET} PRIVATE "${PLATFORM_LIBS}" "${COMMON_LIBS}")
+target_link_libraries(${TARGET} PRIVATE ${IXWEBSOCKET_LIBS})
+
+
+set(TARGET _test15)
+add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" "${headers}")
+umba_add_target_options(${TARGET} ${COMMON_UMBA_OPTIONS} "CONSOLE") 
+target_link_libraries(${TARGET} PRIVATE "${PLATFORM_LIBS}" "${COMMON_LIBS}")
+target_link_libraries(${TARGET} PRIVATE ${IXWEBSOCKET_LIBS})
+
+
+set(TARGET _test16)
+add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" "${headers}")
+umba_add_target_options(${TARGET} ${COMMON_UMBA_OPTIONS} "CONSOLE") 
+target_link_libraries(${TARGET} PRIVATE "${PLATFORM_LIBS}" "${COMMON_LIBS}")
+target_link_libraries(${TARGET} PRIVATE ${IXWEBSOCKET_LIBS})
+
+
+set(TARGET _test17)
+add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" "${headers}")
+umba_add_target_options(${TARGET} ${COMMON_UMBA_OPTIONS} "CONSOLE") 
+target_link_libraries(${TARGET} PRIVATE "${PLATFORM_LIBS}" "${COMMON_LIBS}")
+target_link_libraries(${TARGET} PRIVATE ${IXWEBSOCKET_LIBS})

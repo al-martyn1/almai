@@ -5,3 +5,4 @@
 *.log
 /.set_msvc.bat
 /msg.*
+/.chrome

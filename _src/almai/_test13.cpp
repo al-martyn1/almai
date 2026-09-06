@@ -1,5 +1,5 @@
 /*! \file
-    \brief Тест запуска chrome, и получения списка доступных страниц
+    \brief Тест запуска chrome, и получения списка доступных страниц - тестируем almai::ProjectDirs
  */
 
 
@@ -16,13 +16,16 @@ https://chat.deepseek.com/share/hipbevscouw97pijpm
 
 
 #include "utils.h"
+#include "ProjectDirs.h"
 //
 #include "umba/shellapi.h"
 #include "umba/sleep.h"
 #include "umba/win32_utils.h"
 #include "marty_cdt/utils.h"
+#include "marty_cdt/JsonListResponse.h"
 //
 #include <iostream>
+#include <stdexcept>
 //
 #include <ixwebsocket/IXNetSystem.h>
 #include <ixwebsocket/IXWebSocket.h>
@@ -42,50 +45,42 @@ int main(int argc, char* argv[])
 
     const std::string chromeName = "chrome";
 
-    std::string foundProjectPath;
-    std::string foundAlmaiDir;
-    std::string projectFile;
 
-    if (!almai::utils::findProjectRoot( umba::filesys::getCurrentDir()
-                                      , &foundProjectPath
-                                      , &foundAlmaiDir
-                                      , &projectFile
-                                      )
-       )
+    almai::ProjectDirs projectDirs;
+
+    if (!projectDirs.findProjectRoot())
     {
         cout << "Project root not found" << "\n";
         return 1;
     }
 
-    cout << "foundProjectPath: " << foundProjectPath << "\n";
-    cout << "foundAlmaiDir   : " << foundAlmaiDir    << "\n";
-    cout << "projectFile     : " << projectFile      << "\n";
+    projectDirs.generateBrowserDirs(chromeName, false /* !useTempDir */);
+    projectDirs.generateProjectConnectionPort( /* int startPort=9000, int range=1000 */ );
+    auto httpBaseUrl = projectDirs.generateConnectionBaseUrlString(true /* http */);
+    auto jsonListUrl = httpBaseUrl + "/json/list";
 
-
-    // 1) Надо подключится к TCP порту по имени каталога проекта  
-
-    int projectPort = marty::cdt::utils::generatePortNumberForProjectConnection(foundProjectPath);
-    cout << "projectPort     : " << projectPort      << "\n";
-
-    std::string httpBaseUrl = marty::cdt::utils::generateConnectionBaseUrlString(projectPort, true  /* http */ );
-    cout << "httpBaseUrl     : " << httpBaseUrl      << "\n";
-
+    cout << "projectPath        : " << projectDirs.projectPath << "\n";
+    cout << "almaiDir           : " << projectDirs.almaiDir    << "\n";
+    cout << "projectFile        : " << projectDirs.projectFile      << "\n";
+    cout << "browserUserDataDir : " << projectDirs.browserUserDataDir  << "\n";
+    cout << "browserCacheDataDir: " << projectDirs.browserCacheDataDir << "\n";
+    cout << "httpBaseUrl        : " << httpBaseUrl << "\n";
+    cout << "jsonListUrl        : " << jsonListUrl << "\n";
 
     ix::initNetSystem();
 
     ix::HttpClient httpClient;
-    auto args = httpClient.createRequest(httpBaseUrl + "/json/list");
+    auto args = httpClient.createRequest(jsonListUrl);
     args->connectTimeout  = 2; // 2 секунды на подключение
     args->transferTimeout = 5; // 5 секунды на получение данных
-    
-    // auto response = httpClient.get(httpBaseUrl + "/json/list", args);
+
     auto response = httpClient.get(args->url, args);
 
+    // chrome://settings/onStartup
 
     cout << "response->errorCode : " << marty::cdt::utils::ixHttpErrorCodeToString(response->errorCode) << " (" << (int)response->errorCode << ")" << "\n";
     cout << "response->errorMsg  : " << response->errorMsg   << "\n";
     cout << "response->statusCode: " << response->statusCode << "\n";
-    //cout << "" <<  << "\n";
 
     if ( response->errorCode!=ix::HttpErrorCode::Ok            // 0
       && response->errorCode!=ix::HttpErrorCode::CannotConnect // 1
@@ -105,7 +100,12 @@ int main(int argc, char* argv[])
         std::vector<std::string> foundExes;
         umba::shellapi::findExecutable(chromeName, foundExes);
 
-        std::vector<std::string> spawnArgs = marty::cdt::utils::generateArgsForSpawnChrome(foundProjectPath, "chrome", std::string(), projectPort);
+        std::vector<std::string> spawnArgs = projectDirs.generateArgsForSpawnChrome();
+
+        cout << "\n" << "Args: \n";
+        for(auto a: spawnArgs)
+            cout << "  " << a << "\n";
+
 
         for(auto chromeExeFullName : foundExes)
         {
@@ -136,7 +136,34 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+
+
     cout << "Chrome is running" << "\n";
+
+    cout << "Response:\n" << response->body << "\n";
+
+    try
+    {
+        auto j = nlohmann::json::parse(response->body);
+        std::vector<marty::cdt::JsonListResponseEntry> list;
+        from_json(j, list);
+        cout << "\n" << "Total " << list.size() << " items" << "\n";
+
+    }
+    catch(const std::exception &e)
+    {
+        cout << "Error parsing JSON: " << e.what() << "\n";
+    }
+    catch(...)
+    {
+        cout << "Error: " << "unknown error" << "\n";
+    }
+
+    //void from_json(const json& j, CommonPreset& p)
+    // JsonListResponse
+    // marty::cdt::
+
+    //response->statusCode
 
     return 0;
 }

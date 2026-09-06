@@ -1,0 +1,1840 @@
+Patterns:
+  page.navigation.navigate
+  page.navigation.*
+  page.*
+  *
+### Run&Connect
+HTTP code: 200
+Chrome is running
+
+Version Info:
+  browser        : Chrome/151.0.7922.110
+  protocolVersion: 1.3
+  userAgent      : Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+  v8Version      : 15.1.206.16
+  webkitVersion  : 537.36 (@2ccadf9e6d760667310dc510c978ded23d99be67)
+  debuggerVersion: 
+
+
+### /json/new
+HTTP code: 200
+Response:
+{
+   "description": "",
+   "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@2ccadf9e6d760667310dc510c978ded23d99be67/inspector.html?ws=localhost:9810/devtools/page/D1DBF33C97EA407C3B03626176AFD2C7",
+   "id": "D1DBF33C97EA407C3B03626176AFD2C7",
+   "title": "",
+   "type": "page",
+   "url": "about:blank",
+   "webSocketDebuggerUrl": "ws://localhost:9810/devtools/page/D1DBF33C97EA407C3B03626176AFD2C7"
+}
+
+WS connected
+
+Message, type: Open
+
+Waiting for 'Page.navigate' reply
+timestamp: 2
+'PageEventSubsribe' ID Handler
+  ID: 0
+  JSON:
+{}
+
+timestamp: 2
+'NetworkEventSubsribe' ID Handler
+  ID: 1
+  JSON:
+{}
+
+timestamp: 2
+'Default' Method Handler
+  Method: Runtime.executionContextCreated
+
+timestamp: 2
+'RuntimeEventSubsribe' ID Handler
+  ID: 2
+  JSON:
+{}
+
+timestamp: 4
+'Page' Method Handler
+  Method: Page.frameStartedNavigating
+
+timestamp: 4
+'Page' Method Handler
+  Method: Page.frameStartedLoading
+
+timestamp: 6
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 6
+'DomEventSubsribe' ID Handler
+  ID: 3
+  JSON:
+{}
+
+timestamp: 48
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 63
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 64
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 73
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 316
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 323
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 323
+Page.navigate to ya.ru
+{
+  "frameId": "D1DBF33C97EA407C3B03626176AFD2C7",
+  "isDownload": false,
+  "loaderId": "69005BE48C6BA0690F68B02F0118A1FB"
+}
+
+timestamp: 323
+'Default' Method Handler
+  Method: Runtime.executionContextsCleared
+
+'Page.navigate' done
+
+timestamp: 324
+'Default' Method Handler
+  Method: Runtime.executionContextsCleared
+
+timestamp: 325
+'Page' Method Handler
+  Method: Page.frameNavigated
+
+timestamp: 330
+'Default' Method Handler
+  Method: Network.policyUpdated
+
+timestamp: 334
+'Default' Method Handler
+  Method: DOM.documentUpdated
+
+timestamp: 334
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 335
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 335
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 335
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 336
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 336
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 336
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 337
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 337
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 338
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 338
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 339
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 339
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 339
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 340
+'Default' Method Handler
+  Method: Runtime.executionContextCreated
+
+timestamp: 343
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 344
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 344
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 344
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 353
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 384
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 385
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 385
+'Default' Method Handler
+  Method: Network.requestServedFromCache
+
+timestamp: 385
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 385
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 385
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 386
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 386
+'Default' Method Handler
+  Method: Network.requestServedFromCache
+
+timestamp: 387
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 387
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 387
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 388
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 388
+'Default' Method Handler
+  Method: Network.requestServedFromCache
+
+timestamp: 388
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 388
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 388
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 389
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 389
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 389
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+timestamp: 390
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 390
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 391
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 417
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 417
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 418
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 418
+'Default' Method Handler
+  Method: Network.requestServedFromCache
+
+timestamp: 418
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 419
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 419
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 419
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 420
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 421
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 422
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 422
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 422
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 423
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+timestamp: 423
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+timestamp: 423
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+timestamp: 423
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+timestamp: 423
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+timestamp: 423
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+timestamp: 423
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+timestamp: 423
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+timestamp: 424
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 429
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 447
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 449
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 449
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 486
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 487
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 487
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 507
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 507
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 507
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 508
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 508
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 509
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 509
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 510
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 510
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 522
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 523
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 523
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 527
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 527
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 527
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 528
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 529
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 529
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 539
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 539
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 539
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 544
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 545
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 545
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 545
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 546
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 546
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 555
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 556
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 556
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 584
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 585
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 585
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 590
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 591
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 591
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 595
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 595
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 595
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 605
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 605
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 606
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 610
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 613
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 616
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 616
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 616
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 627
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 627
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 628
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 639
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 639
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 639
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 651
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 654
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 654
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 655
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 661
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 662
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 662
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 673
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 673
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 674
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 678
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 678
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 678
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 699
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 700
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 700
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 714
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 717
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 728
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 729
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 729
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 736
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 738
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 740
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 741
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 764
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 766
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 767
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 767
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 773
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 773
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 774
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 798
+'Default' Method Handler
+  Method: DOM.documentUpdated
+
+timestamp: 798
+AtomicBoolMethodHandler, Method: Page.domContentEventFired
+{
+  "timestamp": 1983888.44839
+}
+
+timestamp: 799
+AtomicBoolMethodHandler, Method: Page.loadEventFired
+{
+  "timestamp": 1983888.449807
+}
+
+timestamp: 799
+'Page' Method Handler
+  Method: Page.frameStoppedLoading
+
+Page loaded
+
+Execute DOM.getDocument
+
+timestamp: 801
+DOM.getDocument
+{
+  "root": {
+    "backendNodeId": 4,
+    "baseURL": "https://ya.ru/",
+    "childNodeCount": 2,
+    "children": [
+      {
+        "backendNodeId": 15,
+        "localName": "",
+        "nodeId": 2,
+        "nodeName": "html",
+        "nodeType": 10,
+        "nodeValue": "",
+        "parentId": 1,
+        "publicId": "",
+        "systemId": ""
+      },
+      {
+        "attributes": [
+          "lang",
+          "ru",
+          "class",
+          "Theme Theme_color_morda-default Theme_root_morda-desktop document_neuro-redesign_yes document_headline-services_yes document_informers_redesign_yes document_services-suggest_yes document_reasoning-section_tiles document_reasoning-section_top document_extra-content_yes document_feed_yes document_overflow-scroll_yes i-ua_js_yes i-ua_inlinesvg_yes pointerfocus"
+        ],
+        "backendNodeId": 16,
+        "childNodeCount": 2,
+        "children": [
+          {
+            "attributes": [
+              "xmlns:og",
+              "http://ogp.me/ns#"
+            ],
+            "backendNodeId": 17,
+            "childNodeCount": 71,
+            "localName": "head",
+            "nodeId": 4,
+            "nodeName": "HEAD",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 3
+          },
+          {
+            "attributes": [],
+            "backendNodeId": 18,
+            "childNodeCount": 85,
+            "localName": "body",
+            "nodeId": 5,
+            "nodeName": "BODY",
+            "nodeType": 1,
+            "nodeValue": "",
+            "parentId": 3
+          }
+        ],
+        "frameId": "D1DBF33C97EA407C3B03626176AFD2C7",
+        "localName": "html",
+        "nodeId": 3,
+        "nodeName": "HTML",
+        "nodeType": 1,
+        "nodeValue": "",
+        "parentId": 1
+      }
+    ],
+    "compatibilityMode": "NoQuirksMode",
+    "documentURL": "https://ya.ru/",
+    "localName": "",
+    "nodeId": 1,
+    "nodeName": "#document",
+    "nodeType": 9,
+    "nodeValue": "",
+    "xmlVersion": ""
+  }
+}
+'DOM.getDocument' done
+
+timestamp: 914
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 914
+'Default' Method Handler
+  Method: DOM.childNodeCountUpdated
+
+timestamp: 915
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 915
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 916
+'Default' Method Handler
+  Method: DOM.childNodeCountUpdated
+
+timestamp: 916
+'Default' Method Handler
+  Method: DOM.childNodeCountUpdated
+
+timestamp: 916
+'Default' Method Handler
+  Method: DOM.childNodeCountUpdated
+
+timestamp: 916
+'Default' Method Handler
+  Method: DOM.childNodeCountUpdated
+
+timestamp: 916
+'Default' Method Handler
+  Method: DOM.attributeModified
+
+timestamp: 918
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 921
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 924
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 927
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 930
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 930
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 930
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 930
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 931
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 931
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 931
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 931
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 931
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 932
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 933
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 933
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 933
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 934
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 935
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 935
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 935
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 936
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 936
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 936
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 937
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 940
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 944
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 945
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 946
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 947
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 947
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 947
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 947
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 949
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 949
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 949
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 950
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 950
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 950
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 950
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 951
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1056
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1060
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 1063
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1067
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 1068
+'Default' Method Handler
+  Method: DOM.scrollableFlagUpdated
+
+timestamp: 1068
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 1070
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1071
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1071
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1071
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1074
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 1075
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 1076
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1076
+'Default' Method Handler
+  Method: Network.requestServedFromCache
+
+timestamp: 1076
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1076
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1077
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1077
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1077
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1079
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1079
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1080
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1080
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1080
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 1081
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1084
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 1085
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+timestamp: 1086
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1086
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1087
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1087
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1087
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1088
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1088
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1088
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1090
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1090
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1090
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1090
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1090
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 1091
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 1091
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+timestamp: 1092
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1096
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 1097
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1097
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1098
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1099
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1100
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1100
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1100
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1101
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1104
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 1105
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+timestamp: 1105
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+timestamp: 1105
+'Default' Method Handler
+  Method: Network.webSocketCreated
+
+timestamp: 1106
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1106
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1106
+'Default' Method Handler
+  Method: DOM.childNodeCountUpdated
+
+timestamp: 1107
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1107
+'Default' Method Handler
+  Method: DOM.childNodeCountUpdated
+
+timestamp: 1108
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1108
+'Default' Method Handler
+  Method: DOM.childNodeCountUpdated
+
+timestamp: 1109
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1109
+'Default' Method Handler
+  Method: DOM.childNodeCountUpdated
+
+timestamp: 1110
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1110
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+timestamp: 1111
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 1111
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 1111
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 1112
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1112
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1113
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1113
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1113
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1114
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 1114
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1116
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1116
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1116
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1116
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1117
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 1118
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1119
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1119
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1119
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1119
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1119
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1120
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1120
+'Default' Method Handler
+  Method: Network.webSocketWillSendHandshakeRequest
+
+timestamp: 1121
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1124
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 1125
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 1125
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 1126
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1127
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 1127
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 1128
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1128
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1129
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1129
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1131
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1132
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1132
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1133
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1133
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1134
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1134
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1135
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1135
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1136
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1136
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1137
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1137
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1137
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1138
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1138
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1138
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1139
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1139
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1139
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1140
+'Default' Method Handler
+  Method: Network.webSocketHandshakeResponseReceived
+
+timestamp: 1140
+'Default' Method Handler
+  Method: Network.webSocketFrameSent
+
+timestamp: 1140
+'Default' Method Handler
+  Method: Network.webSocketFrameSent
+
+timestamp: 1141
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 1142
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1142
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1142
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1142
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1143
+'Default' Method Handler
+  Method: Network.webSocketFrameReceived
+
+timestamp: 1143
+'Default' Method Handler
+  Method: Network.webSocketFrameReceived
+
+timestamp: 1143
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1144
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1144
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1144
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1145
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1145
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1145
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 1145
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 1146
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1147
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1147
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1148
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1148
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1148
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1254
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1254
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1255
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1255
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1255
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1255
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1255
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1256
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1256
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1256
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1256
+'Default' Method Handler
+  Method: DOM.childNodeCountUpdated
+
+timestamp: 1257
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1257
+'Default' Method Handler
+  Method: DOM.childNodeCountUpdated
+
+timestamp: 1257
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1257
+'Default' Method Handler
+  Method: DOM.childNodeCountUpdated
+
+timestamp: 1258
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1258
+'Default' Method Handler
+  Method: DOM.childNodeCountUpdated
+
+timestamp: 1259
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1261
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1264
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+timestamp: 1265
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+timestamp: 1266
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1266
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1266
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1266
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1267
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1267
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1268
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1269
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1269
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1270
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1272
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1273
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1273
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1379
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1380
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1380
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1380
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1380
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1380
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1380
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1380
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1380
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1381
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1381
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+timestamp: 1381
+'Default' Method Handler
+  Method: DOM.childNodeCountUpdated
+
+timestamp: 1381
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+timestamp: 1382
+'Default' Method Handler
+  Method: Network.responseReceived
+
+timestamp: 1383
+'Default' Method Handler
+  Method: Network.dataReceived
+
+timestamp: 1383
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+
+timestamp: 2789
+Normal exit
+
+timestamp: 2789
+Exiting

@@ -234,6 +234,141 @@ std::vector<std::string> simpleReplaceClipboardMarkerLine(const std::vector<std:
 
 
 //----------------------------------------------------------------------------
+inline
+std::vector<std::string> makeAlmaiFolderNames()
+{
+    return std::vector<std::string>{ ".almai"
+                                   , ".ALMAI"
+                                   // , ".almai.yaml"
+                                   // , ".ALMAI.yaml"
+                                   // , ".ALMAI.YAML"
+                                   // , ".almai.YAML"
+                                   // ,  "almai.yaml"
+                                   // ,  "ALMAI.yaml"
+                                   // ,  "ALMAI.YAML"
+                                   // ,  "almai.YAML"
+                                   };
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+inline
+bool isPathExistOneOf(const std::string &basePath, const std::vector<std::string> &relNames)
+{
+    for(auto &&rn : relNames)
+    {
+        auto fullName = umba::filename::makeAbsPath(rn, basePath);
+        if (umba::filesys::isPathExist(fullName))
+            return true;
+    }
+
+    return false;
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+inline
+bool isPathExistOneOf(const std::string &basePath, const std::unordered_set<std::string> &relNames)
+{
+    return isPathExistOneOf(basePath, std::vector<std::string>(relNames.begin(), relNames.end()));
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+inline
+const std::vector<std::string>& getAlmaiFolderNames()
+{
+    static std::vector<std::string> names = makeAlmaiFolderNames();
+    return names;
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+inline
+std::vector<std::string> getAlmaiFolderFullNames(const std::string &path, const std::vector<std::string> &almaiNames=getAlmaiFolderNames())
+{
+    //const auto &almaiNames = getAlmaiFolderNames();
+
+    std::vector<std::string> resVec; resVec.reserve(almaiNames.size());
+
+    for(const auto &name : almaiNames)
+    {
+        resVec.push_back(umba::filename::appendPath(path, name));
+    }
+
+    return resVec;
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+inline
+bool isProjectRootPath( const std::string &path
+                      , std::string *pAlmaiFolderName
+                      , const std::unordered_set<std::string> &projectRootStopNames = { ".git", ".vscode", ".build", "build", ".out", "out" }
+                      )
+{
+    auto almaiNames = getAlmaiFolderFullNames(path);
+
+    for(const auto &almaiFolder : almaiNames)
+    {
+        if (umba::filesys::isDirExist(almaiFolder))
+        {
+            if (pAlmaiFolderName)
+               *pAlmaiFolderName = almaiFolder;
+            return true;
+        }
+    }
+
+    if (pAlmaiFolderName)
+       pAlmaiFolderName->clear();
+
+    if (isPathExistOneOf(path, projectRootStopNames))
+        return true;
+
+    return false;
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+inline
+bool findProjectRoot( std::string startPath
+                    , std::string *pFoundProjectPath=0
+                    , std::string *pFoundAlmaiDir=0
+                    , std::string *pProjectFile=0
+                    , const std::unordered_set<std::string> &projectRootStopNames = { ".git", ".vscode", ".build", "build", ".out", "out" }
+                    )
+{
+    std::string projectFile;
+    std::string almaiDir;
+
+    auto upLevelPath = startPath;
+    auto curPath     = startPath;
+    do
+    {
+        curPath = upLevelPath;
+
+        if (isProjectRootPath(curPath, &almaiDir, projectRootStopNames))
+        {
+            projectFile = umba::filename::appendPath(almaiDir, std::string("PROJECT.yaml"));
+            if (!umba::filesys::isFileExist(projectFile))
+                projectFile.clear();
+
+            if (pProjectFile)
+               *pProjectFile = projectFile;
+
+            if (pFoundProjectPath)
+               *pFoundProjectPath = curPath;
+
+            if (pFoundAlmaiDir)
+               *pFoundAlmaiDir = almaiDir;
+
+            return true;
+        }
+
+        upLevelPath = umba::filename::getPath(curPath);
+    }
+    while(upLevelPath!=curPath);
+
+    return false;
+}
+
+
+
+//----------------------------------------------------------------------------
 
 } // namespace utils
 } // namespace almai

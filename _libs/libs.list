@@ -2,6 +2,7 @@ encoding         umba_mm_mod_encodings
 # inspector_protocol https://chromium.googlesource.com/deps/inspector_protocol
 #marty_bigint
 #marty_containers
+marty_cdt
 marty_cpp
 #marty_crc
 #marty_csv
@@ -11,9 +12,11 @@ marty_cpp
 #marty_format
 #marty_gdl
 #marty_hex
+marty_lsp
 #marty_mem
 #marty_svg
 #marty_tr
+marty_url
 #marty_utf
 #marty_pugixml
 #pugixml         extern_pugixml
@@ -23,7 +26,6 @@ nlohmann         forks-nlohmann-json
 sfmt
 #umba             umba_mm_mod_umba
 umba
-umba_cbp
 umba_tokenizer
 yaml-cpp        forks-jbeder-yaml-cpp
 

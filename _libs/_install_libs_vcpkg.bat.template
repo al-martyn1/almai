@@ -1,0 +1,13 @@
+@set BIN_CACHE=--no-binarycaching
+@rem set CLEAN_OPTS=--clean-buildtrees-after-build --clean-packages-after-build
+@rem set CLEAN_OPTS=--editable
+
+@rem --clean-after-build
+
+vcpkg install ixwebsocket:x64-mingw-dynamic       --host-triplet=x64-mingw-dynamic     %CLEAN_OPTS% %BIN_CACHE%
+vcpkg install ixwebsocket:x64-mingw-static        --host-triplet=x64-mingw-dynamic     %CLEAN_OPTS% %BIN_CACHE%
+
+vcpkg install ixwebsocket:x64-windows             --host-triplet=x64-windows           %CLEAN_OPTS% %BIN_CACHE%
+vcpkg install ixwebsocket:x64-windows-static      --host-triplet=x64-windows           %CLEAN_OPTS% %BIN_CACHE%
+vcpkg install ixwebsocket:x64-windows-static-md   --host-triplet=x64-windows           %CLEAN_OPTS% %BIN_CACHE%
+

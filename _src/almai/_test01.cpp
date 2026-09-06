@@ -4,7 +4,8 @@
 
 #include "utils.h"
 #include "md_utils.h"
- //
+//
+#include "marty_url/percent_encoding.h"
 
 #include <iostream>
 
@@ -222,15 +223,39 @@ void performExtractListingFilenamesTests()
 
     std::cout << "\n";
 }
-// almai::utils::
-// inline
-// std::vector<std::string> splitTextToLines(const std::string &text)
-// {
-//     return marty_cpp::splitToLinesSimple(text);
-// }
 
+//----------------------------------------------------------------------------
+void performUrlEncodeTest(const std::string &url)
+{
+    auto urlEncoded   = marty::url::urlEncode(url);
+    auto urlComponent = marty::url::urlEncodeComponent(url);
+    auto urlDecoded1  = marty::url::urlDecode(urlEncoded);
+    auto urlDecoded2  = marty::url::urlDecode(urlComponent);
 
+    cout << "URL      : " << url          << "\n";
+    cout << "Encoded  : " << urlEncoded   << "\n";
+    cout << "Component: " << urlComponent << "\n";
+    cout << "Decoded1 : " << urlDecoded1  << " ("<< (urlDecoded1==url ? "+" : "-") << ")" << "\n";
+    cout << "Decoded2 : " << urlDecoded2  << " ("<< (urlDecoded2==url ? "+" : "-") << ")" << "\n";
 
+    std::cout << "\n";
+}
+
+//----------------------------------------------------------------------------
+void performUrlEncodeTests()
+{
+    std::cout << "\n";
+
+    cout << "**test01/UrlEncodeTests**" << "\n";
+
+    //performUrlEncodeTest("https://www.google.com/search?q=спрей+10%25+можно+купить+без+рецепта&oq=спрей+10%25+можно+купить+без+рецепта&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIHCAEQIRiSAzIHCAIQIRiSAzIHCAMQIRiSAzIHCAQQIRiSAzIHCAUQIRiSAzIHCAYQIRiSA9IBCTE1NDcxajBqN6gCCLACAfEFDmndytbEcKQ&sourceid=chrome&source=chrome.ob&ie=UTF-8");
+    performUrlEncodeTest("https://www.google.com/search?q=спрей+10%+можно+купить+без+рецепта&sourceid=chrome&source=chrome.ob&ie=UTF-8");
+    performUrlEncodeTest("http://аптека.рф");
+    performUrlEncodeTest("http://аптека.рф/search?q=спрей 10%&location=Москва");
+    // performUrlEncodeTest("");
+
+    std::cout << "\n";
+}
 
 //----------------------------------------------------------------------------
 int main(int argc, char* argv[])
@@ -245,6 +270,7 @@ int main(int argc, char* argv[])
     performMakeNormalizedRelativePathTests();
     performFormatFileSizeTests(false);
     performFormatFileSizeTests(true );
+    performUrlEncodeTests();
 
     return 0;
 }

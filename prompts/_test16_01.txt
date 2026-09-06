@@ -1,0 +1,1357 @@
+Patterns:
+  page.navigation.navigate
+  page.navigation.*
+  page.*
+  *
+### Run&Connect
+HTTP code: 200
+Chrome is running
+
+Version Info:
+  browser        : Chrome/151.0.7922.110
+  protocolVersion: 1.3
+  userAgent      : Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+  v8Version      : 15.1.206.16
+  webkitVersion  : 537.36 (@2ccadf9e6d760667310dc510c978ded23d99be67)
+  debuggerVersion: 
+
+
+### /json/new
+HTTP code: 200
+Response:
+{
+   "description": "",
+   "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@2ccadf9e6d760667310dc510c978ded23d99be67/inspector.html?ws=localhost:9810/devtools/page/77BFE5B99EB9E4C684FA2F0FCC34A4B5",
+   "id": "77BFE5B99EB9E4C684FA2F0FCC34A4B5",
+   "title": "",
+   "type": "page",
+   "url": "about:blank",
+   "webSocketDebuggerUrl": "ws://localhost:9810/devtools/page/77BFE5B99EB9E4C684FA2F0FCC34A4B5"
+}
+
+WS connected
+
+Message, type: Open
+
+Waiting for 'Page.navigate' reply
+'Page' Method Handler
+  Method: Page.frameStartedNavigating
+
+'Page' Method Handler
+  Method: Page.frameStartedLoading
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'PageEventSubsribe' ID Handler
+  ID: 0
+  JSON:
+{}
+
+'NetworkEventSubsribe' ID Handler
+  ID: 1
+  JSON:
+{}
+
+'Default' Method Handler
+  Method: Runtime.executionContextCreated
+
+'RuntimeEventSubsribe' ID Handler
+  ID: 2
+  JSON:
+{}
+
+'DomEventSubsribe' ID Handler
+  ID: 3
+  JSON:
+{}
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+Page.navigate to ya.ru
+{
+  "frameId": "77BFE5B99EB9E4C684FA2F0FCC34A4B5",
+  "isDownload": false,
+  "loaderId": "64C9955173D9F50C134633EC8A2F64A3"
+}
+
+'Default' Method Handler
+  Method: Runtime.executionContextsCleared
+
+'Page.navigate' done
+'Default' Method Handler
+  Method: Runtime.executionContextsCleared
+
+'Page' Method Handler
+  Method: Page.frameNavigated
+
+'Default' Method Handler
+  Method: Network.policyUpdated
+
+'Default' Method Handler
+  Method: DOM.documentUpdated
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Runtime.executionContextCreated
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestServedFromCache
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestServedFromCache
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestServedFromCache
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestServedFromCache
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: DOM.documentUpdated
+
+'Page' Method Handler
+  Method: Page.domContentEventFired
+
+'Page' Method Handler
+  Method: Page.loadEventFired
+
+'Page' Method Handler
+  Method: Page.frameStoppedLoading
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.webSocketCreated
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestServedFromCache
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.webSocketWillSendHandshakeRequest
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.resourceChangedPriority
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.webSocketHandshakeResponseReceived
+
+'Default' Method Handler
+  Method: Network.webSocketFrameSent
+
+'Default' Method Handler
+  Method: Network.webSocketFrameSent
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.webSocketFrameReceived
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.webSocketFrameReceived
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+
+'Default' Method Handler
+  Method: Network.requestWillBeSent
+
+'Default' Method Handler
+  Method: Network.requestWillBeSentExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceivedExtraInfo
+
+'Default' Method Handler
+  Method: Network.responseReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.dataReceived
+
+'Default' Method Handler
+  Method: Network.loadingFinished
+

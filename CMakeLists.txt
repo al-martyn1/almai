@@ -117,6 +117,13 @@ umba_add_target_options(${TARGET} ${COMMON_UMBA_OPTIONS} "CONSOLE")
 target_link_libraries(${TARGET} PRIVATE "${PLATFORM_LIBS}" "${COMMON_LIBS}")
 
 
+set(TARGET almai-cdt-eval)
+add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" "${headers}")
+umba_add_target_options(${TARGET} ${COMMON_UMBA_OPTIONS} "CONSOLE") 
+target_link_libraries(${TARGET} PRIVATE "${PLATFORM_LIBS}" "${COMMON_LIBS}")
+target_link_libraries(${TARGET} PRIVATE ${IXWEBSOCKET_LIBS})
+
+
 set(TARGET _test01)
 add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" "${headers}")
 umba_add_target_options(${TARGET} ${COMMON_UMBA_OPTIONS} "CONSOLE") 

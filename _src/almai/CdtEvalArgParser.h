@@ -67,7 +67,7 @@ int operator()( const StringType                                &a           //!
 
         std::string errMsg;
         std::string strVal;
-        int intVal = 0;
+        int      intVal = 0;
         //unsigned uintVal = 0;
         std::size_t szVal = 0;
         bool boolVal = false;
@@ -82,10 +82,18 @@ int operator()( const StringType                                &a           //!
 #include "cli_opt_parsers/overwrite.h"
 // #include "cli_opt_parsers/list.h"
 // #include "cli_opt_parsers/dict.h"
-// #include "cli_opt_parsers/output-dir.h"
+#include "cli_opt_parsers/output.h"
 // #include "cli_opt_parsers/clipboard.h"
 // #include "cli_opt_parsers/description_filename.h"
+#include "cli_opt_parsers/timeout.h"
+#include "cli_opt_parsers/open-url.h"
+#include "cli_opt_parsers/expression.h"
+#include "cli_opt_parsers/context-id.h"
+#include "cli_opt_parsers/object-group.h"
+#include "cli_opt_parsers/cdt-eval-opts.h"
 
+
+        //--------------------------------------------------------------------------------------------------------------------
         if (opt.isHelpStyleOption())
         {
             // Job is done in isHelpStyleOption

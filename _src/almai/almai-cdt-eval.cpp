@@ -236,8 +236,28 @@ int unsafeMain(int argc, char* argv[])
         return 0;
 
 
+    if (!appConfig.quet)
+    {
+        std::cerr << "\n";
+        std::cerr << "Runtime.evaluate options:\n";
+        std::cerr << "\n";
 
+        std::cerr << "  " << "contextId                   " << ": " << (appConfig.evalContextId.empty()   ? std::string("<EMPTY>") : appConfig.evalContextId  ) << "\n";
+        std::cerr << "  " << "objectGroup                 " << ": " << (appConfig.evalObjectGroup.empty() ? std::string("<EMPTY>") : appConfig.evalObjectGroup)  << "\n";
+        std::cerr << "\n";
 
+        std::cerr << "  " << "returnByValue               " << ": " << to_string(appConfig.evalReturnType)   << "\n";
+        std::cerr << "  " << "awaitPromise                " << ": " << to_string(appConfig.evalAwaitPromise) << "\n";
+        std::cerr << "  " << "userGesture                 " << ": " << to_string(appConfig.evalUserGesture)  << "\n";
+        std::cerr << "  " << "throwOnSideEffect           " << ": " << to_string(appConfig.evalThrowOnSideEffect) << "\n";
+        std::cerr << "  " << "disableBreaks               " << ": " << to_string(appConfig.evalBreaksControl) << "\n";
+        std::cerr << "  " << "replMode                    " << ": " << to_string(appConfig.evalReplMode) << "\n";
+        std::cerr << "  " << "allowUnsafeEvalBlockedByCSP " << ": " << to_string(appConfig.evalCspMode) << "\n";
+        //std::cerr << "  " << "" << ": " << to_string(appConfig.) << "\n";
+
+    }
+
+#if 0
 
     ix::initNetSystem();
 
@@ -524,7 +544,7 @@ int unsafeMain(int argc, char* argv[])
 
         {
             marty::cdt::json jOuterHTML;
-            if (!wsConnection->cdtRuntimEvaluate(jOuterHTML, "document.documentElement.outerHTML"))
+            if (!wsConnection->cdtRuntimeEvaluate(jOuterHTML, "document.documentElement.outerHTML"))
                 throw std::runtime_error("No reply for 'Runtime.evaluate' with 'document.documentElement.outerHTML'");
 
             pageHtml = jOuterHTML["result"]["value"].get<std::string>();
@@ -568,6 +588,8 @@ int unsafeMain(int argc, char* argv[])
     cout << "\n";
     std::cout << "timestamp: " << wsConnection->getTimestamp() << "\n";
     cout << "Exiting\n";
+
+#endif
 
     return 0;
 }

@@ -358,7 +358,7 @@ int main(int argc, char* argv[])
 
         {
             marty::cdt::json jOuterHTML;
-            if (!wsConnection->cdtRuntimEvaluate(jOuterHTML, "document.documentElement.outerHTML"))
+            if (!wsConnection->cdtRuntimeEvaluate(jOuterHTML, "document.documentElement.outerHTML"))
                 throw std::runtime_error("No reply for 'Runtime.evaluate' with 'document.documentElement.outerHTML'");
 
             pageHtml = jOuterHTML["result"]["value"].get<std::string>();

@@ -73,9 +73,15 @@ int main(int argc, char* argv[])
         }
     }
 
+    {
+        std::vector<std::string> values = {"string", "number", "boolean", "object"};
+        std::string merged = marty::cdt::utils::mergeValsToString(values.begin(), values.end(), ",", "or", [](auto s) { return '\'' + s + '\''; });
+        cout << "Merged values: " << merged << "\n";
+    }
+
 // marty::cdt::utils::
 // template<typename IteratorType, typename StringifierType>
-// std::string mergeToString(IteratorType b, IteratorType e, std::string sepStr, std::string lastSepStr, StringifierType stringifier)
+// std::string mergeValsToString(IteratorType b, IteratorType e, std::string sepStr, std::string lastSepStr, StringifierType stringifier)
 
 
     ix::initNetSystem();

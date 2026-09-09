@@ -46,6 +46,7 @@ struct AppConfig
     std::string                       inputFile;
     std::string                       output;
 
+    bool                              restoreLastSession = false;
     std::string                       openUrl;
 
     std::string                       expression;       // либо inputFile, либо expression

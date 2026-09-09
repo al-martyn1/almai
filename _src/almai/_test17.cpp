@@ -73,6 +73,11 @@ int main(int argc, char* argv[])
         }
     }
 
+// marty::cdt::utils::
+// template<typename IteratorType, typename StringifierType>
+// std::string mergeToString(IteratorType b, IteratorType e, std::string sepStr, std::string lastSepStr, StringifierType stringifier)
+
+
     ix::initNetSystem();
 
     const std::string chromeName = "chrome";
@@ -365,6 +370,30 @@ int main(int argc, char* argv[])
             std::cout << "cdtGetHtml timedout\n";
         else
             std::cout << "cdtGetHtml: " << pageHtml << "\n";
+
+
+        {
+            marty::cdt::json jRes;
+            if (!wsConnection->cdtRuntimeEvaluate(jRes, "window.sessionStorage.setItem(\'my_tab_identifier\', \'TYRNIYTFTYHJ\')"))
+                throw std::runtime_error("No reply for 'Runtime.evaluate' with 'window.sessionStorage.setItem'");
+
+            std::cout << "window.sessionStorage.setItem JSON:\n";
+            std::cout << jRes.dump(2) << "\n\n";
+        }
+
+        {
+            marty::cdt::json jRes;
+            if (!wsConnection->cdtRuntimeEvaluate(jRes, "window.sessionStorage.getItem(\'my_tab_identifier\')"))
+                throw std::runtime_error("No reply for 'Runtime.evaluate' with 'window.sessionStorage.getItem'");
+
+            std::cout << "window.sessionStorage.getItem JSON:\n";
+            std::cout << jRes.dump(2) << "\n\n";
+        }
+
+
+
+        // window.sessionStorage.setItem('my_tab_identifier', 'TYRNIYTFTYHJ');
+        // window.sessionStorage.getItem('my_tab_identifier');
 
 
         // 

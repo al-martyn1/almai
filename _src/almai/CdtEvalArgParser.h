@@ -91,6 +91,7 @@ int operator()( const StringType                                &a           //!
 #include "cli_opt_parsers/context-id.h"
 #include "cli_opt_parsers/object-group.h"
 #include "cli_opt_parsers/cdt-eval-opts.h"
+#include "cli_opt_parsers/cdt-opts.h"
 
 
         //--------------------------------------------------------------------------------------------------------------------

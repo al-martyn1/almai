@@ -74,9 +74,9 @@ struct ProjectDirs
         return marty::cdt::utils::generateConnectionBaseUrlString(port, bHttp);
     }
 
-    std::vector<std::string> generateArgsForSpawnChrome() const
+    std::vector<std::string> generateArgsForSpawnChrome(bool restoreLastSession=false) const
     {
-        return marty::cdt::utils::generateArgsForSpawnChromeExactDirs(browserUserDataDir, browserCacheDataDir, port);
+        return marty::cdt::utils::generateArgsForSpawnChromeExactDirs(browserUserDataDir, browserCacheDataDir, port, restoreLastSession);
     }
     
 

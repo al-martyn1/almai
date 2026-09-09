@@ -317,7 +317,7 @@ int unsafeMain(int argc, char* argv[])
 
     cout << "### Run&Connect" << "\n";
 
-    auto spawnArgs = projectDirs.generateArgsForSpawnChrome();
+    auto spawnArgs = projectDirs.generateArgsForSpawnChrome(appConfig.restoreLastSession);
     // cout << "Chrome args:\n";
     // for(auto a: spawnArgs)
     //     cout << "  " << a << "\n";
@@ -325,6 +325,7 @@ int unsafeMain(int argc, char* argv[])
     std::vector<marty::cdt::JsonListResponseEntry> jsonListResponse;
     marty::cdt::json jsonListResponseJson;
     auto httpResponse = wsConnection->checkRunAndGetJsonList( jsonListResponseJson, chromeName, spawnArgs, httpProbeTimeouts);
+
 
     if (!wsConnection->httpIsResponseOk(httpResponse))
         throw std::runtime_error("Failed to connect to browser");
@@ -436,11 +437,12 @@ int unsafeMain(int argc, char* argv[])
 
         if (!appConfig.waitFullCompletion)
              wsConnection->wsSleepAndDispatchMessages(appConfig.pageLoadPause);
-        
 
-    // unsigned                          evalTimeout       = 10000; // ms
-    // unsigned                          pageLoadPause     = 5000; // ms
-    // bool                              waitFullCompletion = true;
+        cout << "PageNavigateResponse:\n";
+        cout << "  frameId   : " << pageNavigateResponse.frameId    << "\n";
+        cout << "  loaderId  : " << pageNavigateResponse.loaderId   << "\n";
+        cout << "  isDownload: " << (pageNavigateResponse.isDownload ? "true" : "false") << "\n";
+        cout << "\n";
 
 
         if (pageNavigateResponse.frameId.empty())

@@ -40,6 +40,8 @@ struct AppConfig
     bool                              quet              = false;
 
     unsigned                          evalTimeout       = 10000; // ms
+    unsigned                          pageLoadPause     = 5000; // ms
+    bool                              waitFullCompletion = true;
 
     std::string                       inputFile;
     std::string                       output;

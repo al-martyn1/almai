@@ -121,7 +121,7 @@ int operator()( const StringType                                &a           //!
                     //argsParser.printHelpPage( std::cout, "[OPTIONS] input_file [output_file]", "If output_file not taken, STDOUT used", helpText );
                     auto helpText = opt.getHelpOptionsString();
                     std::cout << "Usage: " << argsParser.programLocationInfo.exeName
-                              << " [OPTIONS] input_file\n"
+                              << " [OPTIONS] [input_file]\n"
                               << "\nOptions:\n\n"
                               << helpText;
                               //<< " [OPTIONS] input_file [output_file]\n\nOptions:\n\n"<<helpText;
@@ -130,8 +130,8 @@ int operator()( const StringType                                &a           //!
                 if (pCol) // argsNeedHelp
                 {
                     argsParser.printHelpPage( std::cout
-                                            , "[OPTIONS] input_file [output_file]"
-                                            , "If output_file not taken, STDOUT used"
+                                            , "[OPTIONS] [input_file]"
+                                            , "" // Usage comment ???
                                             , pCol->makeText( 78, &argsParser.argsNeedHelp )
                                             );
                     // std::cout<<pCol->makeText( 78, &argsParser.argsNeedHelp );

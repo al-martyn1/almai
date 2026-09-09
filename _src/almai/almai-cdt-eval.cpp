@@ -152,7 +152,8 @@ UMBA_APP_MAIN()
 {
     try
     {
-        return unsafeMain(argc, argv);
+        auto res = unsafeMain(argc, argv);
+        return res;
     }
     catch(const std::exception& e)
     {
@@ -206,11 +207,6 @@ int unsafeMain(int argc, char* argv[])
 
         //argsParser.args.push_back("--help");
 
-
-        argsParser.args.push_back("-Y");
-        argsParser.args.push_back("-J=100");
-        argsParser.args.push_back(rootPath + "/_src/almai/**/*.cpp");
-
     } // if (umba::isDebuggerPresent())
 
 
@@ -255,10 +251,48 @@ int unsafeMain(int argc, char* argv[])
         std::cerr << "  " << "allowUnsafeEvalBlockedByCSP " << ": " << to_string(appConfig.evalCspMode) << "\n";
         //std::cerr << "  " << "" << ": " << to_string(appConfig.) << "\n";
 
+        std::cerr << "\n";
     }
 
-#if 0
+    if (!appConfig.expression.empty() && !appConfig.inputFile.empty())
+    {
+        LOG_ERR << "'--expression' option taken, but input file also taken\n";
+        return 2;
+    }
 
+    if (appConfig.expression.empty() && appConfig.inputFile.empty())
+    {
+        LOG_ERR << "'--expression' option nor input file not taken\n";
+        return 2;
+    }
+
+    std::string expression = appConfig.expression;
+
+    if (!appConfig.inputFile.empty())
+    {
+        if (!almai::utils::readFile(appConfig.inputFile, expression))
+        {
+            LOG_ERR << "failed to read input file: '" << appConfig.inputFile << "'" << "\n";
+            return 2;
+        }
+    }
+
+    if (expression.empty())
+    {
+        LOG_ERR << "expression is empty\n";
+        return 2;
+    }
+
+    // Возможно будет как-то подключаться к открытой уже странице по её frameId, но пока так
+    if (appConfig.openUrl.empty())
+    {
+        LOG_ERR << "URL not taken or empty ('--url')\n";
+        return 2;
+    }
+
+    
+
+    
     ix::initNetSystem();
 
     const std::string chromeName = "chrome";
@@ -272,10 +306,9 @@ int unsafeMain(int argc, char* argv[])
         return 1;
     }
 
-    marty::cdt::Timeouts httpProbeTimeouts   = {1,1};
-    marty::cdt::Timeouts httpConnectTimeouts = {1,3};
+    marty::cdt::Timeouts httpProbeTimeouts   = {3,3};
+    marty::cdt::Timeouts httpConnectTimeouts = {5,5};
 
-    //std::string httpBaseUrl = projectDirs.generateConnectionBaseUrlString(true /* http */);
 
     auto wsConnection = std::make_shared<marty::cdt::Connection>();
 
@@ -290,13 +323,20 @@ int unsafeMain(int argc, char* argv[])
     //     cout << "  " << a << "\n";
 
     std::vector<marty::cdt::JsonListResponseEntry> jsonListResponse;
-    auto httpResponse = wsConnection->checkRunAndGetJsonList( jsonListResponse, chromeName, spawnArgs, httpProbeTimeouts);
+    marty::cdt::json jsonListResponseJson;
+    auto httpResponse = wsConnection->checkRunAndGetJsonList( jsonListResponseJson, chromeName, spawnArgs, httpProbeTimeouts);
 
     if (!wsConnection->httpIsResponseOk(httpResponse))
         throw std::runtime_error("Failed to connect to browser");
 
     cout << "HTTP code: " << httpResponse->statusCode << "\n";
     cout << "Chrome is running" << "\n";
+    cout << "JsonList JSON:" << "\n";
+    cout << jsonListResponseJson.dump(2) << "\n";
+
+    from_json(jsonListResponseJson, jsonListResponse);
+    // std::vector<marty::cdt::JsonListResponseEntry> jsonListResponse;
+    // marty::cdt::json jsonListResponseJson;
 
 
     marty::cdt::JsonVersionResponse versionResponse;
@@ -360,120 +400,13 @@ int unsafeMain(int argc, char* argv[])
         wsConnection->wsSetUrl(defaultNewTabPageWsUrl);
 
 
-        wsConnection->wsSetSystemEventHandler( { ix::WebSocketMessageType::Open
-                                               , ix::WebSocketMessageType::Close
-                                               , ix::WebSocketMessageType::Error
-                                               , ix::WebSocketMessageType::Ping
-                                               , ix::WebSocketMessageType::Pong
-                                               , ix::WebSocketMessageType::Fragment
-                                               }
-                                             , [&](marty::cdt::Connection */* pCon */, const marty::cdt::WebSocketMessage& /* msg */, ix::WebSocketMessageType type)
-                                               {
-                                                   std::cout << "Message, type: " << marty::cdt::utils::ixWebSocketMessageTypeToString(type) << "\n" << "\n";
-                                               }
-                                             );
-
-        struct GenericIdHandler
-        {
-            std::string handlerName;
-
-            void operator()(marty::cdt::Connection *pCon, const marty::cdt::WebSocketMessage& /* msg */, marty::cdt::MessageIdVariant idVariant, marty::cdt::json j) const
-            {
-                using std::cout;
-                std::cout << "timestamp: " << pCon->getTimestamp() << "\n";
-                cout << "'" << handlerName << "'" << " ID Handler" << "\n";
-                std::visit( [&](auto&& arg)
-                            {
-                                using T = std::decay_t<decltype(arg)>;
-    
-                                if constexpr (std::is_same_v<T, unsigned>)
-                                {
-                                    cout << "  ID: " << arg << "\n";
-                                    cout << "  JSON:" << "\n";
-                                    cout << j.dump(2) << "\n";
-                                }
-                                else if constexpr (std::is_same_v<T, std::string>)
-                                {
-                                    cout << "  Method: " << arg << "\n";
-                                }
-                                else if constexpr (std::is_same_v<T, marty::cdt::ResponseError>)
-                                {
-                                    cout << "  ResponseError:" << "\n";
-                                    cout << "    ID     : " << arg.id << "\n";
-                                    cout << "    Code   : " << arg.errorInfo.code << "\n";
-                                    cout << "    Message: " << arg.errorInfo.message << "\n";
-                                }    
-                                // else
-                                //     static_assert(false, "non-exhaustive visitor!");
-                            }
-                          , idVariant
-                          );
-    
-                cout << "\n";
-            
-            }
-
-        }; // struct GenericIdHandler
+        // wsConnection->wsSetSystemEventHandler( [&](marty::cdt::Connection */* pCon */, const marty::cdt::WebSocketMessage& /* msg */, ix::WebSocketMessageType  /* type */ )
+        //                                        {
+        //                                            //std::cout << "Message, type: " << marty::cdt::utils::ixWebSocketMessageTypeToString(type) << "\n" << "\n";
+        //                                        }
+        //                                      );
 
 
-        struct GenericMethodHandler
-        {
-            std::string handlerName;
-
-            void operator()(marty::cdt::Connection *pCon, const marty::cdt::WebSocketMessage& /* msg */, marty::cdt::MessageIdVariant idVariant, marty::cdt::json j) const
-            {
-                using std::cout;
-                std::cout << "timestamp: " << pCon->getTimestamp() << "\n";
-                cout << "'" << handlerName << "'" << " Method Handler" << "\n";
-                std::visit( [&](auto&& arg)
-                            {
-                                using T = std::decay_t<decltype(arg)>;
-    
-                                if constexpr (std::is_same_v<T, unsigned>)
-                                {
-                                    cout << "  ID: " << arg << "\n";
-                                    cout << "  JSON:" << "\n";
-                                    cout << j.dump(2) << "\n";
-                                }
-                                else if constexpr (std::is_same_v<T, std::string>)
-                                {
-                                    cout << "  Method: " << arg << "\n";
-                                }
-                                else if constexpr (std::is_same_v<T, marty::cdt::ResponseError>)
-                                {
-                                    cout << "  ResponseError:" << "\n";
-                                    cout << "    ID     : " << arg.id << "\n";
-                                    cout << "    Code   : " << arg.errorInfo.code << "\n";
-                                    cout << "    Message: " << arg.errorInfo.message << "\n";
-                                }    
-                                else
-                                    static_assert(false, "non-exhaustive visitor!");
-                            }
-                          , idVariant
-                          );
-    
-                cout << "\n";
-            }
-
-        }; // struct GenericMethodHandler
-
-
-
-        wsConnection->wsSetDefaultIdHandler(GenericIdHandler{"DefaultIdHandler"});
-
-        wsConnection->wsSetMethodEventHandler("*", GenericMethodHandler{"Default"});
-
-        wsConnection->wsSetMethodEventHandler("Page.*", GenericMethodHandler{"Page"});
-
-
-        std::atomic<bool> domContentEventFiredFlag = false;
-        std::atomic<bool> loadEventFiredFlag       = false;
-
-        wsConnection->wsSetMethodEventHandler("Page.domContentEventFired", marty::cdt::AtomicBoolMethodHandler{domContentEventFiredFlag, true});
-        wsConnection->wsSetMethodEventHandler("Page.loadEventFired"      , marty::cdt::AtomicBoolMethodHandler{loadEventFiredFlag      , true});
-
-
-        
         auto wsConnectRes = wsConnection->wsConnect();
         if (!wsConnectRes.success)
         {
@@ -489,87 +422,61 @@ int unsafeMain(int argc, char* argv[])
         }
     
         wsConnection->wsStart();
-    
-        // wsConnection->wsSetDefaultIdHandler( GenericIdHandler{"Default"}
-        auto
-        sendRes = wsConnection->wsEventSubscribe("Page", GenericIdHandler{"PageEventSubsribe"});
-        if (!sendRes.success)
-            cout << "Send 'Page.enable' subscription failed" << "\n";
-        wsConnection->wsDispatchMessages();
-
-         
-        sendRes = wsConnection->wsEventSubscribe("Network", GenericIdHandler{"NetworkEventSubsribe"});
-        if (!sendRes.success)
-            cout << "Send 'Network.enable' subscription failed" << "\n";
-        wsConnection->wsDispatchMessages();
-
-         
-        sendRes = wsConnection->wsEventSubscribe("Runtime", GenericIdHandler{"RuntimeEventSubsribe"});
-        if (!sendRes.success)
-            cout << "Send 'Runtime.enable' subscription failed" << "\n";
-        wsConnection->wsDispatchMessages();
-
-         
-        sendRes = wsConnection->wsEventSubscribe("DOM", GenericIdHandler{"DomEventSubsribe"});
-        if (!sendRes.success)
-            cout << "Send 'DOM.enable' subscription failed" << "\n";
-        wsConnection->wsDispatchMessages();
 
 
         marty::cdt::PageNavigateResponse pageNavigateResponse;
 
-        if (!wsConnection->cdtPageNavigate( pageNavigateResponse, "https://яндекс.рф", 30000))
-            throw std::runtime_error("Couldn't wait for the page to load");
+        if (!wsConnection->cdtPageNavigate( pageNavigateResponse, appConfig.openUrl, appConfig.evalTimeout, appConfig.waitFullCompletion))
+        {
+            // if (appConfig.waitFullCompletion)
+                throw std::runtime_error("Couldn't wait for the page to load");
+            // else
+            //     wsConnection->wsSleepAndDispatchMessages(appConfig.pageLoadPause);
+        }
+
+        if (!appConfig.waitFullCompletion)
+             wsConnection->wsSleepAndDispatchMessages(appConfig.pageLoadPause);
+        
+
+    // unsigned                          evalTimeout       = 10000; // ms
+    // unsigned                          pageLoadPause     = 5000; // ms
+    // bool                              waitFullCompletion = true;
+
 
         if (pageNavigateResponse.frameId.empty())
             throw std::runtime_error("Frame ID not returned");
 
 
-        cout << "'Page.navigate' done\n" << "\n";
-        cout << "Page loaded\n" << "\n";
-
-
-
-        cout << "Execute DOM.getDocument\n" << "\n";
-
-
-        marty::cdt::DomDocument domDocument;
-        if (!wsConnection->cdtDomGetDocument(domDocument))
-            throw std::runtime_error("No reply for 'DOM.getDocument'");
-
-        cout << "'DOM.getDocument' done\n" << "\n";
-
-
-        std::string pageHtml;
-
+        marty::cdt::json jEvalResult;
+        if (!wsConnection->cdtRuntimeEvaluate( jEvalResult, expression
+                                             , appConfig.evalTimeout
+                                             , appConfig.evalReturnType
+                                             , appConfig.evalContextId
+                                             , appConfig.evalObjectGroup
+                                             , appConfig.evalAwaitPromise
+                                             , appConfig.evalUserGesture
+                                             , appConfig.evalThrowOnSideEffect
+                                             , appConfig.evalBreaksControl
+                                             , appConfig.evalReplMode
+                                             , appConfig.evalCspMode
+                                             //, appConfig.
+                                             )
+           )
         {
-            marty::cdt::json jOuterHTML;
-            if (!wsConnection->cdtRuntimeEvaluate(jOuterHTML, "document.documentElement.outerHTML"))
-                throw std::runtime_error("No reply for 'Runtime.evaluate' with 'document.documentElement.outerHTML'");
-
-            pageHtml = jOuterHTML["result"]["value"].get<std::string>();
-
-            std::cout << "document.documentElement.outerHTML JSON:\n";
-            std::cout << jOuterHTML.dump(2) << "\n\n";
+            throw std::runtime_error("No reply for 'Runtime.evaluate'");
         }
 
-        std::cerr << pageHtml;
-       
 
-        // 
-        for(auto i=0; i!=20; ++i)
-        {
-            if (!wsConnection->wsDispatchMessages())
-                umba::sleepMs(100);
-        }
-         
+        //pageHtml = jOuterHTML["result"]["value"].get<std::string>();
+
+        // std::cout << "document.documentElement.outerHTML JSON:\n";
+        std::cout << "------- Reply JSON -------\n";
+        std::cout << jEvalResult.dump(2) << "\n\n";
+
+
+        // ix::HttpResponsePtr httpClosePage(const std::string &pageId) const
+        // Где взять pageId?
         wsConnection->wsStop();
-         
-        umba::sleepMs(100);
-
-        cout << "\n";
-        std::cout << "timestamp: " << wsConnection->getTimestamp() << "\n";
-        cout << "Normal exit\n";
 
     }
     catch(const std::exception &e)
@@ -589,7 +496,6 @@ int unsafeMain(int argc, char* argv[])
     std::cout << "timestamp: " << wsConnection->getTimestamp() << "\n";
     cout << "Exiting\n";
 
-#endif
 
     return 0;
 }

@@ -174,14 +174,7 @@ int main(int argc, char* argv[])
         wsConnection->wsSetUrl(defaultNewTabPageWsUrl);
 
 
-        wsConnection->wsSetSystemEventHandler( { ix::WebSocketMessageType::Open
-                                               , ix::WebSocketMessageType::Close
-                                               , ix::WebSocketMessageType::Error
-                                               , ix::WebSocketMessageType::Ping
-                                               , ix::WebSocketMessageType::Pong
-                                               , ix::WebSocketMessageType::Fragment
-                                               }
-                                             , [&](marty::cdt::Connection */* pCon */, const marty::cdt::WebSocketMessage& /* msg */, ix::WebSocketMessageType type)
+        wsConnection->wsSetSystemEventHandler( [&](marty::cdt::Connection */* pCon */, const marty::cdt::WebSocketMessage& /* msg */, ix::WebSocketMessageType type)
                                                {
                                                    std::cout << "Message, type: " << marty::cdt::utils::ixWebSocketMessageTypeToString(type) << "\n" << "\n";
                                                }
@@ -275,17 +268,15 @@ int main(int argc, char* argv[])
 
         wsConnection->wsSetDefaultIdHandler(GenericIdHandler{"DefaultIdHandler"});
 
-        wsConnection->wsSetMethodEventHandler("*", GenericMethodHandler{"Default"});
+        //wsConnection->wsSetMethodEventHandler("*", GenericMethodHandler{"Default"});
+        //wsConnection->wsSetMethodEventHandler("Page.*", GenericMethodHandler{"Page"});
 
-        wsConnection->wsSetMethodEventHandler("Page.*", GenericMethodHandler{"Page"});
 
-
-        std::atomic<bool> domContentEventFiredFlag = false;
-        std::atomic<bool> loadEventFiredFlag       = false;
-
-        wsConnection->wsSetMethodEventHandler("Page.domContentEventFired", marty::cdt::AtomicBoolMethodHandler{domContentEventFiredFlag, true});
-        wsConnection->wsSetMethodEventHandler("Page.loadEventFired"      , marty::cdt::AtomicBoolMethodHandler{loadEventFiredFlag      , true});
-
+        // std::atomic<bool> domContentEventFiredFlag = false;
+        // std::atomic<bool> loadEventFiredFlag       = false;
+        //  
+        // wsConnection->wsSetMethodEventHandler("Page.domContentEventFired", marty::cdt::AtomicBoolMethodHandler{domContentEventFiredFlag, true});
+        // wsConnection->wsSetMethodEventHandler("Page.loadEventFired"      , marty::cdt::AtomicBoolMethodHandler{loadEventFiredFlag      , true});
 
         
         auto wsConnectRes = wsConnection->wsConnect();
@@ -367,8 +358,14 @@ int main(int argc, char* argv[])
             std::cout << jOuterHTML.dump(2) << "\n\n";
         }
 
-        std::cerr << pageHtml;
-       
+        //std::cerr << "Page.HTML\n";
+        std::cerr << pageHtml << "\n";
+
+        if (!wsConnection->cdtGetHtml(pageHtml))
+            std::cout << "cdtGetHtml timedout\n";
+        else
+            std::cout << "cdtGetHtml: " << pageHtml << "\n";
+
 
         // 
         for(auto i=0; i!=20; ++i)

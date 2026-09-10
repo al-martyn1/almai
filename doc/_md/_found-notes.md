@@ -285,11 +285,11 @@ Generator: Umba Brief Scanner
 
 # _libs/umba
 
-- `[_libs/umba/exception.h:255]`
+- `[_libs/umba/exception.h:256]`
   - required to be using namespace ::umba::omanip or using namespace std::iomanip
   declared before using this macro
 
-- `[_libs/umba/filecache.h:16]`
+- `[_libs/umba/filecache.h:18]`
   Not safe for threading
 
 

@@ -136,17 +136,17 @@ Generator: Umba Brief Scanner
 
 # _libs/marty_cpp
 
-- [ ] `[_libs/marty_cpp/marty_cpp.h:690]`
+- [ ] `[_libs/marty_cpp/marty_cpp.h:695]`
   пока range_error не кидаем, но надо доделать
 
-- [ ] `[_libs/marty_cpp/marty_cpp.h:2296]`
+- [ ] `[_libs/marty_cpp/marty_cpp.h:2303]`
   Надо подумать, править баг и как его править
 
-- [ ] `[_libs/marty_cpp/marty_cpp.h:3659]`
+- [ ] `[_libs/marty_cpp/marty_cpp.h:3666]`
   Нужен каст к underlaying типу, если он задан. Сюда надо будет передавать
   шаблоны и строку underlaying типа
 
-- [ ] `[_libs/marty_cpp/marty_cpp.h:4699]`
+- [ ] `[_libs/marty_cpp/marty_cpp.h:4706]`
   Нужен каст к underlaying типу, если он задан. Сюда надо будет передавать
   шаблоны и строку underlaying типа
 
@@ -225,51 +225,79 @@ Generator: Umba Brief Scanner
 
 
 
+# _libs/tmp_bak/results/umba/internal
+
+- [ ] `[_libs/tmp_bak/results/umba/internal/filesys.h:591]`
+  Посмотреть "Именование файлов, путей и пространств имен" -
+  https://learn.microsoft.com/ru-ru/windows/win32/fileio/naming-a-file
+
+- [ ] `[_libs/tmp_bak/results/umba/internal/filesys.h:1597]`
+  При возникновении исключения hFind утекает. Надо бы переделать, и такие моменты
+  надо бы везде это проверить
+
+- [ ] `[_libs/tmp_bak/results/umba/internal/filesys.h:1656]`
+  При возникновении исключения hFind утекает. Надо бы везде это проверить HANDLE
+  hFind = ::FindFirstFileA( umba::filename::prepareForNativeUsage(path).c_str(),
+  &fndData );
+
+- [ ] `[_libs/tmp_bak/results/umba/internal/filesys.h:2030]`
+  Переделать !!!
+  https://stackoverflow.com/questions/2910377/get-home-directory-in-linux
+
+
+
+# _libs/tmp_bak/results/umba/warnings
+
+- [ ] `[_libs/tmp_bak/results/umba/warnings/disable_unsafe_conversion.h:15]`
+  Проверить на 8/9/10/11/12 ой версии GCC - на 13ой точно есть
+
+
+
 # _libs/umba
 
-- [ ] `[_libs/umba/enum_helpers.h:475]`
+- [ ] `[_libs/umba/cmd_line.h:4795]`
+  Надо сделать через функцию: complete -F
+
+- [ ] `[_libs/umba/enum_helpers.h:481]`
   Сделать так же, как для QString
 
-- [ ] `[_libs/umba/enum_helpers.h:483]`
+- [ ] `[_libs/umba/enum_helpers.h:489]`
   Сделать так же, как для QString
 
-- [ ] `[_libs/umba/filesys_scanners.h:31]`
-  Надо бы переименовать в umba::filesys::scanners
-
-- [ ] `[_libs/umba/filesys_scanners.h:285]`
+- [ ] `[_libs/umba/filesys_scanners.h:287]`
   Нужно что-то решать с отсутствующим расширением
 
-- [ ] `[_libs/umba/filesys_scanners.h:503]`
+- [ ] `[_libs/umba/filesys_scanners.h:506]`
   Нужно что-то решать с отсутствующим расширением
 
-- [ ] `[_libs/umba/format_message.h:57]`
+- [ ] `[_libs/umba/format_message.h:61]`
   Надо подумать на тему замены десятичного разделителя и разделителя разрядов
 
-- [ ] `[_libs/umba/format_message.h:303]`
+- [ ] `[_libs/umba/format_message.h:307]`
   Не реализовано ! Десятичный разделитель - между целой и дробной частью
 
-- [ ] `[_libs/umba/format_message.h:307]`
+- [ ] `[_libs/umba/format_message.h:311]`
   Не реализовано ! Разделитель груп разрядов и размер группы
 
-- [ ] `[_libs/umba/format_message.h:311]`
+- [ ] `[_libs/umba/format_message.h:315]`
   Не реализовано ! Установка нац особенностей форматирования десятичных чисел,
   делает decSep и decGroup
 
-- [ ] `[_libs/umba/regex_helpers.h:197]`
+- [ ] `[_libs/umba/regex_helpers.h:200]`
   Если не обрезать, то регулярки в GCC 7.3 падают Чет не работает, а обрезать в
   прикладухе - работает
 
-- [ ] `[_libs/umba/regex_helpers.h:232]`
+- [ ] `[_libs/umba/regex_helpers.h:235]`
   Если не обрезать, то регулярки в GCC 7.3 падают Чет не работает, а обрезать в
   прикладухе - работает
 
-- [ ] `[_libs/umba/string_plus.h:2099]`
+- [ ] `[_libs/umba/string_plus.h:2127]`
   Надо подумать, править баг и как его править
 
-- [ ] `[_libs/umba/string_plus.h:2156]`
+- [ ] `[_libs/umba/string_plus.h:2184]`
   Надо подумать, править баг и как его править
 
-- [ ] `[_libs/umba/utf_impl.h:772]`
+- [ ] `[_libs/umba/utf_impl.h:780]`
   Надо бы сделать: UTF-32 из string UTF-32 из wstring string  из UTF-32 wstring
   из UTF-32
 
@@ -277,20 +305,20 @@ Generator: Umba Brief Scanner
 
 # _libs/umba/internal
 
-- [ ] `[_libs/umba/internal/filesys.h:591]`
+- [ ] `[_libs/umba/internal/filesys.h:603]`
   Посмотреть "Именование файлов, путей и пространств имен" -
   https://learn.microsoft.com/ru-ru/windows/win32/fileio/naming-a-file
 
-- [ ] `[_libs/umba/internal/filesys.h:1597]`
+- [ ] `[_libs/umba/internal/filesys.h:1681]`
   При возникновении исключения hFind утекает. Надо бы переделать, и такие моменты
   надо бы везде это проверить
 
-- [ ] `[_libs/umba/internal/filesys.h:1656]`
+- [ ] `[_libs/umba/internal/filesys.h:1740]`
   При возникновении исключения hFind утекает. Надо бы везде это проверить HANDLE
   hFind = ::FindFirstFileA( umba::filename::prepareForNativeUsage(path).c_str(),
   &fndData );
 
-- [ ] `[_libs/umba/internal/filesys.h:2030]`
+- [ ] `[_libs/umba/internal/filesys.h:2114]`
   Переделать !!!
   https://stackoverflow.com/questions/2910377/get-home-directory-in-linux
 
@@ -309,7 +337,7 @@ Generator: Umba Brief Scanner
 
 # _libs/umba/warnings
 
-- [ ] `[_libs/umba/warnings/disable_unsafe_conversion.h:15]`
+- [ ] `[_libs/umba/warnings/disable_unsafe_conversion.h:17]`
   Проверить на 8/9/10/11/12 ой версии GCC - на 13ой точно есть
 
 

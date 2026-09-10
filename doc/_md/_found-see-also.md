@@ -10,16 +10,24 @@ Generator: Umba Brief Scanner
 
 
 
+# _libs/tmp_bak/results/umba/warnings
+
+- `[_libs/tmp_bak/results/umba/warnings/push.h:7]`
+  https://devblogs.microsoft.com/cppblog/broken-warnings-theory/
+    https://learn.microsoft.com/en-us/cpp/preprocessor/warning?view=msvc-170
+
+
+
 # _libs/umba
 
-- `[_libs/umba/debug_helpers.h:105]`
+- `[_libs/umba/debug_helpers.h:107]`
   https://github.com/scottt/debugbreak/blob/master/debugbreak.h
 
 
 
 # _libs/umba/warnings
 
-- `[_libs/umba/warnings/push.h:7]`
+- `[_libs/umba/warnings/push.h:9]`
   https://devblogs.microsoft.com/cppblog/broken-warnings-theory/
     https://learn.microsoft.com/en-us/cpp/preprocessor/warning?view=msvc-170
 

@@ -48,9 +48,16 @@ Generator: Umba Brief Scanner
 
 
 
+# _libs/tmp_bak/results/umba/warnings
+
+- `[_libs/tmp_bak/results/umba/warnings/disable_unsafe_conversion.h:7]`
+  C4191: 'type cast': unsafe conversion from 'FARPROC' to '...'
+
+
+
 # _libs/umba/warnings
 
-- `[_libs/umba/warnings/disable_unsafe_conversion.h:7]`
+- `[_libs/umba/warnings/disable_unsafe_conversion.h:9]`
   C4191: 'type cast': unsafe conversion from 'FARPROC' to '...'
 
 

@@ -253,6 +253,8 @@ Generator: Umba Brief Scanner
 - `StandaloneFuzzTargetMain.c` - 
 - `doctest.h` - 
 - `main.cpp` - 
+- `CMakeCXXCompilerId.cpp` - 
+- `app_main.h` - 
 - `CMakeCCompilerId.c` - 
 - `CMakeCXXCompilerId.cpp` - 
 - `app_main.h` - 
@@ -299,6 +301,24 @@ Generator: Umba Brief Scanner
 - `sandbox.cpp` - 
 - `_test01.cpp` - Тесты утилитарных функций
 - `_test02.cpp` - Тест задания путей поиска
+- `_test03.cpp` - Тестируем разбор "MdXml"
+- `_test04.cpp` - Тестируем разбор frontmatter
+- `_test05.cpp` - Тестируем чтение препромпта
+- `_test06.cpp` - Тестируем сканирование препромптов (пока только в props и только в одном каталоге)
+- `_test07.cpp` - Тестируем переименование файла
+- `_test08.cpp` - Тестируем umba::command_line::CommandSequenceController
+- `_test09.cpp` - Тестируем фичи almai, не захламляя проект almai
+- `_test10.cpp` - Тесты запуска сторонних программ (без ожидания)
+- `_test11.cpp` - Тест регистрации EXE без добавления в PATH
+- `_test12.cpp` - Тест запуска chrome, и получения списка доступных страниц
+- `_test13.cpp` - Тест запуска chrome, и получения списка доступных страниц - тестируем almai::ProjectDirs
+- `_test14.cpp` - Тест запуска chrome, и получения списка доступных страниц - основная часть кода ушла в библиотеку
+- `_test15.cpp` - Тест запуска chrome, отработка открытия страницы, события Page, Network, Runtime, DOM
+- `_test16.cpp` - Тест запуска chrome, отработка открытия страницы, события Page, Network, Runtime, DOM - используем marty::cdt::Connection
+- `_test17.cpp` - Тест запуска chrome, отработка открытия страницы, события Page, Network, Runtime, DOM - используем marty::cdt::Connection - специализированные функции
+- `almai-cdt-eval.cpp` - Тест запуска chrome, отработка открытия страницы, события Page, Network, Runtime, DOM - используем marty::cdt::Connection - специализированные функции
 - `almai-md-join.cpp` - 
 - `almai-md-split.cpp` - 
 - `almai.cpp` - 
+- `Маркер_языка.cpp` - 
+- `Хвостовой_маркер_языка.cpp` - 

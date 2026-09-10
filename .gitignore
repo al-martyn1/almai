@@ -6,3 +6,13 @@
 /.set_msvc.bat
 /msg.*
 /.chrome
+/_src/almai/*.txt
+/almai-md-join.txt
+/almai-md-split.txt
+/chkdsk.txt
+/cmake.txt
+/tests/_test08*.txt
+/tests/_test08*.md
+/tests/almai.txt
+/doc.scratch/flats.txt
+/tol.txt

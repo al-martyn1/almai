@@ -1,4 +1,4 @@
-@куь set PATCH=01
+@set PATCH=01
 @call "%~dp0\setup.bat"
 
 almai-md-split --overwrite --clipboard "-o=%~dp0\%~n0%PATCH%"

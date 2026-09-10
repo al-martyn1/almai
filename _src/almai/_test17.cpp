@@ -378,6 +378,13 @@ int main(int argc, char* argv[])
             std::cout << "cdtGetHtml: " << pageHtml << "\n";
 
 
+        // Как связать свои данные (идентификатор) с конкретной страницей персистентно -  https://chat.deepseek.com/share/23l9e1yae94620x4jh
+        // сохраняем - window.sessionStorage.setItem
+        // получаем - window.sessionStorage.getItem
+        // При запуске хрома, если мы хотим подклюсится ко вкладке, которую ранее пометили
+        // нужно подключится по ws ко всем вкладкам, и получить свой идентификатор у каждой страницы
+        // идентификатор можно задавать по id страницы, который был получен при первом запуске
+        // (при восстановлении сессии та же страница получит новый ID, поэтому надо ориентироваться только на тот, который мы сами задали)
         {
             marty::cdt::json jRes;
             if (!wsConnection->cdtRuntimeEvaluate(jRes, "window.sessionStorage.setItem(\'my_tab_identifier\', \'TYRNIYTFTYHJ\')"))
@@ -394,6 +401,14 @@ int main(int argc, char* argv[])
 
             std::cout << "window.sessionStorage.getItem JSON:\n";
             std::cout << jRes.dump(2) << "\n\n";
+
+            if (!wsConnection->cdtRuntimeEvaluateGetValue(jRes, "window.sessionStorage.getItem(\'my_tab_identifier\')", "string"))
+                throw std::runtime_error("No reply for 'Runtime.evaluate' with 'window.sessionStorage.getItem'");
+
+            std::string str = jRes;
+            std::cout << "cdtRuntimeEvaluateGetValue returned: " << str << "\n\n";
+            std::cout << "As JSON: " << jRes.dump() << "\n\n";
+
         }
 
 

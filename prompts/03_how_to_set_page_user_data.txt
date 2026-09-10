@@ -1,0 +1,77 @@
+Я подключаюсь к chrome по протоколу chrome dev tools protocol.
+
+Я перечисляю открытые страницы, получив их по HTTP:
+~~~
+[
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@d04cdb24d67b081f6cf80200ffc5233f44b61109/inspector.html?ws=localhost:9975/devtools/page/EA1135F76A6FC7D8C0E84C0C79014558",
+    "faviconUrl": "https://yastatic.net/s3/home-static/_/nova3/B5CxuyJ3.png",
+    "id": "EA1135F76A6FC7D8C0E84C0C79014558",
+    "title": "Яндекс — быстрый поиск в интернете",
+    "type": "page",
+    "url": "https://ya.ru/",
+    "webSocketDebuggerUrl": "ws://localhost:9975/devtools/page/EA1135F76A6FC7D8C0E84C0C79014558"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@d04cdb24d67b081f6cf80200ffc5233f44b61109/inspector.html?ws=localhost:9975/devtools/page/E00AF542D2C7C14826C496D4F2F50B96",
+    "id": "E00AF542D2C7C14826C496D4F2F50B96",
+    "title": "Omnibox Popup",
+    "type": "browser_ui",
+    "url": "chrome://omnibox-popup.top-chrome/",
+    "webSocketDebuggerUrl": "ws://localhost:9975/devtools/page/E00AF542D2C7C14826C496D4F2F50B96"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@d04cdb24d67b081f6cf80200ffc5233f44b61109/inspector.html?ws=localhost:9975/devtools/page/D8108935E2425F70A937E432C20C70B5",
+    "id": "D8108935E2425F70A937E432C20C70B5",
+    "title": "Omnibox Popup",
+    "type": "browser_ui",
+    "url": "chrome://omnibox-popup.top-chrome/omnibox_popup_aim.html",
+    "webSocketDebuggerUrl": "ws://localhost:9975/devtools/page/D8108935E2425F70A937E432C20C70B5"
+  },
+  {
+    "description": "",
+    "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@d04cdb24d67b081f6cf80200ffc5233f44b61109/inspector.html?ws=localhost:9975/devtools/page/93C8244C11539BCE196E04525601CD7F",
+    "faviconUrl": "https://yastatic.net/s3/home-static/_/nova3/B5CxuyJ3.png",
+    "id": "93C8244C11539BCE196E04525601CD7F",
+    "title": "Яндекс — быстрый поиск в интернете",
+    "type": "page",
+    "url": "https://ya.ru/",
+    "webSocketDebuggerUrl": "ws://localhost:9975/devtools/page/93C8244C11539BCE196E04525601CD7F"
+  }
+]
+~~~
+
+Если я нахожу новую вклдку (`if (e.type=="page" && (e.url=="chrome://newtab/" || e.url=="chrome://newtab"))`),
+т подключаюсь по вебсокету к ней.
+
+Если новой вкладки нет, я по HTTP создаю новую вкладку ('/json/new'), и получаю ответ:
+~~~
+{
+   "description": "",
+   "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@d04cdb24d67b081f6cf80200ffc5233f44b61109/inspector.html?ws=localhost:9975/devtools/page/57FE018777EEDA8549F9AEE7EE61B79D",
+   "id": "57FE018777EEDA8549F9AEE7EE61B79D",
+   "title": "",
+   "type": "page",
+   "url": "about:blank",
+   "webSocketDebuggerUrl": "ws://localhost:9975/devtools/page/57FE018777EEDA8549F9AEE7EE61B79D"
+}
+~~~
+
+И подключаюсь к ней по webSocketDebuggerUrl, затем там делаю 'Page.navigate' для открытия нужного адреса.
+Получаю такие данные (это уже извлечено из JSON в мою структуру и выведено из неё): 
+~~~
+PageNavigateResponse:
+  frameId   : A59ADD66A0A42421406CC0258B687BE3
+  loaderId  : 49109B6D3AFA6356E10A8A351193FDBF
+  isDownload: false
+~~~
+
+Затем я отключаюсь.
+
+Мой вопрос состоит в следующем. Могу ли я при следующем запуске своей программы каким-то образом подключиться ко вкладке,
+которую открыл при предыдущем запуске? Допустим, браузер я не закрывал, или браузер был запущен в режиме восстановления сессии.
+
+https://chat.deepseek.com/share/23l9e1yae94620x4jh

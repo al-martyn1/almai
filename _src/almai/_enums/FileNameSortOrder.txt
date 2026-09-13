@@ -1,0 +1,13 @@
+invalid,unknown=-1
+
+asc,ascending            = 0
+desc,descending          = 0x01
+type,byType,sortByType   = 0x02
+dirs,dirsFirst           = 0x04
+
+ascDirs,ascendingDirs,ascDirsFirst,ascendingDirsFirst = 0x04
+ascDirsType,ascDirsByType,ascendingDirsType,ascendingDirsByType,ascDirsFirst,ascDirsFirstType,ascDirsFirstByType,ascendingDirsFirst,ascendingDirsFirstType,ascendingDirsFirstByType = 0x06
+
+no,noSort                = 0x80
+
+

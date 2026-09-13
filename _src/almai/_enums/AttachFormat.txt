@@ -1,0 +1,6 @@
+invalid,unknown=-1
+
+none,no        = 0
+md,markdown
+zip
+7z

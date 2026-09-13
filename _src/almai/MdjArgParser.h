@@ -93,6 +93,9 @@ int operator()( const StringType                                &a           //!
 #include "cli_opt_parsers/add_header_footer.h"
 #include "cli_opt_parsers/clipboard.h"
 #include "cli_opt_parsers/join_lines_limit.h"
+#include "cli_opt_parsers/attach.h"
+#include "cli_opt_parsers/dir-tree-sort.h"
+
 
         if (opt.isHelpStyleOption())
         {

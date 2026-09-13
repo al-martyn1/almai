@@ -198,6 +198,9 @@ int unsafeMain(int argc, char* argv[])
         return 0;
 
 
+    appConfig.checkUpdateOutput();
+
+
     if (appConfig.scanInfos.empty())
     {
         // LOG_ERR << "no input files/masks taken" << "\n";
@@ -300,14 +303,6 @@ int unsafeMain(int argc, char* argv[])
     // Теперь надо для каждого файла найти fence
     // Вывести в конечный документ и записать результат
 
-    std::stringstream oss;
-
-    for(auto &ffi: appConfig.foundFileInfos)
-    {
-        appConfig.generateMarkdownListing(oss, ffi.displayName, ffi.fileLines);
-    }
-
-    auto mdLines = marty_cpp::splitToLinesSimple(oss.str());
 
     auto resLines = almai::utils::simpleReplaceClipboardMarkerLine(appConfig.headerLines);
 
@@ -318,7 +313,31 @@ int unsafeMain(int argc, char* argv[])
         resLines.push_back(std::string());
     }
 
-    resLines.insert(resLines.end(), mdLines.begin(), mdLines.end());
+    if (appConfig.isSourcesInline())
+    {
+        std::stringstream oss;
+    
+        for(auto &ffi: appConfig.foundFileInfos)
+        {
+            appConfig.generateMarkdownListing(oss, ffi.displayName, ffi.fileLines);
+        }
+    
+        auto mdLines = marty_cpp::splitToLinesSimple(oss.str());
+    
+        resLines.insert(resLines.end(), mdLines.begin(), mdLines.end());
+    }
+    else
+    {
+        std::string errStr;
+        if (!appConfig.saveAttach(errStr))
+        {
+            if (errStr.empty())
+                LOG_ERR << "failed to write attach file: '" << appConfig.getAttachName() << "'" << "\n";
+            else
+                LOG_ERR << "failed to write attach file: '" << appConfig.getAttachName() << "': " << errStr << "\n";
+            return 1;
+        }
+    }
 
     if (!appConfig.footerLines.empty())
     {

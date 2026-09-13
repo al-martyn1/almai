@@ -26,6 +26,7 @@
 
 //
 #include <algorithm>
+#include <iterator>
 
 //----------------------------------------------------------------------------
 
@@ -35,22 +36,131 @@
 struct AppConfigBase
 {
 
-    bool            overwrite         = false;
-    bool            quet              = false;
-    bool            useClipboard      = false;
-    std::string     saveClipboard;
+    bool                         overwrite         = false;
+    bool                         quet              = false;
+    bool                         useClipboard      = false;
+    std::string                  saveClipboard;
 
-    bool            listOnly          = false; // list files, but don't save them
-    std::size_t     listLines         = 5;
+    bool                         listOnly          = false; // list files, but don't save them
+    std::size_t                  listLines         = 5;
 
-    std::size_t     joinLinesLimit    = (std::size_t)-1;
+    std::size_t                  joinLinesLimit    = (std::size_t)-1;
+
+    almai::FileNameSortOrder     dirTreeSortOrder  = almai::FileNameSortOrder::ascDirsType; // asc | dirsFirst | sortByType
+    almai::AttachFormat          attachFormat      = almai::AttachFormat::none;
+    std::string                  attachFileName;
 
 
     //------------------------------
     using ELinefeedType = marty_cpp::ELinefeedType;
 
-    std::string     output;
-    ELinefeedType   outputLinefeedType = ELinefeedType::systemDefault;
+    std::string                  output;
+    ELinefeedType                outputLinefeedType = ELinefeedType::systemDefault;
+
+
+    bool isSourcesInline() const
+    {
+        return attachFormat == almai::AttachFormat::none;
+    }
+
+
+    std::string getAttachName() const
+    {
+        if (!attachFileName.empty())
+            return attachFileName;
+
+        auto name = umba::filename::getName(output);
+        auto path = umba::filename::getPath(output);
+
+        if (!name.empty())
+            name += "_sources";
+        else
+            name = "sources_attach";
+
+        if (path.empty())
+            path = umba::filesys::getCurrentDirectory();
+
+        switch(attachFormat)
+        {
+            case almai::AttachFormat::invalid : throw std::runtime_error("saveAttach: invalid attachFormat"); // break;
+
+            case almai::AttachFormat::no : throw std::runtime_error("getAttachName: no attacment"); // break;
+            case almai::AttachFormat::md : name = umba::filename::appendExtention(name, std::string("md") ); break;
+            case almai::AttachFormat::zip: name = umba::filename::appendExtention(name, std::string("zip")); break;
+            case almai::AttachFormat::_7z: name = umba::filename::appendExtention(name, std::string("7z") ); break;
+        }
+
+        return umba::filename::appendPath(path, name);
+    }
+
+    bool saveAttach(std::string & /* errMsg */ ) const
+    {
+        std::vector<std::uint8_t> attachData;
+
+        switch(attachFormat)
+        {
+            case almai::AttachFormat::invalid : throw std::runtime_error("saveAttach: invalid attachFormat"); // break;
+
+            case almai::AttachFormat::no : throw std::runtime_error("saveAttach: no attacment"); // break;
+
+            case almai::AttachFormat::md : 
+            {
+                std::stringstream oss;
+                
+                for(const auto &ffi: foundFileInfos)
+                {
+                    generateMarkdownListing(oss, ffi.displayName, ffi.fileLines);
+                }
+
+                auto mdSourcesLines = marty_cpp::splitToLinesSimple(oss.str());
+                std::string mdSources = mergeLines(mdSourcesLines);
+
+                const std::uint8_t *pBegin = (const std::uint8_t*)mdSources.data();
+                const std::uint8_t *pEnd   = std::next(pBegin, std::ptrdiff_t(mdSources.size()));
+                attachData = std::vector<std::uint8_t>(pBegin, pEnd);
+                
+                break;
+            }
+
+            case almai::AttachFormat::zip: throw std::runtime_error("saveAttach: zip attachments not implemented"); break;
+            case almai::AttachFormat::_7z: throw std::runtime_error("saveAttach: zip attachments not implemented"); break;
+        }
+
+        return umba::filesys::writeFile(getAttachName(), attachData, overwrite);
+    }
+
+    //  
+    // no         = 0x0000 /*!<  */,
+    // md         = 0x0001 /*!<  */,
+    // markdown   = 0x0001 /*!<  */,
+    // zip        = 0x0002 /*!<  */,
+    // _7z        = 0x0003 /*!<  */
+    //  
+
+        //std::string mergeLines(const std::vector<std::string> &lines) const
+
+    // if (appConfig.isSourcesInline())
+    // {
+    //     std::stringstream oss;
+    //  
+    //     for(auto &ffi: appConfig.foundFileInfos)
+    //     {
+    //         appConfig.generateMarkdownListing(oss, ffi.displayName, ffi.fileLines);
+    //     }
+    //  
+    //     auto mdLines = marty_cpp::splitToLinesSimple(oss.str());
+    //  
+    //     resLines.insert(resLines.end(), mdLines.begin(), mdLines.end());
+    // }
+    // else
+    // {
+    //     std::string errStr;
+    //     if (!appConfig.saveAttach(errStr))
+    //     {
+    //         LOG_ERR << "failed to write attach file: '" << appConfig.getAttachName() << "': " << errStr << "\n";
+    //         return 1;
+    //     }
+    // }
 
 
     void checkUpdateOutputDir()
@@ -359,6 +469,8 @@ struct AppConfigBase
 
     void generateMarkdownListing(std::ostream &oss, const std::string &displayFileName, std::vector<std::string> fileLines) const
     {
+        //displayFileName = umba::filename::makeCanonical(displayFileName, '/');
+
         if (filenameDecorationType==almai::FilenameDecorationType::title)
         {
             oss << makeFilenameTitle(displayFileName) << "\n\n";
@@ -403,6 +515,12 @@ struct AppConfigBase
 
     }
 
+    std::string generateMarkdownListing(const std::string &displayFileName, const std::vector<std::string> fileLines) const
+    {
+        std::stringstream oss;
+        generateMarkdownListing(oss, displayFileName, fileLines);
+        return oss.str();
+    }
 
     bool isSetJoinLinesLimit() const
     {

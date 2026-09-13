@@ -34,6 +34,7 @@
 
 
 umba-enum-gen %GEN_OPTS% %HEX2% %TPL_OVERRIDE% %SNIPPETOPTIONS_GEN_FLAGS% ^
+    %UINT32% %HEX4% -E=AttachFormat                  -F=@AttachFormat.txt                 ^
     %UINT32% %HEX4% -E=CodeLanguageMarker            -F=@CodeLanguageMarker.txt           ^
     %UINT32% %HEX4% -E=ComparisonType                -F=@ComparisonType.txt               ^
     %UINT32% %HEX4% -E=FenceStyle                    -F=@FenceStyle.txt                   ^
@@ -42,6 +43,8 @@ umba-enum-gen %GEN_OPTS% %HEX2% %TPL_OVERRIDE% %SNIPPETOPTIONS_GEN_FLAGS% ^
     %UINT32% %HEX4% -E=PrepromptPathType             -F=@PrepromptPathType.txt            ^
     %UINT32% %HEX4% -E=ResultCode                    -F=@ResultCode.txt                   ^
     %UINT32% %HEX4% -E=SortOrder                     -F=@SortOrder.txt                    ^
+    %FLAGS% %FLAGENUM_EXTRA%                                                              ^
+    %UINT32% %HEX4% -E=FileNameSortOrder             -F=@FileNameSortOrder.txt            ^
     %SERIALIZE_HYPHEN%                                                                    ^
 ..\enums.h
 

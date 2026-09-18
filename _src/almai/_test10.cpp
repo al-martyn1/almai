@@ -138,10 +138,10 @@ int main(int argc, char* argv[])
 
 
     auto curDir = umba::filesys::getCurrentDirectory();
-    auto userProfileFolderProject = marty::cdt::utils::generateChromeUserProfileFolderForProject(curDir, std::string(), std::string(".almai-working-files"));
-    auto userCacheFolderProject   = marty::cdt::utils::generateChromeUserCacheFolderForProject  (curDir, std::string(), std::string(".almai-working-files"));
-    auto userProfileFolderGlobal  = marty::cdt::utils::generateChromeUserProfileFolderForProject(curDir, std::string(), std::string());
-    auto userCacheFolderGlobal    = marty::cdt::utils::generateChromeUserCacheFolderForProject  (curDir, std::string(), std::string());
+    auto userProfileFolderProject = marty::cdt::utils::generateChromeUserProfileDirForProject(curDir, std::string(), std::string(".almai-working-files"));
+    auto userCacheFolderProject   = marty::cdt::utils::generateChromeUserCacheDirForProject  (curDir, std::string(), std::string(".almai-working-files"));
+    auto userProfileFolderGlobal  = marty::cdt::utils::generateChromeUserProfileDirForProject(curDir, std::string(), std::string());
+    auto userCacheFolderGlobal    = marty::cdt::utils::generateChromeUserCacheDirForProject  (curDir, std::string(), std::string());
 
     cout << "userProfileFolderProject: " << userProfileFolderProject << "\n";
     cout << "userCacheFolderProject  : " << userCacheFolderProject   << "\n";

@@ -6,6 +6,7 @@
 //----------------------------------------------------------------------------
 #include "umba/filesys.h"
 #include "marty_cdt/utils.h"
+#include "marty_cdt/types.h"
 #include "utils.h"
 //
 #include <ixwebsocket/IXNetSystem.h>
@@ -28,12 +29,12 @@ namespace almai {
 //----------------------------------------------------------------------------
 struct ProjectDirs
 {
-    std::string projectPath;
-    std::string almaiDir;
-    std::string projectFile;
+    std::string              projectPath;
+    std::string              almaiDir;
+    std::string              projectFile;
 
-    std::string browserUserDataDir;
-    std::string browserCacheDataDir;
+    marty::cdt::BrowserDirs  browserDirs;
+
 
     int port = 0;
 
@@ -57,11 +58,12 @@ struct ProjectDirs
             projectSubfolder = "." + browserName;
         }
 
-        browserUserDataDir  = marty::cdt::utils::generateChromeUserProfileFolderForProject(projectPath, browserName, projectSubfolder);
-        browserCacheDataDir = marty::cdt::utils::generateChromeUserCacheFolderForProject(projectPath, browserName, projectSubfolder);
+        // browserDirs.userDataDir  = marty::cdt::utils::generateChromeUserProfileFolderForProject(projectPath, browserName, projectSubfolder);
+        // browserDirs.cacheDataDir = marty::cdt::utils::generateChromeUserCacheFolderForProject(projectPath, browserName, projectSubfolder);
+        browserDirs = marty::cdt::utils::generateChromeDirsForProject(projectPath, browserName, projectSubfolder);
 
-        umba::filesys::createDirectoryEx(browserUserDataDir , true /* forceCreatePath */ );
-        umba::filesys::createDirectoryEx(browserCacheDataDir, true /* forceCreatePath */ );
+        umba::filesys::createDirectoryEx(browserDirs.userDataDir , true /* forceCreatePath */ );
+        umba::filesys::createDirectoryEx(browserDirs.cacheDataDir, true /* forceCreatePath */ );
     }
 
     void generateProjectConnectionPort(int startPort=9000, int range=1000)
@@ -76,7 +78,7 @@ struct ProjectDirs
 
     std::vector<std::string> generateArgsForSpawnChrome(bool restoreLastSession=false) const
     {
-        return marty::cdt::utils::generateArgsForSpawnChromeExactDirs(browserUserDataDir, browserCacheDataDir, port, restoreLastSession);
+        return marty::cdt::utils::generateArgsForSpawnChromeExactDirs(browserDirs.userDataDir, browserDirs.cacheDataDir, port, restoreLastSession);
     }
     
 

@@ -62,8 +62,8 @@ int main(int argc, char* argv[])
     cout << "projectPath        : " << projectDirs.projectPath << "\n";
     cout << "almaiDir           : " << projectDirs.almaiDir    << "\n";
     cout << "projectFile        : " << projectDirs.projectFile      << "\n";
-    cout << "browserUserDataDir : " << projectDirs.browserUserDataDir  << "\n";
-    cout << "browserCacheDataDir: " << projectDirs.browserCacheDataDir << "\n";
+    cout << "browserUserDataDir : " << projectDirs.browserDirs.userDataDir  << "\n";
+    cout << "browserCacheDataDir: " << projectDirs.browserDirs.cacheDataDir << "\n";
     cout << "httpBaseUrl        : " << httpBaseUrl << "\n";
     cout << "jsonListUrl        : " << jsonListUrl << "\n";
 

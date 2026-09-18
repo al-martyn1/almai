@@ -1,0 +1,362 @@
+# План работ по развитию marty_cdt
+
+Ниже — пошаговый план, разбитый на «кирпичики». Каждый кирпичик:
+
+
+Порядок выбран так, чтобы **после каждого шага была польза**, и чтобы более поздние кирпичи не требовали переписывать ранние. Ориентировочно — 25–30 кирпичей, каждый на 0.5–1 сессию.
+
+## Фаза 0. Подготовка инфраструктуры тестирования
+
+Прежде чем добавлять функционал, надо снизить трение от тестов. Сейчас каждый `_testNN.cpp` — это 300–500 строк boilerplate: запуск Chrome, подключение, ожидание, вывод. Из-за этого тестировать «одну маленькую функцию» больно.
+
+### Кирпич 0.1. `TestFixture`
+
+**Что:** заголовочный файл `_src/almai/TestFixture.h` с классом, который инкапсулирует:
+
+**Зачем:** каждый следующий тест — 20–40 строк «настроил, вызвал, проверил».
+**Тест:** `_test18_fixture.cpp` — просто поднимает Chrome, открывает `about:blank`, печатает URL и завершается.
+**Проверка:** работает быстрее, чем `_test16`, и не содержит копипасты.
+### Кирпич 0.2. Логгер и уровни
+
+**Что:** в `TestFixture` — `enum class LogLevel { Silent, Error, Info, Debug }` и `setLogLevel()`. Внутренние хелперы (`logInfo`, `logDebug`, `logError`). Логи с таймстампом `connection->getTimestamp()`.
+**Зачем:** при отладке журналов будет очень много событий. Нужно уметь их выключать.
+**Тест:** тот же `_test18`, переключение уровней, проверить вывод.
+### Кирпич 0.3. Утилита `waitFor(predicate, timeoutMs)` в тестах
+
+Крутит `wsDispatchMessages` + `sleep` до срабатывания предиката или таймаута.
+
+
+**Зачем:** сейчас везде `for(auto i=0;i!=20;++i) { wsDispatchMessages(); sleepMs(100); }`. Это надо один раз написать правильно.
+**Тест:** в `_test18` — `waitFor([]{ return true; }, 100)` возвращает `true`; `waitFor([]{ return false; }, 200)` возвращает `false` за 200 мс.
+## Фаза 1. Журналы (наблюдение)
+
+Это фундамент всего дальнейшего. Пока журналов нет, любое «подождать ответа» или «собрать bundle» — гадание.
+
+### Кирпич 1.1. `NetworkJournal` — только `requestWillBeSent` и `loadingFinished`
+
+`std::mutex` внутри. Только минимум полей.
+**Интеграция:** в `Connection` добавить `std::shared_ptr<NetworkJournal> networkJournal_` и методы `setNetworkJournal`, `getNetworkJournal`. В `GenericMethodHandler` (или в новом диспетчере) — вызывать `networkJournal_->onXxx(...)`.
+**Тест:** `_test19_network_journal.cpp` — открыть `ya.ru`, подождать загрузки, распечатать:
+
+**Проверка:** количество запросов совпадает с `Network` в DevTools (примерно).
+### Кирпич 1.2. `NetworkJournal` — заголовки и `responseReceived`
+
+**Что:** добавить в `RequestRecord`:
+
+Метод `onResponseReceived(const json&)`.
+
+
+**Тест:** `_test20` — распечатать для всех `XHR`-запросов `status, mimeType, url` и первые 3 заголовка ответа.
+**Проверка:** для `ya.ru` — видно `suggest-ya.cgi` с `application/json`.
+### Кирпич 1.3. `NetworkJournal` — ExtraInfo и cookies
+
+**Что:** методы `onRequestWillBeSentExtraInfo`, `onResponseReceivedExtraInfo`. Поля:
+
+**Тест:** `_test21` — открыть `ya.ru`, распечатать все куки, которые ушли и пришли (из `associatedCookies` и `set-cookie`).
+### Кирпич 1.4. `NetworkJournal` — тела через `Network.getResponseBody`
+
+**Что:** поле `BodyRecord { std::string body; bool base64; bool truncated; bool available; std::string error; }` и логика: при `loadingFinished` складывать `requestId` в `pendingBodies_`. Метод `takePendingBodies()`.
+В `Connection` добавить публичный метод:
+
+
+В тесте после каждого `wsDispatchMessages`:
+
+
+**Тест:** `_test22` — открыть `ya.ru`, дождаться idle, распечатать по каждому `Document`/`Script`/`XHR` длину тела и первые 80 символов.
+**Проверка:** для `Document` первого запроса — тело содержит `<html`.
+**Важно:** `takePendingBodies` должен вызываться из того же потока, что и `wsDispatchMessages`, чтобы не было гонки.
+### Кирпич 1.5. `ConsoleJournal`
+
+Методы `onConsoleAPICalled`, `onExceptionThrown`, `messages()`, `exceptions()`.
+
+
+Рендеринг `argTexts` — только примитивы: `value` для `string/number/boolean/null`, иначе `description` или `<object>`.
+
+
+**Тест:** `_test23` — открыть страницу, которая логирует (`ya.ru` — тоже сойдёт), распечатать все сообщения и исключения.
+### Кирпич 1.6. `DomJournal` — только фреймы
+
+**Тест:** `_test24` — открыть `ya.ru` (там есть iframe?), распечатать все фреймы.
+Если хочется гарантированный iframe — открыть `https://www.youtube.com/embed/dQw4w9WgXcQ`.
+
+### Кирпич 1.7. `DomJournal` — контексты
+
+**Тест:** `_test25` — распечатать все контексты и их `frameId`, убедиться, что для главного фрейма есть `isDefault=true`.
+### Кирпич 1.8. `ScriptJournal`
+
+Плюс метод в `Connection`:
+
+
+**Тест:** `_test26` — открыть `ya.ru`, дождаться idle, распечатать количество скриптов, суммарный размер, топ-5 по размеру с URL.
+### Кирпич 1.9. `TargetJournal`
+
+**Пока не включаем `Target.setAutoAttach`** — просто собираем то, что приходит, если кто-то вызовет.
+**Тест:** `_test27` — открыть `youtube.com`, распечатать все target'ы (если `setAutoAttach` ещё не вызван, будет пусто — это тоже результат).
+### Кирпич 1.10. Единая точка подключения журналов к `Connection`
+
+Внутри — устанавливает свой `MessageHandlerType` на `"*"`, который **диспетчеризует** по `method` в соответствующий журнал. Не перетирает пользовательский обработчик, а **складывается** с ним: `wsSetMethodEventHandler("*", chain(dispatcher, userHandler))`.
+
+
+**Зачем:** сейчас у каждого кирпича свой тест, где он вручную дёргает `onXxx`. После этого кирпича любой тест — три строки: создать bundle, attach, готово.
+**Тест:** `_test28` — то же, что `_test19`+`_test23`+`_test24`+`_test26`, но с `attachJournals` и без ручной диспетчеризации.
+**Это ключевой кирпич** — после него можно забыть про ручное подключение журналов.
+## Фаза 2. Ожидание
+
+Пока у нас нет `WaitManager`, любое «подождать» — это `for(...) sleep`. С ним — нормальные примитивы.
+
+### Кирпич 2.1. `WaitManager` — базовый
+
+**Интеграция:** в `Connection` добавить `waitManager_`. В диспетчере (кирпич 1.10) вызывать `waitManager_->dispatch(method, params, sessionId)`. В `wsDispatchMessages` — после обработки каждого сообщения `waitManager_->checkTimeouts()`.
+**Тест:** `_test29` — подписаться на `Page.loadEventFired`, вызвать `Page.navigate` на `example.com`, дождаться события через `future.get()`, распечатать `timestamp`.
+### Кирпич 2.2. `cdtWaitForEvent` в `Connection`
+
+Внутри: создать `PendingWait`, зарегистрировать, крутить `wsDispatchMessages` + `checkTimeouts`, пока `future` не готов. Бросать `std::runtime_error` на таймауте.
+
+
+**Тест:** `_test30` — тот же, что 2.1, но короче на 20 строк.
+### Кирпич 2.3. `cdtWaitForSelector` — только `querySelector`
+
+Внутри — polling через `cdtRuntimeEvaluate` c JS:
+
+
+Шаг опроса — 150 мс. Проверка `returnByValue: true`.
+
+
+**Тест:** `_test31` — открыть `ya.ru`, дождаться `textarea#text`, распечатать координаты. Время ожидания должно быть < 5 с.
+### Кирпич 2.4. `cdtWaitForFunction`
+
+JS-обёртка на странице, которая делает polling и `await Promise`. Через `cdtRuntimeEvaluate` с `awaitPromise: true, returnByValue: true`.
+
+
+**Тест:** `_test32` — дождаться `document.readyState === 'complete'`, потом `window.performance !== undefined`. Оба должны сработать мгновенно.
+### Кирпич 2.5. `cdtWaitForNetworkIdle`
+
+Крутит `wsDispatchMessages`, следит за `networkJournal->inflightCount()`, сбрасывает таймер при изменении. Исключает `WebSocket`/`EventSource` из учёта.
+
+
+**Тест:** `_test33` — открыть `ya.ru`, замерить время от `loadEventFired` до `networkIdle`.
+### Кирпич 2.6. `cdtWaitForNetworkResponse`
+
+Сначала проверяет уже накопленные, потом ждёт новых.
+
+
+**Тест:** `_test34` — после `Page.navigate` на `ya.ru` дождаться запроса, содержащего `suggest-ya.cgi` (либо любого JSON-XHR). Распечатать URL, статус, время.
+## Фаза 3. Действия
+### Кирпич 3.1. `cdtMouseMove` / `cdtClick`
+
+Реализация через `Input.dispatchMouseEvent` (`mouseMoved`, `mousePressed`, `mouseReleased`). Между событиями — 15–25 мс.
+
+
+**Тест:** `_test35` — открыть `ya.ru`, найти `textarea#text` через `cdtWaitForSelector`, кликнуть по нему, затем `Runtime.evaluate("document.activeElement.tagName")` — должно вернуть `"TEXTAREA"`.
+### Кирпич 3.2. `cdtInsertText` / `cdtPressKey`
+
+**Тест:** `_test36` — открыть `ya.ru`, кликнуть в `textarea#text`, вставить «котики» через `cdtInsertText`, проверить `Runtime.evaluate("document.querySelector('#text').value")` → `"котики"`. Затем `cdtPressKey("Enter", ...)` и дождаться `Page.frameNavigated` на `search/?text=...`.
+**Проверка:** URL содержит `text=котики`.
+### Кирпич 3.3. `cdtTypeText` — посимвольно
+
+Для сайтов, слушающих `keydown`/`keyup` (React-контролы). Через `Input.dispatchKeyEvent` с `type: "keyDown"`, `text: "<char>"`, потом `keyUp`.
+
+
+**Тест:** `_test37` — вставить в `textarea#text` через `cdtTypeText` со задержкой 30 мс. Проверить, что сработал suggest (появились запросы в `NetworkJournal`).
+### Кирпич 3.4. `cdtScrollIntoView` / `cdtScrollBy` / `cdtScrollToBottom`
+
+`cdtScrollIntoView` — через `Runtime.evaluate` с `scrollIntoView`. `cdtScrollBy` — через `Input.dispatchMouseEvent` (`mouseWheel`). `cdtScrollToBottom` — `window.scrollTo(0, document.body.scrollHeight)` + подождать `networkIdle` (для бесконечных лент).
+**Тест:** `_test38` — открыть `youtube.com`, `cdtScrollToBottom`, подождать networkIdle, проверить, что новых запросов стало больше.
+### Кирпич 3.5. `cdtScreenshot`
+
+Возвращают **уже декодированные** байты (не base64). Внутри — `Page.captureScreenshot` + `base64Decode`.
+
+
+**Тест:** `_test39` — открыть `ya.ru`, сохранить `screenshot.png` и `screenshot.jpg` в текущую папку. Проверить, что открываются.
+## Фаза 4. Извлечение тел и исходников
+### Кирпич 4.1. `cdtGetResponseBody` (уже есть в 1.4) — доводка
+
+Скорее всего, уже работает. Добавить только если не хватает:
+
+
+**Тест:** прогнать `_test22` ещё раз после всех изменений.
+### Кирпич 4.2. `cdtGetScriptSource`
+
+**Тест:** `_test40` — открыть `ya.ru`, взять первый inline-скрипт (у которого `url.empty()` или `url` начинается с `ya.ru/`), получить его исходник, распечатать первые 200 символов.
+### Кирпич 4.3. Загрузка source map по URL
+
+**Что:** утилита `downloadUrl(url)` через `ix::HttpClient` (у вас уже есть HTTP-клиент в `utils.h`). Не через страницу — чтобы не упираться в CORS.
+Плюс `resolveUrl(base, rel)` — простая арифметика.
+
+
+**Тест:** `_test41` — взять у `ya.ru` какой-нибудь скрипт с `sourceMapURL`, скачать карту, распечатать `version`, количество `sources`.
+### Кирпич 4.4. Парсер source map v3
+
+**Что:** минимальный парсер `SourceMap { version, file, sources[], sourcesContent[], names[], mappings, sourceRoot }`. Только извлечение полей — декодирование `mappings` пока **не нужно** (для bundle достаточно исходников).
+**Тест:** `_test42` — распарсить карту из 4.3, сохранить все `sourcesContent[i]` в файлы `_test42_out/src_<i>.txt`.
+### Кирпич 4.5. `cdtRecoverAllScripts(outDir)`
+
+**Что:** метод, который:
+
+**Тест:** `_test43` — открыть `ya.ru`, дождаться idle, вызвать `cdtRecoverAllScripts("_test43_out")`. Проверить, что в папке есть:
+## Фаза 5. Контексты (iframe / worker)
+### Кирпич 5.1. `Target.setAutoAttach` и приём сессий
+
+Отправляет `Target.setAutoAttach({autoAttach:true, waitForDebuggerOnStart:false, flatten:true})`. События `Target.attachedToTarget` приходят уже с `sessionId`, который ваш `MessageHandlerType` должен получать. **Проверьте, что `idVariant` / `json` содержат `sessionId`** — иначе надо добавить это в `processMessage`.
+
+
+**Тест:** `_test44` — открыть `youtube.com/embed/...`, включить autoattach, распечатать все `Target.attachedToTarget` (sessionId, type, url). Должно быть несколько.
+### Кирпич 5.2. `cdtSendCommandInSession`
+
+Внутри — тот же `wsSendCommand`, но с полем `sessionId` в корне.
+
+
+**Тест:** `_test45` — для iframe-сессии отправить `Runtime.evaluate` с `"document.title"`, распечатать.
+### Кирпич 5.3. `cdtEvaluateInFrame`
+
+**Тест:** `_test46` — открыть `youtube.com/embed/...`, найти iframe, выполнить `location.href` внутри iframe, получить URL.
+### Кирпич 5.4. `cdtClickInFrame` (опционально)
+
+**Что:** клик по элементу внутри iframe. Внутри — либо через JS `el.click()` в контексте iframe, либо через пересчёт координат (сложно).
+**Тест:** `_test47` — кликнуть по кнопке play в YouTube iframe.
+## Фаза 6. Bundle для AI
+### Кирпич 6.1. `cdtBuildSummary`
+
+Возвращает JSON с `url`, `title`, `finalUrl`, количеством запросов по типам, количеством ошибок, количеством фреймов и т.д.
+
+
+**Тест:** `_test48` — открыть `ya.ru`, распечатать summary.
+### Кирпич 6.2. `cdtBuildRequestsTsv`
+
+TSV-таблица: `time | method | status | type | size | url | initiator`.
+
+
+**Тест:** `_test49` — сохранить в файл, открыть глазами.
+### Кирпич 6.3. `cdtBuildNormalizedDom`
+
+JS-скрипт, который клонирует DOM, удаляет script/style/noscript, заменяет base64, обрезает длинные атрибуты, убирает `data-reactid` и т.п.
+
+
+**Тест:** `_test50` — сохранить `dom.html`, открыть в браузере (должно выглядеть как страница, но без стилей).
+### Кирпич 6.4. `cdtBuildInteractive`
+
+JS, который обходит `input, textarea, button, select, a[href], [role], [contenteditable]` и возвращает массив с `selector`, `rect`, `type`, `text`, `placeholder`, `value`.
+
+
+Внутри — генератор уникального селектора: `#id` → `[name=...]` → `tag.class` (до 5 уровней вверх).
+
+
+**Тест:** `_test51` — сохранить `interactive.json`, распечатать. Проверить, что для `ya.ru` есть запись с `tag=textarea, id=text`.
+### Кирпич 6.5. `cdtBuildConsoleLog`
+
+Текстовое представление всех консольных сообщений и исключений.
+
+
+**Тест:** `_test52` — распечатать.
+### Кирпич 6.6. `cdtBuildAiBundle`
+
+Создаёт папку и пишет туда `summary.json`, `requests.tsv`, `dom.html`, `interactive.json`, `console.log`, `meta.json`. Если `includeScripts` — вызывает `cdtRecoverAllScripts`. Если `includeScreenshots` — сохраняет `initial.png`.
+
+
+**Тест:** `_test53` — открыть `ya.ru`, дождаться idle, собрать bundle в `_test53_bundle/`, распечатать размер папки и список файлов.
+## Фаза 7. Snapshot и Diff
+### Кирпич 7.1. `cdtSnapshot`
+
+**Тест:** `_test54` — снять snapshot до и после ввода текста, распечатать размеры.
+### Кирпич 7.2. `cdtDiff`
+
+DOM diff — построчный, до 200 изменений.
+
+
+**Тест:** `_test55` — снять snapshot → ввести «котики» → подождать → снять snapshot → распечатать diff:
+## Фаза 8. Дополнительные домены (по желанию)
+
+Каждый кирпич — независимый.
+
+### 8.1. `cdtGetPerformanceMetrics`
+### 8.2. `cdtStartCoverage` / `cdtTakeCoverage`
+### 8.3. `cdtSetUserAgent` / `cdtSetDeviceMetrics` / `cdtSetTimezone`
+### 8.4. `cdtSetBlockedURLs`
+### 8.5. `cdtAddScriptToEvaluateOnNewDocument` — патч `fetch`/`XHR`
+### 8.6. `cdtGetAllCookies` / `cdtSetCookie`
+### 8.7. `cdtGetLocalStorage` / `cdtGetSessionStorage`
+### 8.8. `cdtGrantPermissions`
+### 8.9. `cdtSetVirtualTime`
+### 8.10. `cdtAddBinding` — `Runtime.addBinding` + `Runtime.bindingCalled`
+## Сводная таблица кирпичей
+
+| # | Кирпич | Файлы | Зависит от | Тест |
+|---|---|---|---|---|
+| 0.1 | TestFixture | `_src/almai/TestFixture.h` | — | `_test18` |
+| 0.2 | Логгер | там же | 0.1 | `_test18` |
+| 0.3 | `waitFor` | там же | 0.1 | `_test18` |
+| 1.1 | NetworkJournal (min) | `NetworkJournal.h` | 0.1 | `_test19` |
+| 1.2 | + responseReceived | там же | 1.1 | `_test20` |
+| 1.3 | + ExtraInfo | там же | 1.2 | `_test21` |
+| 1.4 | + Body | там же + `Connection::cdtGetResponseBody` | 1.2 | `_test22` |
+| 1.5 | ConsoleJournal | `ConsoleJournal.h` | 0.1 | `_test23` |
+| 1.6 | DomJournal (frames) | `DomJournal.h` | 0.1 | `_test24` |
+| 1.7 | DomJournal (contexts) | там же | 1.6 | `_test25` |
+| 1.8 | ScriptJournal | `ScriptJournal.h` + `cdtGetScriptSource` | 0.1 | `_test26` |
+| 1.9 | TargetJournal | `TargetJournal.h` | 0.1 | `_test27` |
+| 1.10 | attachJournals | `Connection.h` | 1.1–1.9 | `_test28` |
+| 2.1 | WaitManager | `WaitManager.h` | 1.10 | `_test29` |
+| 2.2 | cdtWaitForEvent | `Connection.h` | 2.1 | `_test30` |
+| 2.3 | cdtWaitForSelector | там же | 2.2 | `_test31` |
+| 2.4 | cdtWaitForFunction | там же | 2.2 | `_test32` |
+| 2.5 | cdtWaitForNetworkIdle | там же | 2.2, 1.10 | `_test33` |
+| 2.6 | cdtWaitForNetworkResponse | там же | 2.2, 1.10 | `_test34` |
+| 3.1 | cdtMouseMove/Click | там же | 2.3 | `_test35` |
+| 3.2 | cdtInsertText/PressKey | там же | 3.1 | `_test36` |
+| 3.3 | cdtTypeText | там же | 3.2 | `_test37` |
+| 3.4 | cdtScroll* | там же | 3.1 | `_test38` |
+| 3.5 | cdtScreenshot | там же | — | `_test39` |
+| 4.2 | cdtGetScriptSource | там же | 1.8 | `_test40` |
+| 4.3 | downloadUrl/resolveUrl | `utils.h` | — | `_test41` |
+| 4.4 | Парсер source map | `SourceMap.h` | 4.3 | `_test42` |
+| 4.5 | cdtRecoverAllScripts | `Connection.h` | 4.2–4.4 | `_test43` |
+| 5.1 | cdtEnableAutoAttach | там же | 1.9 | `_test44` |
+| 5.2 | cdtSendCommandInSession | там же | 5.1 | `_test45` |
+| 5.3 | cdtEvaluateInFrame | там же | 1.7, 5.2 | `_test46` |
+| 5.4 | cdtClickInFrame | там же | 5.3, 3.1 | `_test47` |
+| 6.1 | cdtBuildSummary | там же | 1.10 | `_test48` |
+| 6.2 | cdtBuildRequestsTsv | там же | 1.10 | `_test49` |
+| 6.3 | cdtBuildNormalizedDom | там же | — | `_test50` |
+| 6.4 | cdtBuildInteractive | там же | — | `_test51` |
+| 6.5 | cdtBuildConsoleLog | там же | 1.5 | `_test52` |
+| 6.6 | cdtBuildAiBundle | там же | 6.1–6.5, 4.5 | `_test53` |
+| 7.1 | cdtSnapshot | там же | 6.4, 1.10 | `_test54` |
+| 7.2 | cdtDiff | там же | 7.1 | `_test55` |
+
+## Правила выполнения кирпича
+
+Чтобы всё не развалилось:
+
+
+1. **Один кирпич — один коммит.** Даже если это 20 строк.
+2. **Перед началом кирпича** — прогоните предыдущие тесты (`_test18.._testNN`), чтобы убедиться, что база зелёная.
+3. **После кирпича** — новый тест **плюс** прогон 2–3 предыдущих (особенно тех, что зависят от изменённых файлов).
+4. **Не рефакторите попутно.** Если увидели, что можно улучшить в `Connection` — запишите и сделайте отдельным кирпичом. Иначе один кирпич превратится в рефакторинг всего.
+5. **Тест должен падать осмысленно.** Если `cdtWaitForSelector` не нашёл элемент — тест должен напечатать, что именно искали и сколько ждали.
+6. **Заводите `_testNN_notes.md`** — короткая заметка: что проверили, что сломалось, что осталось.
+7. **Изоляция по папкам**: кирпичи 6.x пишут в `_testNN_bundle/`, кирпичи 4.x — в `_testNN_out/`, чтобы не мусорить в корне.
+
+## Что даст этот план
+
+После кирпича 1.10 у вас будет **наблюдение**: вы сможете программно видеть все запросы, ответы, ошибки, фреймы, скрипты.
+
+
+После 2.6 — **ожидание**: сценарии перестанут разваливаться из-за гонок.
+
+
+После 3.5 — **действия**: клик, ввод, скролл, скриншот.
+
+
+После 4.5 — **исходники**: вы сможете отдать ИИ не только HTML, но и оригинальные `.ts`/`.jsx` файлы, если у сайта есть source maps.
+
+
+После 5.4 — **многофреймовость**: iframe'ы и воркеры перестанут быть чёрными ящиками.
+
+
+После 6.6 — **bundle**: одна папка, которую можно отдать ИИ.
+
+
+После 7.2 — **поведение**: диффы «до/после» вместо статических снимков.
+
+
+Дальше — экспериментируйте. Скорее всего, после кирпича 3.2 вам захочется автоматизировать конкретный сценарий (например, заполнение формы на `ya.ru`). Это будет ваш первый end-to-end агент. После 6.6 — первый AI-запрос. После 7.2 — цикл «наблюдай → действуй → наблюдай», то есть настоящий агент.

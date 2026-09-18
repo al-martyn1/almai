@@ -88,6 +88,7 @@ int operator()( const StringType                                &a           //!
 #include "cli_opt_parsers/filename_title_level.h"
 #include "cli_opt_parsers/sort.h"
 #include "cli_opt_parsers/fence_style.h"
+#include "cli_opt_parsers/file-list.h"
 #include "cli_opt_parsers/strip_prefix.h"
 #include "cli_opt_parsers/lang_marker.h"
 #include "cli_opt_parsers/add_header_footer.h"
@@ -124,7 +125,7 @@ int operator()( const StringType                                &a           //!
                     //argsParser.printHelpPage( std::cout, "[OPTIONS] input_file [output_file]", "If output_file not taken, STDOUT used", helpText );
                     auto helpText = opt.getHelpOptionsString();
                     std::cout << "Usage: " << argsParser.programLocationInfo.exeName
-                              << " [OPTIONS] PATTERN [PATTERN]\n"
+                              << " [OPTIONS] FILE_PATTERN [FILE_PATTERN]\n"
                               << "\nOptions:\n\n"
                               << helpText;
                               //<< " [OPTIONS] input_file [output_file]\n\nOptions:\n\n"<<helpText;
@@ -133,8 +134,8 @@ int operator()( const StringType                                &a           //!
                 if (pCol) // argsNeedHelp
                 {
                     argsParser.printHelpPage( std::cout
-                                            , "[OPTIONS] input_file [output_file]"
-                                            , "If output_file not taken, STDOUT used"
+                                            , "[OPTIONS] FILE_PATTERN [FILE_PATTERN]"
+                                            , "" // "If output_file not taken, STDOUT used"
                                             , pCol->makeText( 78, &argsParser.argsNeedHelp )
                                             );
                     // std::cout<<pCol->makeText( 78, &argsParser.argsNeedHelp );

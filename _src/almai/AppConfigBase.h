@@ -385,6 +385,42 @@ struct AppConfigBase
 
     //------------------------------
 
+    //template<typename ReadFileErrorHandler>
+    bool addScanPathsFromFileLines(std::vector<std::string> &fileLines, const std::string linesFromFile /* , ReadFileErrorHandler errHandler */ )
+    {
+        auto basePath = umba::filename::getPath(linesFromFile);
+
+        for(auto line: fileLines)
+        {
+            umba::string::ltrim(line);
+
+            if (line.empty())
+                continue;
+
+            if (line.front()=='#' || line.front()==';')
+                continue;
+
+            auto fullFileName = umba::filename::makeAbsPath(line, basePath);
+
+            scanInfos.emplace_back(almai::FileSystemScanInfo::parse(fullFileName));
+
+        }
+        
+        return true;
+        // appConfig.scanInfos.emplace_back(almai::FileSystemScanInfo::parse(argsParser.makeAbsPath(a)));
+
+        // if (!almai::utils::readFile(ffi.fullName, ffi.fileLines))
+        // {
+        //     LOG_WARN("read-failed") << "failed to read file: '" << ffi.fullName << "'";
+        // }
+        // else
+        // {
+        //     readedFiles.push_back(ffi.fullName);
+        //     //std::cerr << "  " << ffi.fullName << "\n";
+        // }
+    
+    }
+
     std::string makeFilenameTitlePrefix() const
     {
         std::size_t lvl = filenameTitleLevel;

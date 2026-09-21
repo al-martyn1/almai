@@ -1,3 +1,23 @@
+!set-var-from-env: TESTS_ROOT
+!set-var-from-env: PROMPTS_DIR
+!set-var-from-env: LIBS
+!set-var-from-env: SRC
+
+!scan-path: "$(TESTS_ROOT)/_test15.cpp"
+!scan-path: "$(TESTS_ROOT)/_test16.cpp"
+!scan-path: "$(TESTS_ROOT)/_test17.cpp"
+
+!scan-path: $(PROMPTS_DIR)/_test17.txt
+
+!scan-path: $(PROMPTS_DIR)/04_what_to_do_reply_patch01/__description__.md_
+!scan-path: $(PROMPTS_DIR)/04_what_to_do_reply_patch04/__description__.md_
+!scan-path: $(PROMPTS_DIR)/04_what_to_do_reply_patch05/__description__.md_
+!scan-path: $(PROMPTS_DIR)/04_what_to_do_reply_patch06/__description__.md_
+
+!scan-path: $(LIBS)/marty_cdt/**/*.h,*.c
+
+
+
 У меня есть библиотека для управления браузером chrome - базовый функционал: запуск браузера, подключение по HTTP,
 подключение по WebSocket, отправка команд, подписка на события, установка обработчиков на события, и тд и тп.
 

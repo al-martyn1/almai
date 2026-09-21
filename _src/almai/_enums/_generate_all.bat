@@ -41,6 +41,7 @@ umba-enum-gen %GEN_OPTS% %HEX2% %TPL_OVERRIDE% %SNIPPETOPTIONS_GEN_FLAGS% ^
     %UINT32% %HEX4% -E=FilenameDecorationStyle       -F=@FilenameDecorationStyle.txt      ^
     %UINT32% %HEX4% -E=FilenameDecorationType        -F=@FilenameDecorationType.txt       ^
     %UINT32% %HEX4% -E=PrepromptPathType             -F=@PrepromptPathType.txt            ^
+    %UINT32% %HEX4% -E=PrepromptTextCommands         -F=@PrepromptTextCommands.txt        ^
     %UINT32% %HEX4% -E=ResultCode                    -F=@ResultCode.txt                   ^
     %UINT32% %HEX4% -E=SortOrder                     -F=@SortOrder.txt                    ^
     %FLAGS% %FLAGENUM_EXTRA%                                                              ^

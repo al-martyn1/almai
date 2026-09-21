@@ -201,6 +201,11 @@ int unsafeMain(int argc, char* argv[])
     appConfig.checkUpdateOutput();
 
 
+
+    //--------------------------------------------------------------------------------------------------------------------
+    appConfig.setMacro("CWD", umba::filesys::getCurrentDirectory());
+
+
     if (appConfig.scanInfos.empty())
     {
         // LOG_ERR << "no input files/masks taken" << "\n";
@@ -244,7 +249,8 @@ int unsafeMain(int argc, char* argv[])
         ffi.stripPrefix(appConfig.stripPrefixes);
     }
 
-    //------------------------------
+
+    //--------------------------------------------------------------------------------------------------------------------
     // В главной тулзе это не нужно будет, там будет использоваться для стрипа каталог проекта
     std::string commonPrefix = almai::findMostCommonPathPrefix(appConfig.foundFileInfos.begin(), appConfig.foundFileInfos.end());
     commonPrefix = almai::checkCorrectMostCommonPathPrefixIsPath(commonPrefix);
@@ -255,7 +261,9 @@ int unsafeMain(int argc, char* argv[])
             ffi.stripPrefix(commonPrefix);
         }
     }
-    //------------------------------
+
+
+    //--------------------------------------------------------------------------------------------------------------------
 
     for(const auto &ffi: appConfig.foundFileInfos)
     {

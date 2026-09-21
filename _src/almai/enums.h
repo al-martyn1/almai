@@ -313,6 +313,45 @@ MARTY_CPP_ENUM_CLASS_DESERIALIZE_BEGIN( PrepromptPathType, std::map, 1 )
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_END( PrepromptPathType, std::map, 1 )
 
 
+//#!PrepromptTextCommands
+enum class PrepromptTextCommands : std::uint32_t
+{
+    invalid         = (std::uint32_t)(-1) /*!<  */,
+    unknown         = (std::uint32_t)(-1) /*!<  */,
+    scanPath        = 0x0000 /*!<  */,
+    setVar          = 0x0001 /*!<  */,
+    setVarFromEnv   = 0x0002 /*!<  */,
+    end             = 0x0003 /*!<  */
+
+}; // enum 
+//#!
+
+MARTY_CPP_MAKE_ENUM_IS_FLAGS_FOR_NON_FLAGS_ENUM(PrepromptTextCommands)
+
+MARTY_CPP_ENUM_CLASS_SERIALIZE_BEGIN( PrepromptTextCommands, std::map, 1 )
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptTextCommands::setVar          , "SetVar"        );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptTextCommands::invalid         , "Invalid"       );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptTextCommands::setVarFromEnv   , "SetVarFromEnv" );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptTextCommands::scanPath        , "ScanPath"      );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptTextCommands::end             , "End"           );
+MARTY_CPP_ENUM_CLASS_SERIALIZE_END( PrepromptTextCommands, std::map, 1 )
+
+MARTY_CPP_ENUM_CLASS_DESERIALIZE_BEGIN( PrepromptTextCommands, std::map, 1 )
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::setVar          , "set-var"          );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::setVar          , "set_var"          );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::setVar          , "setvar"           );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::invalid         , "invalid"          );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::invalid         , "unknown"          );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::setVarFromEnv   , "set-var-from-env" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::setVarFromEnv   , "set_var_from_env" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::setVarFromEnv   , "setvarfromenv"    );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::scanPath        , "scan-path"        );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::scanPath        , "scan_path"        );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::scanPath        , "scanpath"         );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::end             , "end"              );
+MARTY_CPP_ENUM_CLASS_DESERIALIZE_END( PrepromptTextCommands, std::map, 1 )
+
+
 //#!ResultCode
 enum class ResultCode : std::uint32_t
 {

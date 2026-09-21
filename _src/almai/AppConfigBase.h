@@ -16,6 +16,7 @@
 #include "encoding/encoding.h"
 //
 #include "marty_cpp/src_normalization.h"
+#include "marty_cpp/marty_cpp.h"
 //
 #include "umba/string.h"
 //
@@ -23,6 +24,10 @@
 //
 #include "umba/filename.h"
 #include "umba/filesys.h"
+//
+#include "umba/macro_helpers.h"
+#include "umba/macros.h"
+
 
 //
 #include <algorithm>
@@ -370,6 +375,62 @@ struct AppConfigBase
 
 
     //------------------------------
+    using StringStringMap = umba::macros::StringStringMap<std::string>;
+    StringStringMap         macros;
+
+    // return true if added
+    bool setMacro(std::string name, std::string value, bool allowOverwrite=true)
+    {
+        umba::string::trim(name);
+        umba::string::trim(value);
+
+        umba::string::toupper(name);
+
+        auto it = macros.find(name);
+
+        if (it!=macros.end())
+        {
+            if (!allowOverwrite)
+                return false;
+        }
+
+        macros[name] = value;
+
+        return true;
+    }
+
+    bool setMacro(std::string nameValue, bool allowOverwrite=true)
+    {
+        std::string name, value;
+        if (!umba::string::split_to_pair(nameValue, name, value, '='))
+            return false;
+
+        return setMacro(name, value, allowOverwrite);
+    }
+
+    bool setMacroFromEnv(std::string name, bool allowOverwrite=true)
+    {
+        umba::string::trim(name);
+
+        std::string value;
+        umba::env::getVar(name, value);
+
+        return setMacro(name, value, allowOverwrite);
+    }
+
+    std::string substMacros(const std::string &str) const
+    {
+        using namespace umba::macros;
+        return umba::macros::substMacros( str, MacroTextFromMapRef(macros)
+                                        , smf_uppercaseNames | smf_DisableRecursion | smf_KeepUnknownVars
+                                        );
+    }
+
+    //------------------------------
+
+
+
+    //------------------------------
     std::vector<almai::FileSystemScanInfo>    scanInfos;
     std::vector<almai::FoundFileInfo>         foundFileInfos;
     std::vector<std::string>                  stripPrefixes;
@@ -384,6 +445,89 @@ struct AppConfigBase
     almai::CodeLanguageMarker                 langMarker   = almai::CodeLanguageMarker::langName;
 
     //------------------------------
+
+    // Extract "name: value" pairs from lines
+    template<typename NameValueHandlerType>
+    std::vector<std::string> parseLinesExtractValues(const std::vector<std::string> &lines, const std::string &basePath, NameValueHandlerType handler)
+    {
+        // auto basePath = umba::filename::getPath(linesFromFile);
+
+        std::vector<std::string> resLines;
+
+        for(const auto &l : lines)
+        {
+            auto lCopy = umba::string::trim_copy(l);
+
+            if (lCopy.empty())
+            {
+                resLines.push_back(l);
+                continue;
+            }
+
+            if (lCopy.front()==';')
+            {
+                continue;
+            }
+
+            if (lCopy.front()!='!')
+            {
+                resLines.push_back(l);
+                continue;
+            }
+
+            lCopy.erase(0, 1);
+
+            std::string name, value;
+            if (umba::string::split_to_pair(lCopy, name, value, ':'))
+            {
+                umba::string::trim(name);
+                umba::string::trim(value);
+                value = marty_cpp::unquoteSimpleQuoted(value);
+                if (!name.empty() && handler(basePath, name, value))
+                    continue;
+            }
+
+            resLines.push_back(l);
+        }
+
+        return resLines;
+    }
+
+    std::vector<std::string> parseLinesExtractValues(const std::vector<std::string> &lines, const std::string &basePath)
+    {
+        auto handler = [&](const auto &basePath, const auto &name, auto value) -> bool
+        {
+            auto nameEnum = enum_deserialize( name, almai::PrepromptTextCommands::invalid );
+
+            if (nameEnum==almai::PrepromptTextCommands::invalid)
+                return false;
+
+            value = substMacros(value);
+
+
+            if (nameEnum==almai::PrepromptTextCommands::scanPath)
+            {
+                value = umba::filename::makeAbsPath(value, basePath);
+                // return setMacro(name, value, true /* allowOverwrite */);
+                scanInfos.emplace_back(almai::FileSystemScanInfo::parse(value));
+                return true;
+            }
+
+            if (nameEnum==almai::PrepromptTextCommands::setVar)
+            {
+                return setMacro(value, true /* allowOverwrite */);
+            }
+
+            if (nameEnum==almai::PrepromptTextCommands::setVarFromEnv)
+            {
+                return setMacroFromEnv(value, true /* allowOverwrite */);
+            }
+
+            return false; // Неизвестная команда
+        };
+
+        return parseLinesExtractValues(lines, basePath, handler);
+    }
 
     //template<typename ReadFileErrorHandler>
     bool addScanPathsFromFileLines(std::vector<std::string> &fileLines, const std::string linesFromFile /* , ReadFileErrorHandler errHandler */ )

@@ -1,0 +1,2969 @@
+- [Полный план реализации marty_cdt: пошаговое руководство](#полный-план-реализации-marty_cdt-пошаговое-руководство)
+  - [ЧАСТЬ 0. Подготовка инфраструктуры](#часть-0-подготовка-инфраструктуры)
+    - [Кирпич 0.1–0.3. `TestFixture`, логирование, `waitFor`](#кирпич-0103--testfixture--логирование--waitfor-)
+  - [ЧАСТЬ 1. Журналы](#часть-1-журналы)
+    - [Кирпич 1.1. `NetworkJournal` (минимальная версия)](#кирпич-11--networkjournal--минимальная-версия)
+    - [Кирпич 1.2. Дополнение `NetworkJournal` — уже включено в 1.1](#кирпич-12-дополнение--networkjournal---уже-включено-в-11)
+    - [Кирпич 1.3. `ConsoleJournal`](#кирпич-13--consolejournal-)
+    - [Кирпич 1.4. `DomJournal`](#кирпич-14--domjournal-)
+    - [Кирпич 1.5. `ScriptJournal`](#кирпич-15--scriptjournal-)
+    - [Кирпич 1.6. `TargetJournal`](#кирпич-16--targetjournal-)
+  - [ЧАСТЬ 2. Универсальный `attachJournals`](#часть-2-универсальный--attachjournals-)
+    - [Кирпич 2.1. `JournalBundle` и `attachJournals`](#кирпич-21--journalbundle--и--attachjournals-)
+  - [ЧАСТЬ 3. `WaitManager` и ожидание событий](#часть-3--waitmanager--и-ожидание-событий)
+    - [Кирпич 3.1. `WaitManager`](#кирпич-31--waitmanager-)
+  - [ЧАСТЬ 4. Примитивы ожидания](#часть-4-примитивы-ожидания)
+    - [Кирпич 4.1. `cdtWaitForSelector`](#кирпич-41--cdtwaitforselector-)
+    - [Кирпич 4.2. `cdtWaitForFunction`](#кирпич-42--cdtwaitforfunction-)
+    - [Кирпич 4.3. `cdtWaitForNetworkIdle`](#кирпич-43--cdtwaitfornetworkidle-)
+    - [Кирпич 4.4. `cdtWaitForNetworkResponse`](#кирпич-44--cdtwaitfornetworkresponse-)
+  - [ЧАСТЬ 5. Действия](#часть-5-действия)
+    - [Кирпич 5.1. Мышь](#кирпич-51-мышь)
+    - [Кирпич 5.2. Клавиатура](#кирпич-52-клавиатура)
+    - [Кирпич 5.3. `cdtTypeText` (посимвольно)](#кирпич-53--cdttypetext--посимвольно)
+    - [Кирпич 5.4. Скролл](#кирпич-54-скролл)
+    - [Кирпич 5.5. `cdtScreenshot`](#кирпич-55--cdtscreenshot-)
+  - [ЧАСТЬ 6. Тела и исходники](#часть-6-тела-и-исходники)
+    - [Кирпич 6.1. `cdtGetResponseBody`](#кирпич-61--cdtgetresponsebody-)
+    - [Кирпич 6.2. `cdtGetScriptSource`](#кирпич-62--cdtgetscriptsource-)
+    - [Кирпич 6.3. `downloadUrl` / `resolveUrl`](#кирпич-63--downloadurl----resolveurl-)
+    - [Кирпич 6.4. Парсер source map](#кирпич-64-парсер-source-map)
+    - [Кирпич 6.5. `cdtRecoverAllScripts`](#кирпич-65--cdtrecoverallscripts-)
+  - [ЧАСТЬ 7. Контексты](#часть-7-контексты)
+    - [Кирпич 7.1. `cdtEnableAutoAttach`](#кирпич-71--cdtenableautoattach-)
+    - [Кирпич 7.2. `cdtSendCommandInSession`](#кирпич-72--cdtsendcommandinsession-)
+    - [Кирпич 7.3. `cdtEvaluateInFrame`](#кирпич-73--cdtevaluateinframe-)
+  - [ЧАСТЬ 8. Bundle](#часть-8-bundle)
+    - [Кирпич 8.1. `cdtBuildSummary`](#кирпич-81--cdtbuildsummary-)
+    - [Кирпич 8.2. `cdtBuildRequestsTsv`](#кирпич-82--cdtbuildrequeststsv-)
+    - [Кирпич 8.3. `cdtBuildNormalizedDom`](#кирпич-83--cdtbuildnormalizeddom-)
+    - [Кирпич 8.4. `cdtBuildInteractive`](#кирпич-84--cdtbuildinteractive-)
+    - [Кирпич 8.5. `cdtBuildConsoleLog`](#кирпич-85--cdtbuildconsolelog-)
+    - [Кирпич 8.6. `cdtBuildAiBundle`](#кирпич-86--cdtbuildaibundle-)
+  - [ЧАСТЬ 9. Snapshot и Diff](#часть-9-snapshot-и-diff)
+    - [Кирпич 9.1. `cdtSnapshot`](#кирпич-91--cdtsnapshot-)
+    - [Кирпич 9.2. `cdtDiff`](#кирпич-92--cdtdiff-)
+  - [Общие правила](#общие-правила)
+  - [Что в итоге получится](#что-в-итоге-получится)
+
+# Полный план реализации marty_cdt: пошаговое руководство
+
+Ниже — детальный разбор каждого «кирпича» из плана. Для каждого указано:
+
+- **новые файлы** — полный код;
+- **изменения в существующих файлах** — точные места и что вставить;
+- **тест** — полный `_testNN.cpp`;
+- **что проверить**.
+
+Рекомендую выполнять строго по порядку и не переходить к следующему кирпичу, пока текущий тест не пройдёт.
+
+---
+
+## ЧАСТЬ 0. Подготовка инфраструктуры
+
+### Кирпич 0.1–0.3. `TestFixture`, логирование, `waitFor`
+
+**Новый файл:** `_src/almai/TestFixture.h`
+
+```cpp
+#pragma once
+
+#include "utils.h"
+#include "ProjectDirs.h"
+//
+#include "umba/shellapi.h"
+#include "umba/sleep.h"
+//
+#include "marty_cdt/Connection.h"
+#include "marty_cdt/JsonListResponse.h"
+#include "marty_cdt/JsonVersionResponse.h"
+//
+#include <atomic>
+#include <chrono>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <thread>
+#include <vector>
+
+namespace almai {
+
+enum class LogLevel { Silent, Error, Info, Debug };
+
+class TestFixture
+{
+public:
+    TestFixture() = default;
+    TestFixture(const TestFixture&) = delete;
+    TestFixture& operator=(const TestFixture&) = delete;
+
+    ~TestFixture()
+    {
+        shutdown();
+    }
+
+    // --- Логирование ---
+    void setLogLevel(LogLevel lvl) { m_logLevel = lvl; }
+    LogLevel logLevel() const { return m_logLevel; }
+
+    void logInfo(const std::string& s)  const { if (m_logLevel >= LogLevel::Info)  std::cout << "[INFO] "  << s << "\n"; }
+    void logError(const std::string& s) const { if (m_logLevel >= LogLevel::Error) std::cerr << "[ERROR] " << s << "\n"; }
+    void logDebug(const std::string& s) const { if (m_logLevel >= LogLevel::Debug) std::cout << "[DEBUG] " << s << "\n"; }
+
+    // --- Инициализация ---
+    // Поднимает Chrome (или использует запущенный), создаёт страницу, подключает WS.
+    void init(const std::string& chromeName = "chrome",
+              bool useTempDir = false)
+    {
+        ix::initNetSystem();
+
+        if (!m_projectDirs.initAll(chromeName, useTempDir))
+            throw std::runtime_error("Project root not found");
+
+        m_connection = std::make_shared<marty::cdt::Connection>();
+        m_connection->setHttpBaseUrl(m_projectDirs.generateConnectionBaseUrlString(true));
+        m_connection->setHttpTimeouts({1, 3});
+
+        auto spawnArgs = m_projectDirs.generateArgsForSpawnChrome();
+        std::vector<marty::cdt::JsonListResponseEntry> list;
+        auto resp = m_connection->checkRunAndGetJsonList(
+            list, chromeName, spawnArgs, marty::cdt::Timeouts{1,1});
+        if (!m_connection->httpIsResponseOk(resp))
+            throw std::runtime_error("Failed to connect to browser");
+
+        std::string pageWsUrl;
+        for (const auto& e : list)
+        {
+            if (e.type == "page" &&
+                (e.url == "chrome://newtab/" || e.url == "chrome://newtab" || e.url == "about:blank"))
+            {
+                pageWsUrl = e.webSocketDebuggerUrl;
+                break;
+            }
+        }
+        if (pageWsUrl.empty())
+        {
+            marty::cdt::JsonNewPageResponse newPage;
+            auto r = m_connection->httpNewPage(newPage);
+            if (!m_connection->httpIsResponseOk(r))
+                throw std::runtime_error("Failed to create page");
+            pageWsUrl = newPage.webSocketDebuggerUrl;
+        }
+
+        m_connection->wsSetUrl(pageWsUrl);
+        m_connection->wsSetSystemEventHandler([this](marty::cdt::Connection*,
+                                                     const marty::cdt::WebSocketMessage&,
+                                                     ix::WebSocketMessageType t)
+        {
+            logDebug(std::string("System: ") +
+                     marty::cdt::utils::ixWebSocketMessageTypeToString(t));
+        });
+
+        auto wsRes = m_connection->wsConnect();
+        if (!wsRes.success)
+            throw std::runtime_error("WS connect failed: " + wsRes.errorStr);
+
+        m_connection->wsStart();
+
+        // Ждём Open
+        waitFor([this]{ return m_connection->wsDispatchMessages(); }, 2000, 10);
+    }
+
+    void shutdown()
+    {
+        if (m_connection)
+        {
+            try { m_connection->wsStop(); } catch (...) {}
+            m_connection.reset();
+        }
+    }
+
+    // --- Доступ ---
+    marty::cdt::Connection& connection() { return *m_connection; }
+    std::shared_ptr<marty::cdt::Connection> connectionPtr() { return m_connection; }
+    almai::ProjectDirs& projectDirs() { return m_projectDirs; }
+
+    // --- Простой event-loop ---
+    // Крутит wsDispatchMessages, пока predicate не вернёт true или пока не выйдет timeoutMs.
+    bool waitFor(std::function<bool()> pred, unsigned timeoutMs, unsigned stepMs = 50)
+    {
+        auto start = std::chrono::steady_clock::now();
+        while (true)
+        {
+            m_connection->wsDispatchMessages();
+            if (pred()) return true;
+
+            auto now = std::chrono::steady_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
+            if (elapsed >= (long long)timeoutMs) return false;
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(stepMs));
+        }
+    }
+
+    // Навигация на URL и ожидание loadEventFired.
+    void navigateTo(const std::string& url, unsigned timeoutMs = 30000)
+    {
+        std::atomic<bool> loaded{false};
+        m_connection->wsSetMethodEventHandler("Page.loadEventFired",
+            [&loaded](marty::cdt::Connection*, const marty::cdt::WebSocketMessage&,
+                      marty::cdt::MessageIdVariant, marty::cdt::json)
+            {
+                loaded = true;
+            });
+        m_connection->wsEventSubscribe("Page",
+            [](marty::cdt::Connection*, const marty::cdt::WebSocketMessage&,
+               marty::cdt::MessageIdVariant, marty::cdt::json) {});
+        m_connection->wsSendCommand("Page.navigate", {{"url", url}});
+        if (!waitFor([&]{ return loaded.load(); }, timeoutMs))
+            throw std::runtime_error("navigateTo timeout: " + url);
+    }
+
+private:
+    LogLevel                           m_logLevel = LogLevel::Info;
+    almai::ProjectDirs                 m_projectDirs;
+    std::shared_ptr<marty::cdt::Connection> m_connection;
+};
+
+} // namespace almai
+```
+
+**Тест:** `_src/almai/_test18_fixture.cpp`
+
+```cpp
+#include "TestFixture.h"
+#include <iostream>
+
+using namespace almai;
+using std::cout;
+
+int main()
+{
+    try
+    {
+        TestFixture fx;
+        fx.setLogLevel(LogLevel::Debug);
+        fx.init();
+
+        cout << "=== TestFixture works ===\n";
+        cout << "HTTP base URL: " << fx.connection().getHttpBaseUrlForDebug() << "\n";
+
+        // Проверка waitFor: true-предикат
+        bool ok1 = fx.waitFor([]{ return true; }, 100);
+        cout << "waitFor(true, 100) = " << (ok1 ? "true" : "false") << "\n";
+        if (!ok1) return 2;
+
+        // Проверка waitFor: false-предикат, должно занять ~200мс
+        auto t0 = std::chrono::steady_clock::now();
+        bool ok2 = fx.waitFor([]{ return false; }, 200, 20);
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now() - t0).count();
+        cout << "waitFor(false, 200) = " << (ok2 ? "true" : "false")
+             << ", elapsed = " << elapsed << " ms\n";
+
+        cout << "OK\n";
+        return 0;
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "ERROR: " << e.what() << "\n";
+        return 1;
+    }
+}
+```
+
+**Замечание:** `getHttpBaseUrlForDebug()` — если такого метода нет, просто пропустите эту строку или добавьте в `Connection` геттер `const std::string& httpBaseUrl() const { return m_httpBaseUrl; }`.
+
+**Проверка:** тест проходит за <5 с, `waitFor(false, 200)` возвращает `false` за ~200 мс.
+
+---
+
+## ЧАСТЬ 1. Журналы
+
+### Кирпич 1.1. `NetworkJournal` (минимальная версия)
+
+**Новый файл:** `_libs/marty_cdt/NetworkJournal.h`
+
+```cpp
+#pragma once
+
+#include "types.h"
+#include "defs.h"
+//
+#include <chrono>
+#include <cstdint>
+#include <map>
+#include <mutex>
+#include <optional>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+namespace marty {
+namespace chrome_devtools_protocol {
+
+//--------------------------------------------------------------------------------------------------------------------
+struct HeaderMap
+{
+    std::map<std::string, std::string, std::less<>> map;
+
+    void fromJson(const json& j)
+    {
+        map.clear();
+        if (!j.is_object()) return;
+        for (auto it = j.begin(); it != j.end(); ++it)
+        {
+            if (it.value().is_string())
+                map.emplace(it.key(), it.value().get<std::string>());
+            else
+                map.emplace(it.key(), it.value().dump());
+        }
+    }
+
+    std::string get(const std::string& key) const
+    {
+        auto it = map.find(key);
+        return it == map.end() ? std::string() : it->second;
+    }
+
+    json toJson() const
+    {
+        json j = json::object();
+        for (auto& [k, v] : map) j[k] = v;
+        return j;
+    }
+};
+
+//--------------------------------------------------------------------------------------------------------------------
+struct RequestRecord
+{
+    std::string requestId;
+    std::string loaderId;
+    std::string documentURL;
+    std::string frameId;
+    std::string url;
+    std::string method = "GET";
+    std::string type;                 // Document / Script / XHR / Fetch / Image / ...
+    double      timestamp = 0.0;      // monotonic
+    double      wallTime = 0.0;       // unix
+    bool        hasPostData = false;
+    std::string postData;
+
+    // Из initiator
+    std::string initiatorType;        // parser / script / preload / other
+    std::string initiatorTopUrl;
+    int         initiatorTopLine = -1;
+
+    // Заполняется по responseReceived
+    int         status = 0;
+    std::string statusText;
+    std::string mimeType;
+    HeaderMap   requestHeaders;
+    HeaderMap   responseHeaders;
+    HeaderMap   requestHeadersActual;   // из ExtraInfo (с куками)
+    HeaderMap   responseHeadersActual;  // из ExtraInfo (с Set-Cookie)
+    std::int64_t encodedDataLength = 0;
+
+    // Состояние
+    bool        finished = false;
+    bool        failed = false;
+    double      endTime = 0.0;
+    std::string errorText;
+
+    // Тело
+    bool        bodyAvailable = false;
+    bool        bodyBase64 = false;
+    bool        bodyTruncated = false;
+    std::string body;
+    std::string bodyError;
+};
+
+//--------------------------------------------------------------------------------------------------------------------
+class NetworkJournal
+{
+public:
+    using Ptr = std::shared_ptr<NetworkJournal>;
+
+    void onRequestWillBeSent(const json& p)
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+
+        auto requestId = p.value("requestId", std::string());
+        if (requestId.empty()) return;
+
+        auto& r = m_requests[requestId];
+        r.requestId   = requestId;
+        r.loaderId    = p.value("loaderId", std::string());
+        r.documentURL = p.value("documentURL", std::string());
+        r.frameId     = p.value("frameId", std::string());
+        r.type        = p.value("type", std::string("Other"));
+        r.timestamp   = p.value("timestamp", 0.0);
+        r.wallTime    = p.value("wallTime", 0.0);
+
+        if (p.contains("request") && p["request"].is_object())
+        {
+            const auto& req = p["request"];
+            r.url     = req.value("url", std::string());
+            r.method  = req.value("method", std::string("GET"));
+            r.hasPostData = req.value("hasPostData", false);
+            r.postData    = req.value("postData", std::string());
+            if (req.contains("headers"))
+                r.requestHeaders.fromJson(req["headers"]);
+        }
+
+        if (p.contains("initiator") && p["initiator"].is_object())
+        {
+            const auto& ini = p["initiator"];
+            r.initiatorType = ini.value("type", std::string());
+            if (ini.contains("stack") && ini["stack"].is_object() &&
+                ini["stack"].contains("callFrames") && ini["stack"]["callFrames"].is_array() &&
+                !ini["stack"]["callFrames"].empty())
+            {
+                const auto& top = ini["stack"]["callFrames"][0];
+                r.initiatorTopUrl  = top.value("url", std::string());
+                r.initiatorTopLine = top.value("lineNumber", -1);
+            }
+        }
+
+        if (m_order.empty() || m_order.back() != requestId)
+            m_order.push_back(requestId);
+    }
+
+    void onRequestWillBeSentExtraInfo(const json& p)
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        auto it = m_requests.find(p.value("requestId", std::string()));
+        if (it == m_requests.end()) return;
+        if (p.contains("headers"))
+            it->second.requestHeadersActual.fromJson(p["headers"]);
+    }
+
+    void onResponseReceived(const json& p)
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        auto it = m_requests.find(p.value("requestId", std::string()));
+        if (it == m_requests.end()) return;
+        auto& r = it->second;
+
+        if (p.contains("response") && p["response"].is_object())
+        {
+            const auto& res = p["response"];
+            r.status      = res.value("status", 0);
+            r.statusText  = res.value("statusText", std::string());
+            r.mimeType    = res.value("mimeType", std::string());
+            if (res.contains("headers"))
+                r.responseHeaders.fromJson(res["headers"]);
+            if (res.contains("encodedDataLength") && res["encodedDataLength"].is_number())
+                r.encodedDataLength = (std::int64_t)res["encodedDataLength"].get<double>();
+        }
+    }
+
+    void onResponseReceivedExtraInfo(const json& p)
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        auto it = m_requests.find(p.value("requestId", std::string()));
+        if (it == m_requests.end()) return;
+        if (p.contains("headers"))
+            it->second.responseHeadersActual.fromJson(p["headers"]);
+    }
+
+    void onLoadingFinished(const json& p)
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        auto it = m_requests.find(p.value("requestId", std::string()));
+        if (it == m_requests.end()) return;
+        it->second.finished = true;
+        it->second.endTime  = p.value("timestamp", 0.0);
+        if (p.contains("encodedDataLength") && p["encodedDataLength"].is_number())
+            it->second.encodedDataLength = (std::int64_t)p["encodedDataLength"].get<double>();
+        m_pendingBodies.push_back(it->first);
+    }
+
+    void onLoadingFailed(const json& p)
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        auto it = m_requests.find(p.value("requestId", std::string()));
+        if (it == m_requests.end()) return;
+        it->second.failed    = true;
+        it->second.finished  = true;
+        it->second.endTime   = p.value("timestamp", 0.0);
+        it->second.errorText = p.value("errorText", std::string());
+    }
+
+    void setBody(const std::string& requestId,
+                 std::string body, bool base64, bool truncated, std::string error = {})
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        auto it = m_requests.find(requestId);
+        if (it == m_requests.end()) return;
+        auto& r = it->second;
+        r.body = std::move(body);
+        r.bodyBase64 = base64;
+        r.bodyTruncated = truncated;
+        r.bodyError = std::move(error);
+        r.bodyAvailable = r.bodyError.empty();
+    }
+
+    // Возвращает requestId, для которых нужно запросить тело. Очищает список.
+    std::vector<std::string> takePendingBodies()
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        std::vector<std::string> out = std::move(m_pendingBodies);
+        m_pendingBodies.clear();
+        return out;
+    }
+
+    std::vector<RequestRecord> allOrdered() const
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        std::vector<RequestRecord> out;
+        out.reserve(m_order.size());
+        for (const auto& id : m_order)
+        {
+            auto it = m_requests.find(id);
+            if (it != m_requests.end()) out.push_back(it->second);
+        }
+        return out;
+    }
+
+    std::optional<RequestRecord> get(const std::string& requestId) const
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        auto it = m_requests.find(requestId);
+        if (it == m_requests.end()) return std::nullopt;
+        return it->second;
+    }
+
+    // Запросы, которые не завершены (finished==false) и не являются WebSocket/EventSource
+    int inflightCount() const
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        int n = 0;
+        for (const auto& [id, r] : m_requests)
+        {
+            if (r.finished) continue;
+            if (r.type == "WebSocket" || r.type == "EventSource") continue;
+            ++n;
+        }
+        return n;
+    }
+
+private:
+    mutable std::mutex                                 m_mtx;
+    std::unordered_map<std::string, RequestRecord>     m_requests;
+    std::vector<std::string>                           m_order;
+    std::vector<std::string>                           m_pendingBodies;
+};
+
+//--------------------------------------------------------------------------------------------------------------------
+} // namespace chrome_devtools_protocol
+namespace cdt = chrome_devtools_protocol;
+} // namespace marty
+```
+
+**Изменения в `Connection.h`:**
+
+1. В секцию `#include` добавить:
+```cpp
+#include "NetworkJournal.h"
+```
+
+2. В `private` секцию класса `Connection` (после полей `m_methodHandlersMutex`) добавить:
+```cpp
+    std::shared_ptr<NetworkJournal>      m_networkJournal;
+```
+
+3. В `public` секцию (после `wsSetDefaultIdHandler`) добавить:
+```cpp
+    void setNetworkJournal(std::shared_ptr<NetworkJournal> j) { m_networkJournal = std::move(j); }
+    NetworkJournal* networkJournal() const { return m_networkJournal.get(); }
+```
+
+4. В `Connection::processMessage` — в ветке `j.contains("method")` — добавить диспетчеризацию. **Найдите этот фрагмент:**
+```cpp
+            else if (j.contains("method"))
+            {
+                auto method = j["method"].get<std::string>();
+                if (method.empty())
+                    throw std::runtime_error("marty::cdt::Connection::processMessage: Message contains empty 'method'");
+
+                auto methodHandler = findMethodEventHandler(method);
+                if (methodHandler)
+                {
+                    if (j.contains("params"))
+                    {
+                        methodHandler(this, msg, MessageIdVariant(method), j["params"]);
+                    }
+                    else
+                    {
+                        methodHandler(this, msg, MessageIdVariant(method), json{});
+                    }
+                }
+            }
+```
+
+**Замените на:**
+```cpp
+            else if (j.contains("method"))
+            {
+                auto method = j["method"].get<std::string>();
+                if (method.empty())
+                    throw std::runtime_error("marty::cdt::Connection::processMessage: Message contains empty 'method'");
+
+                // --- Журналы ---
+                if (m_networkJournal)
+                {
+                    const auto& params = j.contains("params") ? j["params"] : json::object();
+                    if (method == "Network.requestWillBeSent")
+                        m_networkJournal->onRequestWillBeSent(params);
+                    else if (method == "Network.requestWillBeSentExtraInfo")
+                        m_networkJournal->onRequestWillBeSentExtraInfo(params);
+                    else if (method == "Network.responseReceived")
+                        m_networkJournal->onResponseReceived(params);
+                    else if (method == "Network.responseReceivedExtraInfo")
+                        m_networkJournal->onResponseReceivedExtraInfo(params);
+                    else if (method == "Network.loadingFinished")
+                        m_networkJournal->onLoadingFinished(params);
+                    else if (method == "Network.loadingFailed")
+                        m_networkJournal->onLoadingFailed(params);
+                }
+
+                // --- Пользовательские обработчики ---
+                auto methodHandler = findMethodEventHandler(method);
+                if (methodHandler)
+                {
+                    if (j.contains("params"))
+                        methodHandler(this, msg, MessageIdVariant(method), j["params"]);
+                    else
+                        methodHandler(this, msg, MessageIdVariant(method), json{});
+                }
+            }
+```
+
+**Важно:** нужно **включить** `Network.enable`, иначе события не придут. Добавьте в тесте (или в `attach`-методе позже):
+
+```cpp
+fx.connection().wsEventSubscribe("Network",
+    [](marty::cdt::Connection*, const marty::cdt::WebSocketMessage&,
+       marty::cdt::MessageIdVariant, marty::cdt::json) {});
+```
+
+(Ваш `wsEventSubscribe` отправляет `<domain>.enable`, это уже работает в `_test17`.)
+
+**Тест:** `_src/almai/_test19_network_journal.cpp`
+
+```cpp
+#include "TestFixture.h"
+#include "marty_cdt/NetworkJournal.h"
+#include <iostream>
+#include <memory>
+
+using namespace almai;
+using std::cout;
+
+int main()
+{
+    try
+    {
+        TestFixture fx;
+        fx.setLogLevel(LogLevel::Silent);
+        fx.init();
+
+        auto journal = std::make_shared<marty::cdt::NetworkJournal>();
+        fx.connection().setNetworkJournal(journal);
+
+        // Подписки
+        auto noop = [](marty::cdt::Connection*, const marty::cdt::WebSocketMessage&,
+                       marty::cdt::MessageIdVariant, marty::cdt::json) {};
+        fx.connection().wsEventSubscribe("Page",    noop);
+        fx.connection().wsEventSubscribe("Network", noop);
+        fx.connection().wsEventSubscribe("Runtime", noop);
+
+        // Навигация
+        std::atomic<bool> loaded{false};
+        fx.connection().wsSetMethodEventHandler("Page.loadEventFired",
+            [&](marty::cdt::Connection*, const marty::cdt::WebSocketMessage&,
+                marty::cdt::MessageIdVariant, marty::cdt::json){ loaded = true; });
+
+        fx.connection().wsSendCommand("Page.navigate", {{"url", "https://ya.ru"}});
+        if (!fx.waitFor([&]{ return loaded.load(); }, 30000, 100))
+            throw std::runtime_error("navigate timeout");
+
+        // Дать сети утихнуть
+        fx.waitFor([]{ return false; }, 3000, 100);
+
+        auto all = journal->allOrdered();
+        cout << "Total requests: " << all.size() << "\n";
+
+        int finished = 0, failed = 0, inflight = 0;
+        for (const auto& r : all)
+        {
+            if (r.failed)        ++failed;
+            else if (r.finished) ++finished;
+            else                 ++inflight;
+        }
+        cout << "finished=" << finished
+             << " failed=" << failed
+             << " inflight=" << inflight << "\n\n";
+
+        cout << "First 20 requests:\n";
+        int n = 0;
+        for (const auto& r : all)
+        {
+            if (n++ >= 20) break;
+            cout << "  " << r.type << " | " << r.method << " | "
+                 << (r.finished ? (r.failed ? "FAIL" : "OK") : "...")
+                 << " | " << (r.url.size() > 80 ? r.url.substr(0, 77) + "..." : r.url)
+                 << "\n";
+        }
+
+        return 0;
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "ERROR: " << e.what() << "\n";
+        return 1;
+    }
+}
+```
+
+**Проверка:** количество запросов > 10, есть `Document`, `Script`, `XHR`, `Image`.
+
+---
+
+### Кирпич 1.2. Дополнение `NetworkJournal` — уже включено в 1.1
+
+`responseReceived`, `ExtraInfo` — уже в коде выше. Тест `_test20` можно сделать аналогично `_test19`, но распечатать:
+
+```cpp
+for (const auto& r : all)
+{
+    if (r.type != "XHR" && r.type != "Fetch") continue;
+    cout << "  " << r.status << " " << r.mimeType << " " << r.url << "\n";
+    cout << "    req headers: " << r.requestHeaders.map.size() << "\n";
+    cout << "    req cookies: " << r.requestHeadersActual.get("Cookie").size() << " bytes\n";
+    cout << "    resp set-cookie: " << r.responseHeadersActual.get("set-cookie").size() << " bytes\n";
+}
+```
+
+---
+
+### Кирпич 1.3. `ConsoleJournal`
+
+**Новый файл:** `_libs/marty_cdt/ConsoleJournal.h`
+
+```cpp
+#pragma once
+
+#include "types.h"
+#include "defs.h"
+//
+#include <mutex>
+#include <string>
+#include <vector>
+
+namespace marty {
+namespace chrome_devtools_protocol {
+
+//--------------------------------------------------------------------------------------------------------------------
+struct ConsoleMessage
+{
+    std::string              level;       // log / warn / error / info / debug
+    std::vector<std::string> argTexts;
+    double                   timestamp = 0.0;
+    std::string              url;
+    int                      line = -1;
+    std::vector<std::string> stackTop;   // до 5 кадров
+};
+
+//--------------------------------------------------------------------------------------------------------------------
+struct ExceptionRecord
+{
+    std::string              text;
+    std::string              className;
+    std::string              description;
+    std::string              url;
+    int                      line = -1;
+    int                      column = -1;
+    double                   timestamp = 0.0;
+    std::vector<std::string> stackTop;
+};
+
+//--------------------------------------------------------------------------------------------------------------------
+class ConsoleJournal
+{
+public:
+    using Ptr = std::shared_ptr<ConsoleJournal>;
+
+    void onConsoleAPICalled(const json& p)
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        ConsoleMessage m;
+        m.level     = p.value("type", std::string("log"));
+        m.timestamp = p.value("timestamp", 0.0);
+        m.url       = p.value("context", std::string());
+
+        if (p.contains("args") && p["args"].is_array())
+            for (const auto& a : p["args"])
+                m.argTexts.push_back(renderArg_(a));
+
+        if (p.contains("stackTrace") && p["stackTrace"].contains("callFrames") &&
+            p["stackTrace"]["callFrames"].is_array())
+        {
+            const auto& cfs = p["stackTrace"]["callFrames"];
+            size_t n = std::min<size_t>(5, cfs.size());
+            for (size_t i = 0; i < n; ++i)
+            {
+                const auto& cf = cfs[i];
+                std::string s = cf.value("functionName", std::string("(anonymous)"));
+                s += " (" + cf.value("url", std::string("?")) + ":";
+                s += std::to_string(cf.value("lineNumber", 0) + 1) + ")";
+                m.stackTop.push_back(std::move(s));
+            }
+            if (!cfs.empty())
+            {
+                m.url  = cfs[0].value("url", m.url);
+                m.line = cfs[0].value("lineNumber", -1);
+            }
+        }
+        m_messages.push_back(std::move(m));
+    }
+
+    void onExceptionThrown(const json& p)
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        ExceptionRecord e;
+        e.timestamp = p.value("timestamp", 0.0);
+
+        if (p.contains("exceptionDetails") && p["exceptionDetails"].is_object())
+        {
+            const auto& d = p["exceptionDetails"];
+            e.text   = d.value("text", std::string());
+            e.url    = d.value("url", std::string());
+            e.line   = d.value("lineNumber", -1);
+            e.column = d.value("columnNumber", -1);
+
+            if (d.contains("exception") && d["exception"].is_object())
+            {
+                const auto& ex = d["exception"];
+                e.className   = ex.value("className", std::string());
+                e.description = ex.value("description", std::string());
+            }
+
+            if (d.contains("stackTrace") && d["stackTrace"].contains("callFrames") &&
+                d["stackTrace"]["callFrames"].is_array())
+            {
+                const auto& cfs = d["stackTrace"]["callFrames"];
+                size_t n = std::min<size_t>(5, cfs.size());
+                for (size_t i = 0; i < n; ++i)
+                {
+                    const auto& cf = cfs[i];
+                    std::string s = cf.value("functionName", std::string("(anonymous)"));
+                    s += " (" + cf.value("url", std::string("?")) + ":";
+                    s += std::to_string(cf.value("lineNumber", 0) + 1) + ")";
+                    e.stackTop.push_back(std::move(s));
+                }
+            }
+        }
+        m_exceptions.push_back(std::move(e));
+    }
+
+    std::vector<ConsoleMessage> messages() const
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        return m_messages;
+    }
+
+    std::vector<ExceptionRecord> exceptions() const
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        return m_exceptions;
+    }
+
+private:
+    static std::string renderArg_(const json& a)
+    {
+        if (a.contains("value"))
+        {
+            const auto& v = a["value"];
+            if (v.is_string())  return v.get<std::string>();
+            if (v.is_number())  return v.dump();
+            if (v.is_boolean()) return v.get<bool>() ? "true" : "false";
+            if (v.is_null())    return "null";
+            return v.dump();
+        }
+        if (a.contains("description") && a["description"].is_string())
+            return a["description"].get<std::string>();
+        return "<" + a.value("type", std::string("unknown")) + ">";
+    }
+
+    mutable std::mutex                m_mtx;
+    std::vector<ConsoleMessage>       m_messages;
+    std::vector<ExceptionRecord>      m_exceptions;
+};
+
+//--------------------------------------------------------------------------------------------------------------------
+} // namespace chrome_devtools_protocol
+namespace cdt = chrome_devtools_protocol;
+} // namespace marty
+```
+
+**Изменения в `Connection.h`:**
+
+1. `#include "ConsoleJournal.h"`
+2. В `private`: `std::shared_ptr<ConsoleJournal> m_consoleJournal;`
+3. В `public`: `void setConsoleJournal(std::shared_ptr<ConsoleJournal> j) { m_consoleJournal = std::move(j); } ConsoleJournal* consoleJournal() const { return m_consoleJournal.get(); }`
+4. В `processMessage` — в блок журналов:
+```cpp
+                if (m_consoleJournal)
+                {
+                    const auto& params = j.contains("params") ? j["params"] : json::object();
+                    if (method == "Runtime.consoleAPICalled")
+                        m_consoleJournal->onConsoleAPICalled(params);
+                    else if (method == "Runtime.exceptionThrown")
+                        m_consoleJournal->onExceptionThrown(params);
+                }
+```
+
+**Тест:** `_src/almai/_test23_console_journal.cpp` — открыть `ya.ru`, `Runtime.enable` (через `wsEventSubscribe("Runtime", noop)`), распечатать `messages().size()` и `exceptions().size()`. Для `ya.ru` обычно есть сообщения.
+
+Чтобы гарантировать наличие сообщений, можно сначала выполнить через `cdtRuntimeEvaluate`:
+
+```cpp
+fx.connection().cdtRuntimeEvaluate(jRes, "console.log('hello from test'); console.warn('warn msg')");
+```
+
+Потом распечатать.
+
+---
+
+### Кирпич 1.4. `DomJournal`
+
+**Новый файл:** `_libs/marty_cdt/DomJournal.h`
+
+```cpp
+#pragma once
+
+#include "types.h"
+#include "defs.h"
+//
+#include <mutex>
+#include <optional>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+namespace marty {
+namespace chrome_devtools_protocol {
+
+//--------------------------------------------------------------------------------------------------------------------
+struct FrameInfo
+{
+    std::string frameId;
+    std::string parentFrameId;
+    std::string url;
+    std::string name;
+    std::string securityOrigin;
+    std::string mimeType;
+    bool        isMain = false;
+    double      lastNavigated = 0.0;
+};
+
+//--------------------------------------------------------------------------------------------------------------------
+struct ContextInfo
+{
+    int         id = 0;
+    std::string uniqueId;
+    std::string origin;
+    std::string name;
+    std::string type;      // default / isolated / worker
+    std::string frameId;   // пусто для worker
+    bool        isDefault = false;
+    std::string sessionId; // к какой WS-сессии относится
+};
+
+//--------------------------------------------------------------------------------------------------------------------
+class DomJournal
+{
+public:
+    using Ptr = std::shared_ptr<DomJournal>;
+
+    void onFrameAttached(const json& p, const std::string& sessionId)
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        FrameInfo f;
+        f.frameId       = p.value("frameId", std::string());
+        f.parentFrameId = p.value("parentFrameId", std::string());
+        f.isMain        = f.parentFrameId.empty();
+        m_frames[f.frameId] = f;
+        m_frameSession[f.frameId] = sessionId;
+    }
+
+    void onFrameNavigated(const json& p, const std::string& sessionId)
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        if (!p.contains("frame") || !p["frame"].is_object()) return;
+        const auto& fr = p["frame"];
+        FrameInfo f;
+        f.frameId        = fr.value("id", std::string());
+        f.parentFrameId  = fr.value("parentId", std::string());
+        f.url            = fr.value("url", std::string());
+        f.name           = fr.value("name", std::string());
+        f.securityOrigin = fr.value("securityOrigin", std::string());
+        f.mimeType       = fr.value("mimeType", std::string());
+        f.isMain         = f.parentFrameId.empty();
+        f.lastNavigated  = p.value("timestamp", 0.0);
+        m_frames[f.frameId] = f;
+        m_frameSession[f.frameId] = sessionId;
+    }
+
+    void onFrameDetached(const json& p)
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        auto id = p.value("frameId", std::string());
+        m_frames.erase(id);
+        m_frameSession.erase(id);
+    }
+
+    void onExecutionContextCreated(const json& p, const std::string& sessionId)
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        if (!p.contains("context") || !p["context"].is_object()) return;
+        const auto& c = p["context"];
+        ContextInfo ctx;
+        ctx.id       = c.value("id", 0);
+        ctx.uniqueId = c.value("uniqueId", std::string());
+        ctx.origin   = c.value("origin", std::string());
+        ctx.name     = c.value("name", std::string());
+        ctx.sessionId = sessionId;
+        if (c.contains("auxData") && c["auxData"].is_object())
+        {
+            const auto& a = c["auxData"];
+            ctx.type      = a.value("type", std::string());
+            ctx.frameId   = a.value("frameId", std::string());
+            ctx.isDefault = a.value("isDefault", false);
+        }
+        m_contexts[ctx.id] = ctx;
+    }
+
+    void onExecutionContextDestroyed(const json& p)
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        int id = p.value("executionContextId", 0);
+        m_contexts.erase(id);
+    }
+
+    void onExecutionContextsCleared()
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        m_contexts.clear();
+    }
+
+    std::vector<FrameInfo> allFrames() const
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        std::vector<FrameInfo> out;
+        out.reserve(m_frames.size());
+        for (const auto& [id, f] : m_frames) out.push_back(f);
+        return out;
+    }
+
+    std::optional<FrameInfo> getFrame(const std::string& frameId) const
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        auto it = m_frames.find(frameId);
+        if (it == m_frames.end()) return std::nullopt;
+        return it->second;
+    }
+
+    std::string getMainFrameId() const
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        for (const auto& [id, f] : m_frames) if (f.isMain) return id;
+        return std::string();
+    }
+
+    std::string getSessionForFrame(const std::string& frameId) const
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        auto it = m_frameSession.find(frameId);
+        return it == m_frameSession.end() ? std::string() : it->second;
+    }
+
+    std::optional<ContextInfo> getContextForFrame(const std::string& frameId) const
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        for (const auto& [id, c] : m_contexts)
+            if (c.frameId == frameId && c.isDefault) return c;
+        return std::nullopt;
+    }
+
+    std::vector<ContextInfo> allContexts() const
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        std::vector<ContextInfo> out;
+        for (const auto& [id, c] : m_contexts) out.push_back(c);
+        return out;
+    }
+
+private:
+    mutable std::mutex                          m_mtx;
+    std::unordered_map<std::string, FrameInfo>  m_frames;
+    std::unordered_map<std::string, std::string> m_frameSession;
+    std::unordered_map<int, ContextInfo>        m_contexts;
+};
+
+//--------------------------------------------------------------------------------------------------------------------
+} // namespace chrome_devtools_protocol
+namespace cdt = chrome_devtools_protocol;
+} // namespace marty
+```
+
+**Изменения в `Connection.h`:** аналогично предыдущим журналам (include, member, setter/getter). В `processMessage` — добавить блок:
+
+```cpp
+                if (m_domJournal)
+                {
+                    const auto& params = j.contains("params") ? j["params"] : json::object();
+                    std::string sessionId = j.value("sessionId", std::string());
+                    if (method == "Page.frameAttached")
+                        m_domJournal->onFrameAttached(params, sessionId);
+                    else if (method == "Page.frameNavigated")
+                        m_domJournal->onFrameNavigated(params, sessionId);
+                    else if (method == "Page.frameDetached")
+                        m_domJournal->onFrameDetached(params);
+                    else if (method == "Runtime.executionContextCreated")
+                        m_domJournal->onExecutionContextCreated(params, sessionId);
+                    else if (method == "Runtime.executionContextDestroyed")
+                        m_domJournal->onExecutionContextDestroyed(params);
+                    else if (method == "Runtime.executionContextsCleared")
+                        m_domJournal->onExecutionContextsCleared();
+                }
+```
+
+**Тест:** `_src/almai/_test24_dom_journal.cpp` — открыть `ya.ru`, подписаться на `Page`, `Runtime`, распечатать все фреймы и контексты.
+
+---
+
+### Кирпич 1.5. `ScriptJournal`
+
+**Новый файл:** `_libs/marty_cdt/ScriptJournal.h`
+
+```cpp
+#pragma once
+
+#include "types.h"
+#include "defs.h"
+//
+#include <cstdint>
+#include <mutex>
+#include <optional>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+namespace marty {
+namespace chrome_devtools_protocol {
+
+struct ScriptInfo
+{
+    std::string  scriptId;
+    std::string  url;
+    std::string  sourceMapURL;
+    std::string  hash;
+    int          executionContextId = 0;
+    bool         isModule = false;
+    int64_t      length = 0;
+    std::string  language = "JavaScript";
+    std::string  sessionId;
+};
+
+class ScriptJournal
+{
+public:
+    using Ptr = std::shared_ptr<ScriptJournal>;
+
+    void onScriptParsed(const json& p, const std::string& sessionId)
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        ScriptInfo s;
+        s.scriptId           = p.value("scriptId", std::string());
+        s.url                = p.value("url", std::string());
+        s.sourceMapURL       = p.value("sourceMapURL", std::string());
+        s.hash               = p.value("hash", std::string());
+        s.executionContextId = p.value("executionContextId", 0);
+        s.isModule           = p.value("isModule", false);
+        s.language           = p.value("scriptLanguage", std::string("JavaScript"));
+        s.sessionId          = sessionId;
+        if (p.contains("length") && p["length"].is_number())
+            s.length = (int64_t)p["length"].get<double>();
+        m_scripts[s.scriptId] = std::move(s);
+    }
+
+    std::vector<ScriptInfo> all() const
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        std::vector<ScriptInfo> out;
+        out.reserve(m_scripts.size());
+        for (const auto& [id, s] : m_scripts) out.push_back(s);
+        return out;
+    }
+
+    std::optional<ScriptInfo> get(const std::string& scriptId) const
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        auto it = m_scripts.find(scriptId);
+        if (it == m_scripts.end()) return std::nullopt;
+        return it->second;
+    }
+
+private:
+    mutable std::mutex                            m_mtx;
+    std::unordered_map<std::string, ScriptInfo>   m_scripts;
+};
+
+} // namespace chrome_devtools_protocol
+namespace cdt = chrome_devtools_protocol;
+} // namespace marty
+```
+
+**Изменения в `Connection.h`:** include, member, setter/getter. В `processMessage`:
+
+```cpp
+                if (m_scriptJournal)
+                {
+                    const auto& params = j.contains("params") ? j["params"] : json::object();
+                    std::string sessionId = j.value("sessionId", std::string());
+                    if (method == "Debugger.scriptParsed")
+                        m_scriptJournal->onScriptParsed(params, sessionId);
+                }
+```
+
+**Тест:** `_src/almai/_test26_script_journal.cpp` — открыть `ya.ru`, подписаться на `Debugger`, распечатать количество скриптов, топ-5 по размеру.
+
+---
+
+### Кирпич 1.6. `TargetJournal`
+
+**Новый файл:** `_libs/marty_cdt/TargetJournal.h`
+
+```cpp
+#pragma once
+
+#include "types.h"
+#include "defs.h"
+//
+#include <mutex>
+#include <optional>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+namespace marty {
+namespace chrome_devtools_protocol {
+
+struct TargetInfo
+{
+    std::string targetId;
+    std::string type;
+    std::string title;
+    std::string url;
+    std::string browserContextId;
+    bool        attached = false;
+};
+
+class TargetJournal
+{
+public:
+    using Ptr = std::shared_ptr<TargetJournal>;
+
+    void onAttached(const json& p)
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        auto sessionId = p.value("sessionId", std::string());
+        if (sessionId.empty() || !p.contains("targetInfo")) return;
+        const auto& t = p["targetInfo"];
+        TargetInfo info;
+        info.targetId         = t.value("targetId", std::string());
+        info.type             = t.value("type", std::string());
+        info.title            = t.value("title", std::string());
+        info.url              = t.value("url", std::string());
+        info.attached         = t.value("attached", true);
+        info.browserContextId = t.value("browserContextId", std::string());
+        m_sessions[sessionId] = info;
+        m_targetToSession[info.targetId] = sessionId;
+    }
+
+    void onDetached(const json& p)
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        auto sessionId = p.value("sessionId", std::string());
+        auto it = m_sessions.find(sessionId);
+        if (it != m_sessions.end())
+        {
+            m_targetToSession.erase(it->second.targetId);
+            m_sessions.erase(it);
+        }
+    }
+
+    std::optional<TargetInfo> getSession(const std::string& sessionId) const
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        auto it = m_sessions.find(sessionId);
+        if (it == m_sessions.end()) return std::nullopt;
+        return it->second;
+    }
+
+    std::string getSessionForTarget(const std::string& targetId) const
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        auto it = m_targetToSession.find(targetId);
+        return it == m_targetToSession.end() ? std::string() : it->second;
+    }
+
+    std::vector<std::pair<std::string, TargetInfo>> all() const
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        std::vector<std::pair<std::string, TargetInfo>> out;
+        for (const auto& [sid, info] : m_sessions) out.emplace_back(sid, info);
+        return out;
+    }
+
+private:
+    mutable std::mutex                                 m_mtx;
+    std::unordered_map<std::string, TargetInfo>        m_sessions;
+    std::unordered_map<std::string, std::string>       m_targetToSession;
+};
+
+} // namespace chrome_devtools_protocol
+namespace cdt = chrome_devtools_protocol;
+} // namespace marty
+```
+
+**Изменения в `Connection.h`:** include, member, setter/getter. В `processMessage`:
+
+```cpp
+                if (m_targetJournal)
+                {
+                    const auto& params = j.contains("params") ? j["params"] : json::object();
+                    if (method == "Target.attachedToTarget")
+                        m_targetJournal->onAttached(params);
+                    else if (method == "Target.detachedFromTarget")
+                        m_targetJournal->onDetached(params);
+                }
+```
+
+**Тест:** `_src/almai/_test27_target_journal.cpp` — открыть `youtube.com/embed/...`, распечатать все target'ы. Пока `setAutoAttach` не включён — их может быть 0, что нормально.
+
+---
+
+## ЧАСТЬ 2. Универсальный `attachJournals`
+
+### Кирпич 2.1. `JournalBundle` и `attachJournals`
+
+**Новый файл:** `_libs/marty_cdt/JournalBundle.h`
+
+```cpp
+#pragma once
+
+#include "NetworkJournal.h"
+#include "ConsoleJournal.h"
+#include "DomJournal.h"
+#include "ScriptJournal.h"
+#include "TargetJournal.h"
+
+namespace marty {
+namespace chrome_devtools_protocol {
+
+struct JournalBundle
+{
+    std::shared_ptr<NetworkJournal> network;
+    std::shared_ptr<ConsoleJournal> console;
+    std::shared_ptr<DomJournal>     dom;
+    std::shared_ptr<ScriptJournal>  script;
+    std::shared_ptr<TargetJournal>  target;
+
+    static JournalBundle makeAll()
+    {
+        JournalBundle b;
+        b.network = std::make_shared<NetworkJournal>();
+        b.console = std::make_shared<ConsoleJournal>();
+        b.dom     = std::make_shared<DomJournal>();
+        b.script  = std::make_shared<ScriptJournal>();
+        b.target  = std::make_shared<TargetJournal>();
+        return b;
+    }
+};
+
+} // namespace chrome_devtools_protocol
+namespace cdt = chrome_devtools_protocol;
+} // namespace marty
+```
+
+**Изменения в `Connection.h`:**
+
+1. Добавить `#include "JournalBundle.h"`
+2. В `public`:
+```cpp
+    void attachJournals(const JournalBundle& b)
+    {
+        if (b.network) setNetworkJournal(b.network);
+        if (b.console) setConsoleJournal(b.console);
+        if (b.dom)     setDomJournal(b.dom);
+        if (b.script)  setScriptJournal(b.script);
+        if (b.target)  setTargetJournal(b.target);
+    }
+
+    void enableAllDomains()
+    {
+        auto noop = [](Connection*, const WebSocketMessage&, MessageIdVariant, json) {};
+        wsEventSubscribe("Page",     noop);
+        wsEventSubscribe("Network",  noop);
+        wsEventSubscribe("Runtime",  noop);
+        wsEventSubscribe("DOM",      noop);
+        wsEventSubscribe("Debugger", noop);
+        wsEventSubscribe("Log",      noop);
+    }
+```
+
+3. В `private`: `std::shared_ptr<DomJournal> m_domJournal; std::shared_ptr<ScriptJournal> m_scriptJournal; std::shared_ptr<TargetJournal> m_targetJournal;`
+4. Сеттеры/геттеры для `m_domJournal`, `m_scriptJournal`, `m_targetJournal`.
+5. В `processMessage` — блоки для этих журналов (см. выше).
+
+**Тест:** `_src/almai/_test28_bundle.cpp`
+
+```cpp
+#include "TestFixture.h"
+#include "marty_cdt/JournalBundle.h"
+#include <iostream>
+
+using namespace almai;
+using std::cout;
+
+int main()
+{
+    try
+    {
+        TestFixture fx;
+        fx.setLogLevel(LogLevel::Silent);
+        fx.init();
+
+        auto bundle = marty::cdt::JournalBundle::makeAll();
+        fx.connection().attachJournals(bundle);
+        fx.connection().enableAllDomains();
+
+        std::atomic<bool> loaded{false};
+        fx.connection().wsSetMethodEventHandler("Page.loadEventFired",
+            [&](marty::cdt::Connection*, const marty::cdt::WebSocketMessage&,
+                marty::cdt::MessageIdVariant, marty::cdt::json){ loaded = true; });
+
+        fx.connection().wsSendCommand("Page.navigate", {{"url", "https://ya.ru"}});
+        if (!fx.waitFor([&]{ return loaded.load(); }, 30000, 100))
+            throw std::runtime_error("navigate timeout");
+        fx.waitFor([]{ return false; }, 3000, 100);
+
+        auto reqs = bundle.network->allOrdered();
+        auto msgs = bundle.console->messages();
+        auto excs = bundle.console->exceptions();
+        auto frames = bundle.dom->allFrames();
+        auto scripts = bundle.script->all();
+
+        cout << "requests:   " << reqs.size() << "\n";
+        cout << "messages:   " << msgs.size() << "\n";
+        cout << "exceptions: " << excs.size() << "\n";
+        cout << "frames:     " << frames.size() << "\n";
+        cout << "scripts:    " << scripts.size() << "\n";
+
+        return 0;
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "ERROR: " << e.what() << "\n";
+        return 1;
+    }
+}
+```
+
+**Проверка:** все счётчики > 0.
+
+---
+
+## ЧАСТЬ 3. `WaitManager` и ожидание событий
+
+### Кирпич 3.1. `WaitManager`
+
+**Новый файл:** `_libs/marty_cdt/WaitManager.h`
+
+```cpp
+#pragma once
+
+#include "types.h"
+#include "defs.h"
+//
+#include <chrono>
+#include <cstdint>
+#include <functional>
+#include <future>
+#include <memory>
+#include <mutex>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+namespace marty {
+namespace chrome_devtools_protocol {
+
+struct PendingWait
+{
+    std::string method;
+    std::function<bool(const json&)> predicate;
+    std::shared_ptr<std::promise<json>> promise;
+    std::chrono::steady_clock::time_point deadline;
+    std::string sessionId;
+    uint64_t id = 0;
+};
+
+class WaitManager
+{
+public:
+    using Ptr = std::shared_ptr<WaitManager>;
+
+    uint64_t add(PendingWait w)
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        w.id = ++m_nextId;
+        m_waits.push_back(std::move(w));
+        return m_waits.back().id;
+    }
+
+    void cancel(uint64_t id)
+    {
+        std::lock_guard<std::mutex> lk(m_mtx);
+        for (auto it = m_waits.begin(); it != m_waits.end(); ++it)
+        {
+            if (it->id == id)
+            {
+                try { it->promise->set_exception(std::make_exception_ptr(
+                    std::runtime_error("wait cancelled"))); } catch (...) {}
+                m_waits.erase(it);
+                return;
+            }
+        }
+    }
+
+    void dispatch(const std::string& method, const json& params, const std::string& sessionId)
+    {
+        std::vector<PendingWait> ready;
+        {
+            std::lock_guard<std::mutex> lk(m_mtx);
+            for (auto it = m_waits.begin(); it != m_waits.end(); )
+            {
+                if (it->method == method
+                    && (it->sessionId.empty() || it->sessionId == sessionId))
+                {
+                    bool ok = false;
+                    try { ok = it->predicate(params); } catch (...) { ok = false; }
+                    if (ok)
+                    {
+                        ready.push_back(std::move(*it));
+                        it = m_waits.erase(it);
+                        continue;
+                    }
+                }
+                ++it;
+            }
+        }
+        for (auto& w : ready)
+        {
+            try { w.promise->set_value(params); } catch (...) {}
+        }
+    }
+
+    void checkTimeouts()
+    {
+        auto now = std::chrono::steady_clock::now();
+        std::vector<PendingWait> expired;
+        {
+            std::lock_guard<std::mutex> lk(m_mtx);
+            for (auto it = m_waits.begin(); it != m_waits.end(); )
+            {
+                if (it->deadline <= now)
+                {
+                    expired.push_back(std::move(*it));
+                    it = m_waits.erase(it);
+                }
+                else ++it;
+            }
+        }
+        for (auto& w : expired)
+        {
+            try { w.promise->set_exception(std::make_exception_ptr(
+                std::runtime_error("wait timeout: " + w.method))); } catch (...) {}
+        }
+    }
+
+private:
+    std::mutex                m_mtx;
+    std::vector<PendingWait>  m_waits;
+    uint64_t                  m_nextId = 0;
+};
+
+} // namespace chrome_devtools_protocol
+namespace cdt = chrome_devtools_protocol;
+} // namespace marty
+```
+
+**Изменения в `Connection.h`:**
+
+1. `#include "WaitManager.h"`
+2. В `private`: `WaitManager::Ptr m_waitManager = std::make_shared<WaitManager>();`
+3. В `public`: `WaitManager& waitManager() { return *m_waitManager; }`
+
+4. В `processMessage` — в блоке `j.contains("method")`, **в самом начале** (до журналов):
+
+```cpp
+                std::string sessionId = j.value("sessionId", std::string());
+                const json& methodParams = j.contains("params") ? j["params"] : json::object();
+                m_waitManager->dispatch(method, methodParams, sessionId);
+```
+
+5. В `wsDispatchMessages` — после цикла `while(getQueuedMessage(msg))` добавить:
+
+```cpp
+        m_waitManager->checkTimeouts();
+```
+
+6. Добавить публичный шаблонный метод:
+
+```cpp
+    template<typename Predicate>
+    json cdtWaitForEvent(const std::string& method,
+                         Predicate pred,
+                         int timeoutMs = 30000,
+                         const std::string& sessionId = "")
+    {
+        auto promise = std::make_shared<std::promise<json>>();
+        auto future  = promise->get_future();
+
+        PendingWait w;
+        w.method    = method;
+        w.predicate = pred;
+        w.promise   = promise;
+        w.deadline  = std::chrono::steady_clock::now()
+                    + std::chrono::milliseconds(timeoutMs);
+        w.sessionId = sessionId;
+
+        m_waitManager->add(std::move(w));
+
+        while (future.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready)
+        {
+            wsDispatchMessages();
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+
+        return future.get();
+    }
+```
+
+**Не забыть** `#include <future>` и `#include <thread>` в `Connection.h`.
+
+**Тест:** `_src/almai/_test29_waitmanager.cpp`
+
+```cpp
+#include "TestFixture.h"
+#include <iostream>
+
+using namespace almai;
+using std::cout;
+
+int main()
+{
+    try
+    {
+        TestFixture fx;
+        fx.setLogLevel(LogLevel::Silent);
+        fx.init();
+
+        auto noop = [](marty::cdt::Connection*, const marty::cdt::WebSocketMessage&,
+                       marty::cdt::MessageIdVariant, marty::cdt::json){};
+        fx.connection().wsEventSubscribe("Page", noop);
+
+        auto t0 = std::chrono::steady_clock::now();
+
+        std::thread sender([&]{
+            std::this_thread::sleep_for(std::chrono::milliseconds(300));
+            fx.connection().wsSendCommand("Page.navigate", {{"url", "https://example.com"}});
+        });
+
+        // Но тут же вызываем cdtWaitForEvent — оно крутит event loop
+        auto result = fx.connection().cdtWaitForEvent(
+            "Page.loadEventFired",
+            [](const marty::cdt::json&){ return true; },
+            10000);
+
+        sender.join();
+
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now() - t0).count();
+        cout << "Waited " << elapsed << " ms for load event\n";
+        cout << "Params: " << result.dump() << "\n";
+        return 0;
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "ERROR: " << e.what() << "\n";
+        return 1;
+    }
+}
+```
+
+**Замечание:** `cdtWaitForEvent` крутит event loop в текущем потоке, поэтому отправлять команду надо **до** вызова или из другого потока. В реальном использовании обычно отправка команды идёт внутри `wsSendCommand`, а потом сразу `cdtWaitForEvent`. У вас `wsSendCommand` синхронный (через `send` в IXWebSocket), так что можно просто:
+
+```cpp
+fx.connection().wsSendCommand("Page.navigate", {{"url", "https://example.com"}});
+auto result = fx.connection().cdtWaitForEvent("Page.loadEventFired", ...);
+```
+
+Так и делайте в реальных тестах.
+
+---
+
+## ЧАСТЬ 4. Примитивы ожидания
+
+### Кирпич 4.1. `cdtWaitForSelector`
+
+**Изменения в `Connection.h`:**
+
+```cpp
+    struct ElementRect
+    {
+        bool        found = false;
+        double      x = 0, y = 0, width = 0, height = 0;
+        std::string tagName;
+        std::string text;
+    };
+
+    ElementRect cdtWaitForSelector(const std::string& selector,
+                                   int timeoutMs = 30000,
+                                   bool requireVisible = true,
+                                   unsigned pollMs = 150);
+```
+
+**Реализация в `impl/Connection.h`:**
+
+```cpp
+inline
+Connection::ElementRect Connection::cdtWaitForSelector(const std::string& selector,
+                                                       int timeoutMs,
+                                                       bool requireVisible,
+                                                       unsigned pollMs)
+{
+    std::string js =
+        "(() => {"
+        "  const el = document.querySelector(" + json(selector).dump() + ");"
+        "  if (!el) return null;";
+
+    if (requireVisible)
+        js += "  if (el.offsetWidth === 0 || el.offsetHeight === 0) return null;";
+
+    js +=
+        "  el.scrollIntoView({block:'center', inline:'center', behavior:'instant'});"
+        "  const r = el.getBoundingClientRect();"
+        "  if (r.width <= 0 || r.height <= 0) return null;"
+        "  return {"
+        "    x: r.left + r.width/2,"
+        "    y: r.top  + r.height/2,"
+        "    width: r.width,"
+        "    height: r.height,"
+        "    tagName: el.tagName.toLowerCase(),"
+        "    text: (el.innerText || '').slice(0, 100)"
+        "  };"
+        "})()";
+
+    auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
+
+    while (std::chrono::steady_clock::now() < deadline)
+    {
+        json jResult;
+        bool ok = cdtRuntimeEvaluate(jResult, js, 3000,
+                                     RuntimeEvaluateReturnType::returnByValue);
+        if (ok && jResult.contains("result") && jResult["result"].is_object())
+        {
+            const auto& r = jResult["result"];
+            if (r.contains("value") && r["value"].is_object())
+            {
+                const auto& v = r["value"];
+                ElementRect out;
+                out.found   = true;
+                out.x       = v.value("x", 0.0);
+                out.y       = v.value("y", 0.0);
+                out.width   = v.value("width", 0.0);
+                out.height  = v.value("height", 0.0);
+                out.tagName = v.value("tagName", std::string());
+                out.text    = v.value("text", std::string());
+                return out;
+            }
+        }
+        wsDispatchMessages();
+        std::this_thread::sleep_for(std::chrono::milliseconds(pollMs));
+    }
+
+    return {};
+}
+```
+
+**Тест:** `_src/almai/_test31_wait_selector.cpp` — открыть `ya.ru`, дождаться `textarea#text`, распечатать координаты.
+
+---
+
+### Кирпич 4.2. `cdtWaitForFunction`
+
+```cpp
+inline
+json Connection::cdtWaitForFunction(const std::string& expr, int timeoutMs)
+{
+    std::string js =
+        "(async () => {"
+        "  const deadline = performance.now() + " + std::to_string(timeoutMs) + ";"
+        "  while (performance.now() < deadline) {"
+        "    const v = (function(){ return (" + expr + "); })();"
+        "    if (v) return v;"
+        "    await new Promise(r => setTimeout(r, 80));"
+        "  }"
+        "  return null;"
+        "})()";
+
+    json jResult;
+    bool ok = cdtRuntimeEvaluate(jResult, js, timeoutMs + 2000,
+                                 RuntimeEvaluateReturnType::returnByValue,
+                                 std::string(), std::string(),
+                                 RuntimeEvaluateAwaitPromise::awaitPromise);
+    if (!ok) return json();
+    if (!jResult.contains("result")) return json();
+    const auto& r = jResult["result"];
+    if (r.contains("value") && !r["value"].is_null()) return r["value"];
+    return json();
+}
+```
+
+**Тест:** `_test32` — дождаться `document.readyState === 'complete'`, потом `window.performance !== undefined`.
+
+---
+
+### Кирпич 4.3. `cdtWaitForNetworkIdle`
+
+```cpp
+inline
+void Connection::cdtWaitForNetworkIdle(int idleMs, int timeoutMs)
+{
+    if (!m_networkJournal)
+        throw std::runtime_error("NetworkJournal not attached");
+
+    auto start     = std::chrono::steady_clock::now();
+    auto idleSince = start;
+    int  lastCount = m_networkJournal->inflightCount();
+
+    while (true)
+    {
+        wsDispatchMessages();
+        auto now = std::chrono::steady_clock::now();
+
+        if (std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count() > timeoutMs)
+            throw std::runtime_error("network idle timeout");
+
+        int count = m_networkJournal->inflightCount();
+        if (count != lastCount)
+        {
+            lastCount = count;
+            idleSince = now;
+        }
+        if (count == 0 &&
+            std::chrono::duration_cast<std::chrono::milliseconds>(now - idleSince).count() >= idleMs)
+            return;
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(30));
+    }
+}
+```
+
+**Тест:** `_test33` — открыть `ya.ru`, замерить время от load до idle.
+
+---
+
+### Кирпич 4.4. `cdtWaitForNetworkResponse`
+
+```cpp
+inline
+std::optional<RequestRecord>
+Connection::cdtWaitForNetworkResponse(std::function<bool(const RequestRecord&)> pred,
+                                      int timeoutMs)
+{
+    if (!m_networkJournal)
+        throw std::runtime_error("NetworkJournal not attached");
+
+    // Уже накопленные
+    for (const auto& r : m_networkJournal->allOrdered())
+        if (pred(r)) return r;
+
+    auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
+    while (std::chrono::steady_clock::now() < deadline)
+    {
+        wsDispatchMessages();
+        auto all = m_networkJournal->allOrdered();
+        for (auto it = all.rbegin(); it != all.rend(); ++it)
+            if (pred(*it)) return *it;
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
+    return std::nullopt;
+}
+```
+
+**Тест:** `_test34` — открыть `ya.ru`, дождаться запроса с `suggest` в URL.
+
+---
+
+## ЧАСТЬ 5. Действия
+
+### Кирпич 5.1. Мышь
+
+**В `Connection.h`:**
+
+```cpp
+    void cdtMouseMove(double x, double y, int modifiers = 0);
+    void cdtClick(double x, double y,
+                  const std::string& button = "left",
+                  int clickCount = 1,
+                  int modifiers = 0);
+    void cdtDoubleClick(double x, double y, int modifiers = 0);
+    void cdtMouseDown(double x, double y, const std::string& button = "left", int modifiers = 0);
+    void cdtMouseUp(double x, double y, const std::string& button = "left", int modifiers = 0);
+    void cdtScroll(double x, double y, double deltaX, double deltaY, int modifiers = 0);
+```
+
+**В `impl/Connection.h`:**
+
+```cpp
+inline
+void Connection::cdtMouseMove(double x, double y, int modifiers)
+{
+    json p = {
+        {"type", "mouseMoved"}, {"x", x}, {"y", y},
+        {"button", "none"}, {"buttons", 0},
+        {"modifiers", modifiers}, {"pointerType", "mouse"}
+    };
+    wsSendCommand("Input.dispatchMouseEvent", p);
+}
+
+inline
+void Connection::cdtMouseDown(double x, double y, const std::string& button, int modifiers)
+{
+    int buttons = (button == "left") ? 1 : (button == "right") ? 2 : (button == "middle") ? 4 : 0;
+    json p = {
+        {"type", "mousePressed"}, {"x", x}, {"y", y},
+        {"button", button}, {"buttons", buttons},
+        {"clickCount", 1}, {"modifiers", modifiers}, {"pointerType", "mouse"}
+    };
+    wsSendCommand("Input.dispatchMouseEvent", p);
+}
+
+inline
+void Connection::cdtMouseUp(double x, double y, const std::string& button, int modifiers)
+{
+    json p = {
+        {"type", "mouseReleased"}, {"x", x}, {"y", y},
+        {"button", button}, {"buttons", 0},
+        {"clickCount", 1}, {"modifiers", modifiers}, {"pointerType", "mouse"}
+    };
+    wsSendCommand("Input.dispatchMouseEvent", p);
+}
+
+inline
+void Connection::cdtClick(double x, double y, const std::string& button, int clickCount, int modifiers)
+{
+    cdtMouseMove(x, y, modifiers);
+    std::this_thread::sleep_for(std::chrono::milliseconds(15));
+
+    int buttons = (button == "left") ? 1 : (button == "right") ? 2 : (button == "middle") ? 4 : 0;
+    json downP = {
+        {"type", "mousePressed"}, {"x", x}, {"y", y},
+        {"button", button}, {"buttons", buttons},
+        {"clickCount", clickCount}, {"modifiers", modifiers}, {"pointerType", "mouse"}
+    };
+    wsSendCommand("Input.dispatchMouseEvent", downP);
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+
+    json upP = {
+        {"type", "mouseReleased"}, {"x", x}, {"y", y},
+        {"button", button}, {"buttons", 0},
+        {"clickCount", clickCount}, {"modifiers", modifiers}, {"pointerType", "mouse"}
+    };
+    wsSendCommand("Input.dispatchMouseEvent", upP);
+}
+
+inline
+void Connection::cdtDoubleClick(double x, double y, int modifiers)
+{
+    cdtClick(x, y, "left", 1, modifiers);
+    std::this_thread::sleep_for(std::chrono::milliseconds(30));
+    cdtClick(x, y, "left", 2, modifiers);
+}
+
+inline
+void Connection::cdtScroll(double x, double y, double deltaX, double deltaY, int modifiers)
+{
+    cdtMouseMove(x, y, modifiers);
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    json p = {
+        {"type", "mouseWheel"}, {"x", x}, {"y", y},
+        {"deltaX", deltaX}, {"deltaY", deltaY}, {"modifiers", modifiers}
+    };
+    wsSendCommand("Input.dispatchMouseEvent", p);
+}
+```
+
+**Тест:** `_test35` — открыть `ya.ru`, найти `textarea#text`, кликнуть, проверить `document.activeElement.tagName`.
+
+---
+
+### Кирпич 5.2. Клавиатура
+
+```cpp
+    void cdtInsertText(const std::string& text);
+    void cdtPressKey(const std::string& key, const std::string& code, int vk,
+                     int modifiers = 0, const std::string& text = "");
+    void cdtPressEnter();
+    void cdtPressTab();
+    void cdtPressEscape();
+```
+
+```cpp
+inline
+void Connection::cdtInsertText(const std::string& text)
+{
+    wsSendCommand("Input.insertText", {{"text", text}});
+}
+
+inline
+void Connection::cdtPressKey(const std::string& key, const std::string& code, int vk,
+                             int modifiers, const std::string& text)
+{
+    json down = {
+        {"type", "keyDown"}, {"modifiers", modifiers},
+        {"key", key}, {"code", code},
+        {"windowsVirtualKeyCode", vk}, {"nativeVirtualKeyCode", vk}
+    };
+    if (!text.empty()) { down["text"] = text; down["unmodifiedText"] = text; }
+    wsSendCommand("Input.dispatchKeyEvent", down);
+
+    json up = down;
+    up["type"] = "keyUp";
+    up.erase("text"); up.erase("unmodifiedText");
+    wsSendCommand("Input.dispatchKeyEvent", up);
+}
+
+inline
+void Connection::cdtPressEnter()  { cdtPressKey("Enter", "Enter", 13, 0, "\r"); }
+inline
+void Connection::cdtPressTab()    { cdtPressKey("Tab", "Tab", 9, 0, "\t"); }
+inline
+void Connection::cdtPressEscape() { cdtPressKey("Escape", "Escape", 27, 0, ""); }
+```
+
+**Тест:** `_test36` — ввод «котики» в `textarea#text` и Enter, проверка URL.
+
+---
+
+### Кирпич 5.3. `cdtTypeText` (посимвольно)
+
+```cpp
+inline
+void Connection::cdtTypeText(const std::string& text, int delayMs)
+{
+    for (size_t i = 0; i < text.size(); )
+    {
+        unsigned char c = (unsigned char)text[i];
+        size_t len = (c < 0x80) ? 1 : ((c & 0xE0) == 0xC0) ? 2 : ((c & 0xF0) == 0xE0) ? 3 : 4;
+        std::string ch = text.substr(i, len);
+        i += len;
+
+        int vk = 0;
+        std::string code;
+        if (len == 1)
+        {
+            char c0 = ch[0];
+            if (c0 >= 'a' && c0 <= 'z') { vk = 'A' + (c0 - 'a'); code = std::string("Key") + char(c0 - 32); }
+            else if (c0 >= 'A' && c0 <= 'Z') { vk = c0; code = std::string("Key") + c0; }
+            else if (c0 >= '0' && c0 <= '9') { vk = c0; code = std::string("Digit") + c0; }
+            else if (c0 == ' ') { vk = 32; code = "Space"; }
+        }
+
+        json down = {
+            {"type", "keyDown"}, {"key", ch}, {"code", code},
+            {"windowsVirtualKeyCode", vk}, {"nativeVirtualKeyCode", vk},
+            {"text", ch}, {"unmodifiedText", ch}
+        };
+        wsSendCommand("Input.dispatchKeyEvent", down);
+
+        json up = down;
+        up["type"] = "keyUp";
+        up.erase("text"); up.erase("unmodifiedText");
+        wsSendCommand("Input.dispatchKeyEvent", up);
+
+        if (delayMs > 0)
+            std::this_thread::sleep_for(std::chrono::milliseconds(delayMs));
+    }
+}
+```
+
+**Тест:** `_test37` — `cdtTypeText("привет", 30)`, проверить, что suggest-запросы пошли.
+
+---
+
+### Кирпич 5.4. Скролл
+
+```cpp
+inline
+void Connection::cdtScrollIntoView(const std::string& selector)
+{
+    std::string js = "document.querySelector(" + json(selector).dump() +
+                     ")?.scrollIntoView({block:'center', behavior:'instant'})";
+    json jRes;
+    cdtRuntimeEvaluate(jRes, js, 2000);
+}
+
+inline
+void Connection::cdtScrollToBottom()
+{
+    json jRes;
+    cdtRuntimeEvaluate(jRes,
+        "window.scrollTo({top: document.body.scrollHeight, behavior: 'instant'}); true",
+        2000);
+}
+```
+
+**Тест:** `_test38` — открыть `youtube.com`, `cdtScrollToBottom`, подождать networkIdle, проверить новые запросы.
+
+---
+
+### Кирпич 5.5. `cdtScreenshot`
+
+```cpp
+std::vector<std::uint8_t> cdtScreenshotPng(bool fullPage = false);
+std::vector<std::uint8_t> cdtScreenshotJpeg(int quality = 80);
+```
+
+```cpp
+inline
+std::vector<std::uint8_t> Connection::cdtScreenshotPng(bool fullPage)
+{
+    json p = {{"format", "png"}, {"fromSurface", true}, {"captureBeyondViewport", fullPage}};
+    auto res = wsSendCommand("Page.captureScreenshot", p);
+    std::string b64 = res.value("data", std::string());
+    return base64Decode(b64);
+}
+```
+
+**`base64Decode`** — простая утилита, реализуйте сами или возьмите из `umba`.
+
+**Тест:** `_test39` — сохранить PNG, проверить размер > 10 KB.
+
+---
+
+## ЧАСТЬ 6. Тела и исходники
+
+### Кирпич 6.1. `cdtGetResponseBody`
+
+```cpp
+struct BodyResponse { std::string body; bool base64 = false; bool truncated = false; std::string error; };
+BodyResponse cdtGetResponseBody(const std::string& requestId, const std::string& sessionId = "");
+```
+
+```cpp
+inline
+Connection::BodyResponse Connection::cdtGetResponseBody(const std::string& requestId,
+                                                        const std::string& sessionId)
+{
+    BodyResponse r;
+    try
+    {
+        json p = {{"requestId", requestId}};
+        json msg = {{"id", m_wsCommandId++}, {"method", "Network.getResponseBody"}, {"params", p}};
+        if (!sessionId.empty()) msg["sessionId"] = sessionId;
+
+        // Синхронный вызов через внутренний механизм — нужно реализовать
+        // или просто отправить команду и вычитать ответ из очереди (сложно).
+        // Простейший путь: wsSendCommand уже синхронный? Нет — он только шлёт.
+        // См. ниже.
+        ...
+    }
+    catch (const std::exception& e) { r.error = e.what(); }
+    return r;
+}
+```
+
+**Проблема:** `wsSendCommand` **отправляет** команду, но не ждёт ответа. Для `cdtGetResponseBody` нужен **синхронный** вызов, который блокируется до ответа по `id`.
+
+**Решение:** используйте `WaitManager` или аналогичный механизм. Проще всего — сделать через `cdtWaitForEvent`:
+
+```cpp
+inline
+Connection::BodyResponse Connection::cdtGetResponseBody(const std::string& requestId,
+                                                        const std::string& sessionId)
+{
+    BodyResponse r;
+    try
+    {
+        unsigned id = m_wsCommandId++;
+
+        // Создаём ожидание ответа по id
+        auto promise = std::make_shared<std::promise<json>>();
+        auto future  = promise->get_future();
+
+        // Регистрируем в WaitManager - но наш WaitManager ждёт по method, а тут ответ по id.
+        // Значит, нужен либо отдельный механизм, либо использовать wsSetDefaultIdHandler.
+        // ...
+    }
+    catch (...) {}
+    return r;
+}
+```
+
+**Более простой подход:** добавить в `Connection` синхронный хелпер для одиночных CDP-команд:
+
+```cpp
+// В private:
+    json wsSendCommandSync(const std::string& method, const json& params,
+                           const std::string& sessionId = "", int timeoutMs = 10000);
+```
+
+Реализация:
+
+```cpp
+inline
+json Connection::wsSendCommandSync(const std::string& method, const json& params,
+                                   const std::string& sessionId, int timeoutMs)
+{
+    unsigned id = m_wsCommandId++;
+
+    json msg = {{"id", id}, {"method", method}, {"params", params}};
+    if (!sessionId.empty()) msg["sessionId"] = sessionId;
+
+    auto result     = std::make_shared<json>();
+    auto completed  = std::make_shared<std::atomic<bool>>(false);
+
+    // Устанавливаем временный ID-обработчик
+    // Проблема: wsSetDefaultIdHandler перезапишет предыдущий.
+    // Лучше добавить в m_idQueue через enqueIdHandler.
+    auto handler = [result, completed](Connection*, const WebSocketMessage&,
+                                       MessageIdVariant idVar, json j)
+    {
+        *result = j;
+        *completed = true;
+    };
+    enqueIdHandler(id, handler);
+
+    auto info = m_webSocket.sendText(msg.dump());
+    if (!info.success)
+        throw std::runtime_error("send failed: " + method);
+
+    auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
+    while (std::chrono::steady_clock::now() < deadline)
+    {
+        wsDispatchMessages();
+        if (completed->load()) break;
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    }
+
+    if (!completed->load())
+        throw std::runtime_error("sendSync timeout: " + method);
+
+    return *result;
+}
+```
+
+**Важное ограничение:** команды `Network.getResponseBody` вызываются на том же `m_webSocket`, что и все остальные. `enqueIdHandler` уже есть в `Connection`. Используем его.
+
+Тогда `cdtGetResponseBody`:
+
+```cpp
+inline
+Connection::BodyResponse Connection::cdtGetResponseBody(const std::string& requestId,
+                                                        const std::string& sessionId)
+{
+    BodyResponse r;
+    try
+    {
+        auto res = wsSendCommandSync("Network.getResponseBody",
+                                     {{"requestId", requestId}}, sessionId, 5000);
+        r.body          = res.value("body", std::string());
+        r.base64        = res.value("base64Encoded", false);
+        r.truncated     = res.value("truncated", false);
+    }
+    catch (const std::exception& e) { r.error = e.what(); }
+    return r;
+}
+```
+
+**Аналогично** реализуются все остальные синхронные команды (`Debugger.getScriptSource`, `Page.captureScreenshot`, `DOM.getDocument` и т.д.).
+
+**Тест:** `_test22` — после загрузки `ya.ru` для каждого `Document` и `Script` вызвать `cdtGetResponseBody`, проверить размеры.
+
+---
+
+### Кирпич 6.2. `cdtGetScriptSource`
+
+```cpp
+inline
+std::string Connection::cdtGetScriptSource(const std::string& scriptId, const std::string& sessionId)
+{
+    auto res = wsSendCommandSync("Debugger.getScriptSource", {{"scriptId", scriptId}}, sessionId, 5000);
+    return res.value("scriptSource", std::string());
+}
+```
+
+**Тест:** `_test40` — взять первый скрипт из журнала, распечатать первые 200 символов.
+
+---
+
+### Кирпич 6.3. `downloadUrl` / `resolveUrl`
+
+**В `utils.h`:**
+
+```cpp
+inline
+std::string resolveUrl(const std::string& base, const std::string& rel)
+{
+    if (rel.empty()) return base;
+    if (rel.find("://") != std::string::npos) return rel;         // absolute
+    if (rel[0] == '/')
+    {
+        // absolute path
+        auto schemeEnd = base.find("://");
+        if (schemeEnd == std::string::npos) return rel;
+        auto hostStart = schemeEnd + 3;
+        auto pathStart = base.find('/', hostStart);
+        if (pathStart == std::string::npos) return base + rel;
+        return base.substr(0, pathStart) + rel;
+    }
+    // relative path
+    auto lastSlash = base.rfind('/');
+    if (lastSlash == std::string::npos) return rel;
+    return base.substr(0, lastSlash + 1) + rel;
+}
+
+inline
+std::string downloadUrl(const std::string& url, Timeouts timeouts = {5, 15})
+{
+    auto response = httpGet(url, timeouts);
+    if (!ixHttpErrorCodeIsOk(response->errorCode)) return {};
+    return response->body;
+}
+```
+
+**Тест:** `_test41` — скачать source map скрипта с `ya.ru`, распечатать размер.
+
+---
+
+### Кирпич 6.4. Парсер source map
+
+**Новый файл:** `_libs/marty_cdt/SourceMap.h`
+
+```cpp
+#pragma once
+
+#include "types.h"
+#include "defs.h"
+//
+#include <string>
+#include <vector>
+
+namespace marty {
+namespace chrome_devtools_protocol {
+
+struct SourceMap
+{
+    int version = 3;
+    std::string file;
+    std::vector<std::string> sources;
+    std::vector<std::string> sourcesContent;
+    std::vector<std::string> names;
+    std::string mappings;
+    std::string sourceRoot;
+
+    static SourceMap fromJson(const json& j)
+    {
+        SourceMap m;
+        m.version = j.value("version", 3);
+        m.file    = j.value("file", std::string());
+        m.mappings = j.value("mappings", std::string());
+        m.sourceRoot = j.value("sourceRoot", std::string());
+
+        if (j.contains("sources") && j["sources"].is_array())
+            for (const auto& s : j["sources"])
+                m.sources.push_back(s.is_string() ? s.get<std::string>() : std::string());
+
+        if (j.contains("sourcesContent") && j["sourcesContent"].is_array())
+            for (const auto& s : j["sourcesContent"])
+                m.sourcesContent.push_back(s.is_string() ? s.get<std::string>() : std::string());
+
+        if (j.contains("names") && j["names"].is_array())
+            for (const auto& s : j["names"])
+                m.names.push_back(s.is_string() ? s.get<std::string>() : std::string());
+
+        return m;
+    }
+};
+
+} // namespace chrome_devtools_protocol
+namespace cdt = chrome_devtools_protocol;
+} // namespace marty
+```
+
+**Тест:** `_test42` — распарсить карту из 6.3, распечатать поля.
+
+---
+
+### Кирпич 6.5. `cdtRecoverAllScripts`
+
+```cpp
+void cdtRecoverAllScripts(const std::string& outDir);
+```
+
+```cpp
+inline
+void Connection::cdtRecoverAllScripts(const std::string& outDir)
+{
+    namespace fs = std::filesystem;
+
+    if (!m_scriptJournal) throw std::runtime_error("ScriptJournal not attached");
+
+    fs::create_directories(outDir + "/scripts");
+    fs::create_directories(outDir + "/scripts/src");
+
+    json indexArr = json::array();
+    auto scripts = m_scriptJournal->all();
+
+    for (const auto& s : scripts)
+    {
+        if (s.url.empty()) continue;
+        if (s.url.find("chrome-extension://") == 0) continue;
+        if (s.url.find("devtools://") == 0) continue;
+        if (s.url.find("chrome://") == 0) continue;
+
+        std::string src;
+        try { src = cdtGetScriptSource(s.scriptId, s.sessionId); } catch (...) { continue; }
+        if (src.empty()) continue;
+
+        // Хеш от URL
+        size_t h = std::hash<std::string>{}(s.url);
+        std::string hash = std::to_string(h);
+        std::string jsFile = outDir + "/scripts/" + hash + ".js";
+        std::ofstream(jsFile, std::ios::binary) << src;
+
+        json entry;
+        entry["id"] = s.scriptId;
+        entry["url"] = s.url;
+        entry["size"] = src.size();
+        entry["bundleFile"] = "scripts/" + hash + ".js";
+
+        if (!s.sourceMapURL.empty())
+        {
+            std::string mapUrl = resolveUrl(s.url, s.sourceMapURL);
+            std::string mapText;
+            try { mapText = downloadUrl(mapUrl); } catch (...) {}
+            if (!mapText.empty())
+            {
+                std::string mapFile = outDir + "/scripts/" + hash + ".js.map";
+                std::ofstream(mapFile, std::ios::binary) << mapText;
+                entry["mapFile"] = "scripts/" + hash + ".js.map";
+
+                try
+                {
+                    auto sm = SourceMap::fromJson(json::parse(mapText));
+                    entry["sourceFiles"] = sm.sources;
+                    for (size_t i = 0; i < sm.sources.size() && i < sm.sourcesContent.size(); ++i)
+                    {
+                        std::string content = sm.sourcesContent[i];
+                        if (content.empty()) continue;
+                        // Простая санитация имени
+                        std::string safe;
+                        for (char c : sm.sources[i])
+                            safe += (std::isalnum((unsigned char)c) || c == '.' || c == '-' || c == '_') ? c : '_';
+                        std::string srcFile = outDir + "/scripts/src/" + hash + "_" + safe;
+                        std::ofstream(srcFile, std::ios::binary) << content;
+                    }
+                }
+                catch (...) {}
+            }
+        }
+        indexArr.push_back(entry);
+    }
+
+    std::ofstream(outDir + "/scripts/index.json") << indexArr.dump(2);
+}
+```
+
+**Тест:** `_test43` — открыть `ya.ru`, вызвать, проверить содержимое папки.
+
+---
+
+## ЧАСТЬ 7. Контексты
+
+### Кирпич 7.1. `cdtEnableAutoAttach`
+
+```cpp
+inline
+void Connection::cdtEnableAutoAttach()
+{
+    json p = {
+        {"autoAttach", true},
+        {"waitForDebuggerOnStart", false},
+        {"flatten", true}
+    };
+    wsSendCommand("Target.setAutoAttach", p);
+}
+```
+
+**Тест:** `_test44` — открыть `youtube.com/embed/...`, распечатать `TargetJournal::all()`.
+
+---
+
+### Кирпич 7.2. `cdtSendCommandInSession`
+
+```cpp
+inline
+json Connection::cdtSendCommandInSession(const std::string& method, const json& params,
+                                         const std::string& sessionId, int timeoutMs)
+{
+    return wsSendCommandSync(method, params, sessionId, timeoutMs);
+}
+```
+
+---
+
+### Кирпич 7.3. `cdtEvaluateInFrame`
+
+```cpp
+inline
+json Connection::cdtEvaluateInFrame(const std::string& frameId, const std::string& expr,
+                                    bool returnByValue, bool awaitPromise)
+{
+    if (!m_domJournal) throw std::runtime_error("DomJournal not attached");
+    auto sessionId = m_domJournal->getSessionForFrame(frameId);
+    auto ctx = m_domJournal->getContextForFrame(frameId);
+
+    json p = {
+        {"expression", expr},
+        {"returnByValue", returnByValue},
+        {"awaitPromise", awaitPromise},
+        {"userGesture", true}
+    };
+    if (ctx) p["contextId"] = ctx->id;
+
+    return wsSendCommandSync("Runtime.evaluate", p, sessionId, 10000);
+}
+```
+
+**Тест:** `_test46` — открыть iframe, выполнить `document.title` внутри.
+
+---
+
+## ЧАСТЬ 8. Bundle
+
+### Кирпич 8.1. `cdtBuildSummary`
+
+```cpp
+inline
+json Connection::cdtBuildSummary()
+{
+    json s;
+    s["url"] = cdtRuntimeEvaluateToString("location.href");
+    s["title"] = cdtRuntimeEvaluateToString("document.title");
+
+    auto domStats = cdtRuntimeEvaluateJson(R"JS(
+      ({
+        nodes: document.getElementsByTagName('*').length,
+        scripts: document.scripts.length,
+        iframes: document.querySelectorAll('iframe').length,
+        forms: document.querySelectorAll('form').length,
+        inputs: document.querySelectorAll('input, textarea, select').length,
+        buttons: document.querySelectorAll('button, [role=button]').length,
+        links: document.querySelectorAll('a[href]').length
+      })
+    )JS");
+    s["dom"] = domStats;
+
+    json reqTypes = json::object();
+    if (m_networkJournal)
+        for (const auto& r : m_networkJournal->allOrdered())
+            reqTypes[r.type] = reqTypes.value(r.type, 0) + 1;
+    s["requestsByType"] = reqTypes;
+
+    return s;
+}
+```
+
+Утилиты `cdtRuntimeEvaluateToString/Json` добавьте как удобные обёртки.
+
+---
+
+### Кирпич 8.2. `cdtBuildRequestsTsv`
+
+```cpp
+inline
+std::string Connection::cdtBuildRequestsTsv(bool postLoadOnly)
+{
+    std::ostringstream out;
+    out << "time\tmethod\tstatus\ttype\tsize\turl\tinitiator\n";
+
+    if (!m_networkJournal) return out.str();
+
+    for (const auto& r : m_networkJournal->allOrdered())
+    {
+        if (postLoadOnly && !r.finished) continue;
+        out << r.timestamp << "\t"
+            << r.method << "\t"
+            << r.status << "\t"
+            << r.type << "\t"
+            << r.encodedDataLength << "\t"
+            << r.url << "\t"
+            << r.initiatorType;
+        if (!r.initiatorTopUrl.empty())
+            out << " (" << r.initiatorTopUrl << ":" << (r.initiatorTopLine + 1) << ")";
+        out << "\n";
+    }
+    return out.str();
+}
+```
+
+---
+
+### Кирпич 8.3. `cdtBuildNormalizedDom`
+
+```cpp
+inline
+std::string Connection::cdtBuildNormalizedDom()
+{
+    std::string js = R"JS(
+      (() => {
+        const clone = document.documentElement.cloneNode(true);
+        const LIMIT = 200;
+        clone.querySelectorAll('script, style, link[rel="preload"], link[rel="prefetch"]')
+             .forEach(n => n.remove());
+        clone.querySelectorAll('noscript').forEach(n => n.remove());
+        clone.querySelectorAll('svg').forEach(svg => { svg.innerHTML = ''; });
+        clone.querySelectorAll('[src^="data:"]').forEach(n => n.setAttribute('src', '<data>'));
+        const noise = ['data-reactid','data-react-checksum','data-v-','data-testid','aria-busy'];
+        clone.querySelectorAll('*').forEach(el => {
+          for (const a of [...el.attributes]) {
+            if (noise.some(n => a.name.startsWith(n))) { el.removeAttribute(a.name); continue; }
+            if (a.value.length > LIMIT) el.setAttribute(a.name, a.value.slice(0, LIMIT) + '...');
+          }
+        });
+        return clone.outerHTML;
+      })()
+    )JS;
+    return cdtRuntimeEvaluateToString(js);
+}
+```
+
+---
+
+### Кирпич 8.4. `cdtBuildInteractive`
+
+```cpp
+inline
+std::string Connection::cdtBuildInteractive()
+{
+    std::string js = R"JS(
+      (() => {
+        const out = [];
+        const sel = 'input:not([type=hidden]), textarea, select, button, a[href], [role=button], [role=link], [role=textbox], [contenteditable="true"]';
+        for (const el of document.querySelectorAll(sel)) {
+          const r = el.getBoundingClientRect();
+          if (r.width <= 0 || r.height <= 0) continue;
+          const st = getComputedStyle(el);
+          if (st.visibility === 'hidden' || st.display === 'none') continue;
+          out.push({
+            tag: el.tagName.toLowerCase(),
+            type: el.type || null,
+            id: el.id || null,
+            name: el.name || null,
+            role: el.getAttribute('role') || null,
+            ariaLabel: el.getAttribute('aria-label') || null,
+            placeholder: el.placeholder || null,
+            text: (el.innerText || '').trim().slice(0, 80),
+            href: el.href || null,
+            value: el.value != null ? String(el.value).slice(0, 80) : null,
+            disabled: !!el.disabled,
+            selector: (function() {
+              if (el.id) return '#' + CSS.escape(el.id);
+              let parts = [], cur = el;
+              while (cur && cur.nodeType === 1 && parts.length < 6) {
+                let s = cur.tagName.toLowerCase();
+                const nm = cur.getAttribute('name');
+                if (nm) { s += '[name="' + CSS.escape(nm) + '"]'; parts.unshift(s); break; }
+                if (cur.className && typeof cur.className === 'string') {
+                  const f = cur.className.trim().split(/\s+/)[0];
+                  if (f && !/^css-/.test(f)) s += '.' + CSS.escape(f);
+                }
+                parts.unshift(s); cur = cur.parentElement;
+              }
+              return parts.join(' > ');
+            })(),
+            rect: { x: Math.round(r.left + r.width/2), y: Math.round(r.top + r.height/2),
+                    w: Math.round(r.width), h: Math.round(r.height) }
+          });
+        }
+        return JSON.stringify(out);
+      })()
+    )JS;
+    return cdtRuntimeEvaluateToString(js);
+}
+```
+
+---
+
+### Кирпич 8.5. `cdtBuildConsoleLog`
+
+```cpp
+inline
+std::string Connection::cdtBuildConsoleLog()
+{
+    if (!m_consoleJournal) return {};
+    std::ostringstream out;
+    for (const auto& m : m_consoleJournal->messages())
+    {
+        out << "[" << m.timestamp << "] " << m.level << "  ";
+        for (size_t i = 0; i < m.argTexts.size(); ++i)
+        {
+            if (i) out << " ";
+            out << m.argTexts[i];
+        }
+        if (!m.url.empty()) out << " (at " << m.url << ":" << (m.line + 1) << ")";
+        out << "\n";
+    }
+    for (const auto& e : m_consoleJournal->exceptions())
+    {
+        out << "[" << e.timestamp << "] EXCEPTION " << e.className << ": " << e.text;
+        if (!e.url.empty()) out << " (at " << e.url << ":" << (e.line + 1) << ")";
+        out << "\n";
+        for (const auto& fr : e.stackTop) out << "    " << fr << "\n";
+    }
+    return out.str();
+}
+```
+
+---
+
+### Кирпич 8.6. `cdtBuildAiBundle`
+
+```cpp
+struct AiBundleOptions {
+    bool includeScripts = false;
+    bool includeBodies = false;
+    bool includeScreenshots = true;
+    size_t maxScriptSize = 5 * 1024 * 1024;
+};
+
+void cdtBuildAiBundle(const std::string& outDir, const AiBundleOptions& opts = {});
+```
+
+```cpp
+inline
+void Connection::cdtBuildAiBundle(const std::string& outDir, const AiBundleOptions& opts)
+{
+    namespace fs = std::filesystem;
+    fs::create_directories(outDir);
+
+    auto writeStr = [&](const std::string& rel, const std::string& content) {
+        std::ofstream(outDir + "/" + rel, std::ios::binary) << content;
+    };
+
+    writeStr("summary.json",     cdtBuildSummary().dump(2));
+    writeStr("requests.tsv",     cdtBuildRequestsTsv(false));
+    writeStr("dom.html",         cdtBuildNormalizedDom());
+    writeStr("interactive.json", cdtBuildInteractive());
+    writeStr("console.log",      cdtBuildConsoleLog());
+
+    json meta;
+    meta["warnings"] = json::array();
+    writeStr("meta.json", meta.dump(2));
+
+    if (opts.includeScripts)
+        cdtRecoverAllScripts(outDir);
+
+    if (opts.includeScreenshots)
+    {
+        auto png = cdtScreenshotPng(true);
+        std::ofstream(outDir + "/screenshot.png", std::ios::binary)
+            .write((const char*)png.data(), png.size());
+    }
+}
+```
+
+**Тест:** `_test53` — открыть `ya.ru`, собрать bundle, распечатать список файлов и размеры.
+
+---
+
+## ЧАСТЬ 9. Snapshot и Diff
+
+### Кирпич 9.1. `cdtSnapshot`
+
+```cpp
+struct Snapshot {
+    std::string url;
+    double takenAt = 0.0;
+    std::string domHtml;
+    std::vector<std::string> requestIds;
+    std::unordered_map<std::string, std::string> localStorage;
+    std::unordered_map<std::string, std::string> sessionStorage;
+    json interactive;   // array
+};
+
+Snapshot cdtSnapshot();
+```
+
+```cpp
+inline
+Connection::Snapshot Connection::cdtSnapshot()
+{
+    Snapshot s;
+    s.url = cdtRuntimeEvaluateToString("location.href");
+    s.domHtml = cdtBuildNormalizedDom();
+    s.interactive = json::parse(cdtBuildInteractive(), nullptr, false);
+
+    if (m_networkJournal)
+        for (const auto& r : m_networkJournal->allOrdered())
+            s.requestIds.push_back(r.requestId);
+
+    auto parseMap = [](const std::string& txt) {
+        std::unordered_map<std::string, std::string> out;
+        auto j = json::parse(txt, nullptr, false);
+        if (j.is_object())
+            for (auto it = j.begin(); it != j.end(); ++it)
+                out[it.key()] = it.value().is_string() ? it.value().get<std::string>() : it.value().dump();
+        return out;
+    };
+
+    s.localStorage   = parseMap(cdtRuntimeEvaluateToString(
+        "JSON.stringify(Object.fromEntries(Object.entries(localStorage)))"));
+    s.sessionStorage = parseMap(cdtRuntimeEvaluateToString(
+        "JSON.stringify(Object.fromEntries(Object.entries(sessionStorage)))"));
+
+    return s;
+}
+```
+
+---
+
+### Кирпич 9.2. `cdtDiff`
+
+```cpp
+struct SnapshotDiff {
+    std::vector<std::string> newRequestIds;
+    std::vector<std::pair<std::string, std::string>> domChanges;
+    std::unordered_map<std::string, std::string> storageAdded;
+    std::unordered_map<std::string, std::string> storageChanged;
+    std::unordered_map<std::string, std::string> storageRemoved;
+    json interactiveAdded;
+    json interactiveRemoved;
+};
+
+SnapshotDiff cdtDiff(const Snapshot& a, const Snapshot& b);
+```
+
+Реализация DOM diff — построчно:
+
+```cpp
+inline
+Connection::SnapshotDiff Connection::cdtDiff(const Snapshot& a, const Snapshot& b)
+{
+    SnapshotDiff d;
+
+    // Новые запросы
+    std::unordered_set<std::string> aReqs(a.requestIds.begin(), a.requestIds.end());
+    for (const auto& id : b.requestIds)
+        if (!aReqs.count(id)) d.newRequestIds.push_back(id);
+
+    // DOM diff
+    auto aLines = splitLines(a.domHtml);
+    auto bLines = splitLines(b.domHtml);
+    std::unordered_set<std::string> bSet(bLines.begin(), bLines.end());
+    std::unordered_set<std::string> aSet(aLines.begin(), aLines.end());
+    for (const auto& l : bLines)
+        if (!aSet.count(l) && d.domChanges.size() < 200)
+            d.domChanges.emplace_back("<new>", l);
+    for (const auto& l : aLines)
+        if (!bSet.count(l) && d.domChanges.size() < 200)
+            d.domChanges.emplace_back(l, "<removed>");
+
+    // Storage
+    auto diffMap = [](const auto& A, const auto& B, auto& added, auto& changed, auto& removed) {
+        for (const auto& [k, v] : B)
+            if (!A.count(k)) added[k] = v;
+        for (const auto& [k, v] : A) {
+            auto it = B.find(k);
+            if (it == B.end()) removed[k] = v;
+            else if (it->second != v) changed[k] = it->second;
+        }
+    };
+    diffMap(a.localStorage,   b.localStorage,   d.storageAdded, d.storageChanged, d.storageRemoved);
+    diffMap(a.sessionStorage, b.sessionStorage, d.storageAdded, d.storageChanged, d.storageRemoved);
+
+    // Interactive — по ключу
+    auto key = [](const json& el) {
+        return el.value("tag", std::string()) + "|" +
+               el.value("id", std::string()) + "|" +
+               el.value("name", std::string()) + "|" +
+               el.value("placeholder", std::string());
+    };
+    std::unordered_set<std::string> aInts, bInts;
+    if (a.interactive.is_array()) for (const auto& e : a.interactive) aInts.insert(key(e));
+    if (b.interactive.is_array()) for (const auto& e : b.interactive) bInts.insert(key(e));
+
+    d.interactiveAdded = json::array();
+    d.interactiveRemoved = json::array();
+    if (b.interactive.is_array())
+        for (const auto& e : b.interactive)
+            if (!aInts.count(key(e))) d.interactiveAdded.push_back(e);
+    if (a.interactive.is_array())
+        for (const auto& e : a.interactive)
+            if (!bInts.count(key(e))) d.interactiveRemoved.push_back(e);
+
+    return d;
+}
+```
+
+**`splitLines`** — простая функция, добавьте в утилиты.
+
+**Тест:** `_test55` — снять snapshot → ввести «котики» → Enter → подождать → снять snapshot → распечатать diff.
+
+---
+
+## Общие правила
+
+1. **Порядок кирпичей не менять.** Каждый следующий использует предыдущие.
+2. **После каждого кирпича — запускать не только новый тест, но и 1–2 предыдущих.**
+3. **Не рефакторить попутно.** Увидели проблему — запишите и сделайте отдельным кирпичом.
+4. **Если тест падает — сначала воспроизвести вручную, потом лезть в код.** Девтулзы — ваш друг.
+5. **Логи.** Включите `LogLevel::Debug` в тесте, распечатайте поток событий. Часто проблему видно сразу.
+6. **Один кирпич — один коммит.** Даже если это 10 строк.
+7. **Пишите заметки.** `_testNN_notes.md` — что получилось, что нет, что осталось.
+
+---
+
+## Что в итоге получится
+
+Пройдя по плану, вы получите:
+
+- **Наблюдение.** Все запросы, ответы, ошибки, фреймы, скрипты, контексты — структурированно в памяти.
+- **Ожидание.** `cdtWaitForSelector`, `cdtWaitForFunction`, `cdtWaitForNetworkIdle`, `cdtWaitForNetworkResponse`, `cdtWaitForEvent`.
+- **Действия.** Клик, двойной клик, drag, ввод, Enter, скролл, скриншот.
+- **Исходники.** Тела ответов, исходники скриптов, source maps, восстановленные исходники.
+- **Контексты.** iframe, worker, service worker — всё видно и доступно.
+- **Bundle.** Папка с `summary.json`, `requests.tsv`, `dom.html`, `interactive.json`, `console.log`, `scripts/`.
+- **Диффы.** `cdtSnapshot` + `cdtDiff` — сравнение состояний «до/после».
+

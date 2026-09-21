@@ -12,6 +12,10 @@
             }
 
             auto fileName = argsParser.makeAbsPath(strVal);
+            auto filePath = umba::filename::getPath(fileName);
+
+            appConfig.setMacro("HeaderFileName", fileName);
+            appConfig.setMacro("HeaderFilePath", filePath);
 
             std::vector<std::string> lines;
             if (!almai::utils::readFile(fileName, lines))
@@ -20,6 +24,7 @@
                 return -1;
             }
 
+            lines = appConfig.parseLinesExtractValues(lines, filePath);
             lines = appConfig.stripEmptyHeadTailLines(lines);
             if (!lines.empty())
                 appConfig.headerLines.push_back(std::string());
@@ -44,6 +49,10 @@
             }
 
             auto fileName = argsParser.makeAbsPath(strVal);
+            auto filePath = umba::filename::getPath(strVal);
+
+            appConfig.setMacro("FooterFileName", fileName);
+            appConfig.setMacro("FooterFilePath", filePath);
 
             std::vector<std::string> lines;
             if (!almai::utils::readFile(fileName, lines))
@@ -52,6 +61,7 @@
                 return -1;
             }
 
+            lines = appConfig.parseLinesExtractValues(lines, filePath);
             lines = appConfig.stripEmptyHeadTailLines(lines);
             if (!lines.empty())
                 appConfig.footerLines.push_back(std::string());
@@ -76,6 +86,12 @@
             }
 
             auto fileName = argsParser.makeAbsPath(strVal);
+            auto filePath = umba::filename::getPath(strVal);
+
+            appConfig.setMacro("HeaderFileName", fileName);
+            appConfig.setMacro("HeaderFilePath", filePath);
+            appConfig.setMacro("FooterFileName", fileName);
+            appConfig.setMacro("FooterFilePath", filePath);
 
             std::vector<std::string> lines;
             if (!almai::utils::readFile(fileName, lines))
@@ -88,6 +104,9 @@
             std::vector<std::string> footer;
 
             appConfig.splitHeaderFooter(lines, header, footer);
+
+            header = appConfig.parseLinesExtractValues(header, filePath);
+            footer = appConfig.parseLinesExtractValues(footer, filePath);
 
 // #if defined(WIN32) || defined(_WIN32)
 //     #include "umba/clipboard_win32.h"

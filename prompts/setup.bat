@@ -3,8 +3,9 @@
 @set SRC=%PRJ_ROOT%\_src
 @set PROMPTS_DIR=%PRJ_ROOT%\prompts
 @set CDT_SRC="%LIBS%/marty_cdt/**/*.h,*.c"
+@set ALMAI_SRC=%SRC%\almai
 @set TESTS_ROOT=%SRC%\almai
-@set CMN_OPTS=--overwrite --clipboard
+@set CMN_OPTS=--overwrite --clipboard --attach-format=md
 
 @set SPLIT_OPTS=--description-filename=__description__.md_
 

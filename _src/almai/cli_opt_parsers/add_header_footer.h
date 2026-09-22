@@ -73,7 +73,7 @@
 
 
         if (   opt.setParam("FILE", umba::command_line::OptionType::optString)
-            || opt.isOption("add-hefooter") || opt.isOption("add-fooheader") || opt.isOption("hefooter") || opt.isOption("fooheader")
+            || opt.isOption("add-hefooter") || opt.isOption("add-fooheader") || opt.isOption("hefooter") || opt.isOption("fooheader") || opt.isOption("prompt")
             || opt.setDescription("Add file as header/footer to generated markdown.")
            )
         {

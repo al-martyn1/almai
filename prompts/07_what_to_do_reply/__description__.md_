@@ -1,0 +1,208 @@
+Судя по коду, у вас уже есть три сильных куска:
+
+1. **JOIN/SPLIT** — сборка промпта и разбор ответа через markdown-архив.
+2. **База препромптов** — роли, skills, categories, `requires`, PluralDatabase.
+3. **CDP-мост** — `marty::cdt::Connection`, запуск Chrome, `Runtime.evaluate`, WebSocket.
+
+Но между ними пока нет **замкнутого цикла**. Поэтому «что дальше» — не ZIP/7Z и не ещё один сканер, а превращение системы в цикл:
+
+> контекст → промпт → ответ ИИ → применение изменений → сборка/тесты → ошибки → снова промпт.
+
+Ниже — конкретный roadmap.
+
+---
+
+## 1. P0. Сделать `almai apply`
+
+Сейчас SPLIT умеет вытаскивать файлы из markdown-архива и сохранять их. Этого мало для реального программирования. Нужен режим применения **действий**, а не просто «сохранить все файлы».
+
+Введите формальный протокол ответа ИИ. Например:
+
+```xml
+<almai-actions>
+  <write path="src/foo.cpp">
+  ```cpp
+  ...
+  ```
+  </write>
+
+  <delete path="src/old.cpp"/>
+
+  <patch path="src/bar.cpp">
+  ```diff
+  --- a/src/bar.cpp
+  +++ b/src/bar.cpp
+  @@ ...
+  ```
+  </patch>
+
+  <run command="cmake --build build"/>
+
+  <ask>Нужно уточнить: ...</ask>
+</almai-actions>
+```
+
+Что добавить в SPLIT/APPLY:
+
+- `--dry-run` — показать, что будет сделано, ничего не менять.
+- `--diff` — показать diff относительно текущих файлов.
+- `--backup` — сохранить бэкап перед изменением.
+- `--apply` — реально применить.
+- `--git-commit` — сделать коммит после успешного применения.
+- Поддержка `write`, `delete`, `move`, `patch`, `search/replace`.
+- Проверка, что путь не выходит за `projectRoot`.
+- Запрет на запись в `.git`, `build`, `.almai` без явного разрешения.
+
+Технически это ложится в `almai-md-split.cpp` и `AppConfigBase::writeFile`. Нужен новый слой `ActionApplier`.
+
+---
+
+## 2. P0. Добавить проектные команды
+
+Чтобы цикл был замкнутым, система должна уметь запускать сборку, тесты, линтеры и получать ошибки.
+
+Расширьте `.almai/PROJECT.yaml`:
+
+```yaml
+build:
+  - cmake --build build
+test:
+  - ctest --test-dir build --output-on-failure
+lint:
+  - clang-tidy ...
+format:
+  - clang-format -i ...
+```
+
+И добавьте `almai run`:
+
+- запускает команду;
+- пишет stdout/stderr;
+- возвращает код;
+- умеет таймаут;
+- умеет вытаскивать ошибки компилятора в компактный вид.
+
+Это нужно, чтобы после применения ответа ИИ сразу получить `build failed` и отправить ошибки обратно в чат.
+
+---
+
+## 3. P0. Автоматизировать чат через CDP
+
+У вас уже есть `almai-cdt-eval` и тесты 12–17. Следующий шаг — `almai-chat`.
+
+Он должен:
+
+1. Запустить Chrome с persistent profile проекта.
+2. Подключиться к вкладке чата.
+3. Отправить промпт через `Runtime.evaluate`.
+4. Дождаться завершения ответа.
+5. Забрать текст ответа.
+6. Отдать его в `almai apply`.
+
+Для DeepSeek/Qwen нужны адаптеры:
+
+- найти textarea/input;
+- установить значение;
+- вызвать `input`/`change`;
+- нажать кнопку отправки;
+- ждать по DOM-мутациям или по кнопке «Stop»;
+- извлечь ответ.
+
+Это хрупко, но у вас уже есть весь CDP-инструментарий. Главное — не делать универсальный парсер всех чатов, а сделать по адаптеру на движок.
+
+---
+
+## 4. P0. Собрать оркестратор `almai loop`
+
+Псевдокод:
+
+```cpp
+for (int iter = 0; iter < maxIter; ++iter)
+{
+    context = buildContext(task, role, skills, gitDiff, lastErrors);
+    prompt  = renderPreprompt(context);
+
+    response = chat.send(prompt);
+    actions  = parseActions(response);
+
+    if (actions.hasAsk())
+    {
+        askHuman(actions.ask());
+        continue;
+    }
+
+    apply(actions, dryRun=false);
+
+    result = runProjectCommands();
+
+    if (result.ok())
+        break;
+
+    lastErrors = result.errors;
+    history.append({prompt, response, result});
+}
+```
+
+Это и есть «агентское программирование». Всё остальное — обвязка.
+
+---
+
+## 5. P1. Задействовать базу препромптов
+
+Сейчас `PrepromptDatabase` сканирует препромпты, но `almai.cpp` в основном печатает их. Нужно:
+
+- реализовать `requiresList` и топологическую сортировку зависимостей;
+- выбирать `skill`, `instruction`, `knowledge`, `format`, `output` по роли и задаче;
+- подставлять их в JOIN;
+- добавить память проекта: `.almai/memory.md`, `.almai/decisions.md`.
+
+Пример:
+
+```
+almai-md-join --role cpp-dev --task "fix bug" ...
+```
+
+JOIN сам подтянет нужные skills и instructions.
+
+---
+
+## 6. P1. Контекст и git
+
+Не отправляйте весь проект. Для реального программирования нужно:
+
+- `git diff` как основной контекст;
+- `git status`;
+- только релевантные файлы через `ripgrep`/индекс;
+- история последних ошибок;
+- текущая задача.
+
+Перед применением изменений:
+
+- сделать `git commit` или `git stash`;
+- после применения — `git diff`;
+- если тесты упали — откат или новый цикл.
+
+Это резко повышает безопасность.
+
+---
+
+## 7. P2. Что можно отложить
+
+- ZIP/7Z-архивы.
+- Сложный RAG/векторный поиск.
+- Мультиагентность.
+- Полную автономность без подтверждения.
+- Красивую локализацию.
+
+Сначала — цикл `apply → run → feedback`.
+
+---
+
+## 8. Что сделать прямо сейчас
+
+1. Добавить в SPLIT режимы `--dry-run`, `--diff`, `--apply`, `--backup`.
+2. Ввести формат `<almai-actions>` и парсер действий.
+3. Добавить `build`/`test` в `PROJECT.yaml`.
+4. Сделать `almai run`.
+5. Сделать `almai-chat` на базе `marty::cdt::Connection`.
+6. Сделать `almai loop`, который связывает это вместе.

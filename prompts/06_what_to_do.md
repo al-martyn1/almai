@@ -1,29 +1,15 @@
-!import-var: TESTS_ROOT
-!import-var: PROMPTS_DIR
-!import-var: LIBS
-; same as import-var
-!set-var-from-env: SRC
-!set-var-from-env: ALMAI_SRC
 
-!scan-path: "$(ALMAI_SRC)/_test15.cpp"
-!scan-path: "$(ALMAI_SRC)/_test16.cpp"
-!scan-path: "$(ALMAI_SRC)/_test17.cpp"
 
-!scan-path: $(PROMPTS_DIR)/_test17.txt
 
-!scan-path: $(PROMPTS_DIR)/04_what_to_do_reply_patch01/__description__.md_
-!scan-path: $(PROMPTS_DIR)/04_what_to_do_reply_patch04/__description__.md_
-!scan-path: $(PROMPTS_DIR)/04_what_to_do_reply_patch05/__description__.md_
-!scan-path: $(PROMPTS_DIR)/04_what_to_do_reply_patch06/__description__.md_
 
-!scan-path: $(LIBS)/marty_cdt/**/*.h,*.c
+
 
 
 
 У меня есть библиотека для управления браузером chrome - базовый функционал: запуск браузера, подключение по HTTP,
 подключение по WebSocket, отправка команд, подписка на события, установка обработчиков на события, и тд и тп.
 
-Я привожу эту библиотеку. 
+Я привожу эту библиотеку.
 Также привожу тесты и их результаты:
 - Тест `_test15.cpp`
 - Тест `_test16.cpp` и его вывод - `_test16_03.txt` и `_test16_03_DOM.txt`
@@ -38,15 +24,16 @@
 
 Также у меня есть некоторый план, который постепенно развивался:
 - получение снэпшота страницы различными вариантами - `04_what_to_do_reply_patch01/__description__.md`
-; - краткое описание HAR - `04_what_to_do_reply_patch02/__description__.md`
-; - краткое описание, что нужно для ИИ анализа - `04_what_to_do_reply_patch03/__description__.md`
 - общее описание, чего не хватает моей библиотеке - `04_what_to_do_reply_patch04/__description__.md`
 - подробный разбор по слоям - `04_what_to_do_reply_patch05/__description__.md`
 - подробный разбор: реализация слоёв CDT для AI-анализа - `04_what_to_do_reply_patch06/__description__.md`
 
 ---
 
-Нужно расписать всё очень подробно и детально, с упором на то, что и как мне необходимо реализовать.
-Нужно составить план работ. И составить его таким образом, чтобы я мог делать небольшие дополнения для своей 
-библиотеки, и сразу их тестировать, а потом собирать эти "кирпичики" в более мощный функционал.
 
+---
+
+
+Нужно расписать всё очень подробно и детально, с упором на то, что и как мне необходимо реализовать.
+Нужно составить план работ. И составить его таким образом, чтобы я мог делать небольшие дополнения для своей
+библиотеки, и сразу их тестировать, а потом собирать эти "кирпичики" в более мощный функционал.

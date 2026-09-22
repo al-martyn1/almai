@@ -378,8 +378,24 @@ struct AppConfigBase
     using StringStringMap = umba::macros::StringStringMap<std::string>;
     StringStringMap         macros;
 
+    std::map<std::string, std::string> getSortedMacros() const
+    {
+        std::map<std::string, std::string> resMap;
+        for(const auto& [k, v] : macros)
+            resMap[k] = v;
+        return resMap;
+    }
+
+    std::string substMacros(const std::string &str) const
+    {
+        using namespace umba::macros;
+        return umba::macros::substMacros( str, MacroTextFromMapRef(macros)
+                                        , smf_uppercaseNames | smf_KeepUnknownVars | smf_uppercaseNames
+                                        );
+    }
+
     // return true if added
-    bool setMacro(std::string name, std::string value, bool allowOverwrite=true)
+    bool setMacro(std::string name, std::string value, bool bSubst, bool allowOverwrite)
     {
         umba::string::trim(name);
         umba::string::trim(value);
@@ -394,36 +410,31 @@ struct AppConfigBase
                 return false;
         }
 
+        if (bSubst)
+            value = substMacros(value);
+
         macros[name] = value;
 
         return true;
     }
 
-    bool setMacro(std::string nameValue, bool allowOverwrite=true)
+    bool setMacro(std::string nameValue, bool bSubst, bool allowOverwrite)
     {
         std::string name, value;
         if (!umba::string::split_to_pair(nameValue, name, value, '='))
             return false;
 
-        return setMacro(name, value, allowOverwrite);
+        return setMacro(name, value, bSubst, allowOverwrite);
     }
 
-    bool setMacroFromEnv(std::string name, bool allowOverwrite=true)
+    bool setMacroFromEnv(std::string name, bool bSubst, bool allowOverwrite)
     {
         umba::string::trim(name);
 
         std::string value;
         umba::env::getVar(name, value);
 
-        return setMacro(name, value, allowOverwrite);
-    }
-
-    std::string substMacros(const std::string &str) const
-    {
-        using namespace umba::macros;
-        return umba::macros::substMacros( str, MacroTextFromMapRef(macros)
-                                        , smf_uppercaseNames | smf_DisableRecursion | smf_KeepUnknownVars
-                                        );
+        return setMacro(name, value, bSubst, allowOverwrite);
     }
 
     //------------------------------
@@ -502,6 +513,27 @@ struct AppConfigBase
             if (nameEnum==almai::PrepromptTextCommands::invalid)
                 return false;
 
+            if (nameEnum==almai::PrepromptTextCommands::setVar)
+            {
+                return setMacro(value, false /* !bSubst */, true /* allowOverwrite */);
+            }
+
+            if (nameEnum==almai::PrepromptTextCommands::importVar)
+            {
+                return setMacroFromEnv(value, false /* !bSubst */, true /* allowOverwrite */);
+            }
+
+            if (nameEnum==almai::PrepromptTextCommands::expandSetVar)
+            {
+                return setMacro(value, true /* bSubst */, true /* allowOverwrite */);
+            }
+
+            if (nameEnum==almai::PrepromptTextCommands::expandImportVar)
+            {
+                return setMacroFromEnv(value, true /* bSubst */, true /* allowOverwrite */);
+            }
+
+
             value = substMacros(value);
 
 
@@ -511,16 +543,6 @@ struct AppConfigBase
                 // return setMacro(name, value, true /* allowOverwrite */);
                 scanInfos.emplace_back(almai::FileSystemScanInfo::parse(value));
                 return true;
-            }
-
-            if (nameEnum==almai::PrepromptTextCommands::setVar)
-            {
-                return setMacro(value, true /* allowOverwrite */);
-            }
-
-            if (nameEnum==almai::PrepromptTextCommands::setVarFromEnv)
-            {
-                return setMacroFromEnv(value, true /* allowOverwrite */);
             }
 
             return false; // Неизвестная команда

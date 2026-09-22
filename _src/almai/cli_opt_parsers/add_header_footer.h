@@ -14,8 +14,8 @@
             auto fileName = argsParser.makeAbsPath(strVal);
             auto filePath = umba::filename::getPath(fileName);
 
-            appConfig.setMacro("HeaderFileName", fileName);
-            appConfig.setMacro("HeaderFilePath", filePath);
+            appConfig.setMacro("HeaderFileName", fileName, false, true);
+            appConfig.setMacro("HeaderFilePath", filePath, false, true);
 
             std::vector<std::string> lines;
             if (!almai::utils::readFile(fileName, lines))
@@ -49,10 +49,10 @@
             }
 
             auto fileName = argsParser.makeAbsPath(strVal);
-            auto filePath = umba::filename::getPath(strVal);
+            auto filePath = umba::filename::getPath(fileName);
 
-            appConfig.setMacro("FooterFileName", fileName);
-            appConfig.setMacro("FooterFilePath", filePath);
+            appConfig.setMacro("FooterFileName", fileName, false, true);
+            appConfig.setMacro("FooterFilePath", filePath, false, true);
 
             std::vector<std::string> lines;
             if (!almai::utils::readFile(fileName, lines))
@@ -86,12 +86,12 @@
             }
 
             auto fileName = argsParser.makeAbsPath(strVal);
-            auto filePath = umba::filename::getPath(strVal);
+            auto filePath = umba::filename::getPath(fileName);
 
-            appConfig.setMacro("HeaderFileName", fileName);
-            appConfig.setMacro("HeaderFilePath", filePath);
-            appConfig.setMacro("FooterFileName", fileName);
-            appConfig.setMacro("FooterFilePath", filePath);
+            appConfig.setMacro("HeaderFileName", fileName, false, true);
+            appConfig.setMacro("HeaderFilePath", filePath, false, true);
+            appConfig.setMacro("FooterFileName", fileName, false, true);
+            appConfig.setMacro("FooterFilePath", filePath, false, true);
 
             std::vector<std::string> lines;
             if (!almai::utils::readFile(fileName, lines))

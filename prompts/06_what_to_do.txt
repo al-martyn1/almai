@@ -1,6 +1,7 @@
-!set-var-from-env: TESTS_ROOT
-!set-var-from-env: PROMPTS_DIR
-!set-var-from-env: LIBS
+!import-var: TESTS_ROOT
+!import-var: PROMPTS_DIR
+!import-var: LIBS
+; same as import-var
 !set-var-from-env: SRC
 
 !scan-path: "$(TESTS_ROOT)/_test15.cpp"

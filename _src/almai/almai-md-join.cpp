@@ -203,7 +203,7 @@ int unsafeMain(int argc, char* argv[])
 
 
     //--------------------------------------------------------------------------------------------------------------------
-    appConfig.setMacro("CWD", umba::filesys::getCurrentDirectory());
+    appConfig.setMacro("CWD", umba::filesys::getCurrentDirectory(), false, true);
 
 
     if (appConfig.scanInfos.empty())
@@ -214,12 +214,23 @@ int unsafeMain(int argc, char* argv[])
         LOG_WARN("no-input") << "no input files/masks taken" << "\n";
     }
 
+    std::size_t notFoundScanMasksCount = 0;
     std::vector<std::string> foundFiles;
     for(const auto &s : appConfig.scanInfos)
     {
         std::vector<std::string> tmp;
         s.scanForFiles(tmp);
-        foundFiles.insert(foundFiles.end(), tmp.begin(), tmp.end());
+
+        if (tmp.empty())
+        {
+            LOG_WARN("not-found") << "no files found for scan info" << "\n";
+            LOG_MSG << "  " << s.toString() << "\n";
+            ++notFoundScanMasksCount;
+        }
+        else
+        {
+            foundFiles.insert(foundFiles.end(), tmp.begin(), tmp.end());
+        }
     }
 
     if (!appConfig.scanInfos.empty() && foundFiles.empty())
@@ -238,6 +249,15 @@ int unsafeMain(int argc, char* argv[])
 
         return 1;
     }
+
+    if (notFoundScanMasksCount)
+    {
+        LOG_MSG << "Macros:\n";
+        auto macros = appConfig.getSortedMacros();
+        for(const auto& [k, v] : macros)
+            LOG_MSG << "  " << k << ": " << v << "\n";
+    }
+
 
     for( auto &&f: foundFiles)
     {

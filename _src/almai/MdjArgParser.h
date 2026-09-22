@@ -81,16 +81,21 @@ int operator()( const StringType                                &a           //!
 
 #include "cli_opt_parsers/basic_options.h"
 #include "cli_opt_parsers/overwrite.h"
-#include "cli_opt_parsers/list.h"
+
 #include "cli_opt_parsers/dict.h"
 #include "cli_opt_parsers/output.h"
 #include "cli_opt_parsers/filename_decoration.h"
 #include "cli_opt_parsers/filename_title_level.h"
 #include "cli_opt_parsers/sort.h"
 #include "cli_opt_parsers/fence_style.h"
-#include "cli_opt_parsers/file-list.h"
 #include "cli_opt_parsers/strip_prefix.h"
 #include "cli_opt_parsers/lang_marker.h"
+#include "cli_opt_parsers/add_plural_pair.h"
+#include "cli_opt_parsers/add_translation.h"
+#include "cli_opt_parsers/add_project_root_marker.h"
+#include "cli_opt_parsers/role_setup.h"
+
+#include "cli_opt_parsers/list.h"
 #include "cli_opt_parsers/add_header_footer.h"
 #include "cli_opt_parsers/clipboard.h"
 #include "cli_opt_parsers/join_lines_limit.h"

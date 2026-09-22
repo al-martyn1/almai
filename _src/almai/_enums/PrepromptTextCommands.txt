@@ -6,11 +6,10 @@ importVar,setVarFromEnv
 expandSetVar
 expandImportVar,expandSetVarFromEnv
 
-
 # Пока role и skills будем обрабатывать одинаково
 # Просто role обычно одна, а skills - обычно вообще не надо указывать, так как роль уже содержит обычно все нужные skills
 # skills можно использовать для добавления скилов к заданной роли
-role
-skills
+role,roles
+skills,skill
 
 end

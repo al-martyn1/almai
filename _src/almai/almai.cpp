@@ -87,7 +87,8 @@ bool umbaLogSourceInfo  = false;
 //
 #include "AppConfig.h"
 
-almai::AppConfig appConfig;
+//almai::
+AppConfig appConfig;
 
 std::string curFile;
 unsigned lineNo = 0;

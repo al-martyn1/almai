@@ -84,6 +84,13 @@ set(COMMON_LIBS
 # set(JSON_YAML_LIB nlohmann_json::nlohmann_json yaml-cpp::yaml-cpp)
 
 
+set(ALMAI_SRC_DIR "${SRC_ROOT}/almai")
+
+set(COMMON_SOURCES "${ALMAI_SRC_DIR}/AppConfigBase.cpp"
+                   "${ALMAI_SRC_DIR}/AppConfig.cpp"
+   )
+
+
 file(GLOB_RECURSE sources   "${SRC_ROOT}/*.cpp")
 file(GLOB_RECURSE headers   "${SRC_ROOT}/*.h")
 file(GLOB_RECURSE resources "${SRC_ROOT}/*.rc")
@@ -100,19 +107,19 @@ set(COMMON_UMBA_OPTIONS "BIGOBJ" "UTF8" "PEDANTIC" "WERR") # "PEDANTIC"/"WALL" "
 
 
 set(TARGET almai)
-add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" "${SRC_ROOT}/almai/AppConfig.cpp" "${headers}")
+add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" ${COMMON_SOURCES} "${headers}")
 umba_add_target_options(${TARGET} ${COMMON_UMBA_OPTIONS} "CONSOLE") 
 target_link_libraries(${TARGET} PRIVATE "${PLATFORM_LIBS}" "${COMMON_LIBS}")
 
 
 set(TARGET almai-md-split)
-add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" "${headers}")
+add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" ${COMMON_SOURCES} "${headers}")
 umba_add_target_options(${TARGET} ${COMMON_UMBA_OPTIONS} "CONSOLE") 
 target_link_libraries(${TARGET} PRIVATE "${PLATFORM_LIBS}" "${COMMON_LIBS}")
 
 
 set(TARGET almai-md-join)
-add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" "${headers}")
+add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" ${COMMON_SOURCES} "${headers}")
 umba_add_target_options(${TARGET} ${COMMON_UMBA_OPTIONS} "CONSOLE") 
 target_link_libraries(${TARGET} PRIVATE "${PLATFORM_LIBS}" "${COMMON_LIBS}")
 
@@ -167,13 +174,13 @@ target_link_libraries(${TARGET} PRIVATE "${PLATFORM_LIBS}" "${COMMON_LIBS}")
 
 
 set(TARGET _test08)
-add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" "${SRC_ROOT}/almai/AppConfig.cpp" "${headers}")
+add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" ${COMMON_SOURCES} "${headers}")
 umba_add_target_options(${TARGET} ${COMMON_UMBA_OPTIONS} "CONSOLE") 
 target_link_libraries(${TARGET} PRIVATE "${PLATFORM_LIBS}" "${COMMON_LIBS}")
 
 
 set(TARGET _test09)
-add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" "${SRC_ROOT}/almai/AppConfig.cpp" "${headers}")
+add_executable(${TARGET} "${SRC_ROOT}/almai/${TARGET}.cpp" ${COMMON_SOURCES} "${headers}")
 umba_add_target_options(${TARGET} ${COMMON_UMBA_OPTIONS} "CONSOLE") 
 target_link_libraries(${TARGET} PRIVATE "${PLATFORM_LIBS}" "${COMMON_LIBS}")
 

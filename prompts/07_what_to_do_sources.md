@@ -932,7 +932,8 @@ bool umbaLogSourceInfo  = false;
 //
 #include "AppConfig.h"
 
-almai::AppConfig appConfig;
+//almai::
+AppConfig appConfig;
 
 std::string curFile;
 unsigned lineNo = 0;
@@ -1151,7 +1152,8 @@ bool umbaLogSourceInfo  = false;
 //
 #include "AppConfig.h"
 
-almai::AppConfig appConfig;
+//almai::
+AppConfig appConfig;
 
 std::string curFile;
 unsigned lineNo = 0;
@@ -3684,7 +3686,8 @@ bool umbaLogSourceInfo  = false;
 //
 #include "AppConfig.h"
 
-almai::AppConfig appConfig;
+//almai::
+AppConfig appConfig;
 
 std::string curFile;
 unsigned lineNo = 0;
@@ -4785,14 +4788,14 @@ int unsafeMain(int argc, char* argv[])
     // Вывести в конечный документ и записать результат
 
 
-    auto resLines = almai::utils::simpleReplaceClipboardMarkerLine(appConfig.headerLines);
+    std::vector<std::string> resLines;
 
-    if (!resLines.empty())
     {
-        resLines.push_back(std::string());
-        resLines.push_back(std::string(3u,'-'));
-        resLines.push_back(std::string());
+        auto lines = appConfig.makePrepromptHeader();
+        if (!lines.empty())
+            resLines = lines;
     }
+
 
     if (appConfig.isSourcesInline())
     {
@@ -4803,9 +4806,13 @@ int unsafeMain(int argc, char* argv[])
             appConfig.generateMarkdownListing(oss, ffi.displayName, ffi.fileLines);
         }
 
-        auto mdLines = marty_cpp::splitToLinesSimple(oss.str());
+        auto mdArcLines = appConfig.stripEmptyHeadTailLines(marty_cpp::splitToLinesSimple(oss.str()));
 
-        resLines.insert(resLines.end(), mdLines.begin(), mdLines.end());
+        if (!mdArcLines.empty())
+        {
+            appConfig.addMdPartSeparator(resLines);
+            resLines.insert(resLines.end(), mdArcLines.begin(), mdArcLines.end());
+        }
     }
     else
     {
@@ -4820,15 +4827,37 @@ int unsafeMain(int argc, char* argv[])
         }
     }
 
-    if (!appConfig.footerLines.empty())
+
+
+    // std::vector<std::string> makePrepromptHeader()
+    // std::vector<std::string> makePrepromptFooter()
+    // addMdPartSeparator(std::vector<std::string> &lines, std::size_t sepLen=3u)
+
+
+    // auto resLines = almai::utils::simpleReplaceClipboardMarkerLine(appConfig.headerLines);
+
+
+
+    // if (!appConfig.footerLines.empty())
+    // {
+    //     resLines.push_back(std::string());
+    //     resLines.push_back(std::string(3u,'-'));
+    //     resLines.push_back(std::string());
+    // }
+    //
+    // auto footerLines = almai::utils::simpleReplaceClipboardMarkerLine(appConfig.footerLines);
+    // resLines.insert(resLines.end(), footerLines.begin(), footerLines.end());
+
     {
-        resLines.push_back(std::string());
-        resLines.push_back(std::string(3u,'-'));
-        resLines.push_back(std::string());
+        auto lines = appConfig.makePrepromptFooter();
+        if (!lines.empty())
+        {
+            appConfig.addMdPartSeparator(resLines);
+            resLines.insert(resLines.end(), lines.begin(), lines.end());
+        }
     }
 
-    auto footerLines = almai::utils::simpleReplaceClipboardMarkerLine(appConfig.footerLines);
-    resLines.insert(resLines.end(), footerLines.begin(), footerLines.end());
+
 
     bool printToStdOut = appConfig.output.empty();
     if (appConfig.useClipboard)
@@ -5402,7 +5431,6 @@ enum class MdLineType
  */
 
 #include "AppConfig.h"
-#include "Preprompt.h"
 //
 #include "umba/filename.h"
 #include "umba/parse_utils.h"
@@ -5422,7 +5450,84 @@ namespace almai {
 
 
 //--------------------------------------------------------------------------------------------------------------------
-bool AppConfig::roleSetupFromCli(const std::string &roleSetupStr)
+//--------------------------------------------------------------------------------------------------------------------
+
+
+
+//--------------------------------------------------------------------------------------------------------------------
+
+} // namespace almai
+~~~
+
+**\_src/almai/AppConfig.h**
+~~~C/C++ Header
+/*! \file
+    \brief Конфиг главного приложения
+ */
+
+#pragma once
+
+
+//
+#include "AppConfigBase.h"
+//
+#include "utils.h"
+
+//
+#include "umba/umba.h"
+#include "umba/env.h"
+
+//
+#include "umba/string.h"
+#include "umba/rule_of_five.h"
+#include "umba/filename.h"
+#include "umba/filesys.h"
+
+//
+#include <map>
+#include <vector>
+#include <unordered_map>
+#include <unordered_set>
+#include <memory>
+
+//--------------------------------------------------------------------------------------------------------------------
+
+
+
+//--------------------------------------------------------------------------------------------------------------------
+struct AppConfig : public AppConfigBase
+{
+
+
+
+
+}; // struct AppConfig
+
+//--------------------------------------------------------------------------------------------------------------------
+~~~
+
+**\_src/almai/AppConfigBase.cpp**
+~~~C++
+/*! \file
+    \brief Конфиг главного приложения - реализация
+ */
+
+#include "AppConfig.h"
+#include "Preprompt.h"
+//
+#include "umba/filename.h"
+#include "umba/parse_utils.h"
+
+//
+#include <algorithm>
+#include <utility>
+
+//--------------------------------------------------------------------------------------------------------------------
+
+
+
+//--------------------------------------------------------------------------------------------------------------------
+bool AppConfigBase::roleSetupFromCli(const std::string &roleSetupStr)
 {
     std::string role, roleDef;
 
@@ -5433,7 +5538,7 @@ bool AppConfig::roleSetupFromCli(const std::string &roleSetupStr)
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-bool AppConfig::addProjectRootMarker(std::string marker)
+bool AppConfigBase::addProjectRootMarker(std::string marker)
 {
     umba::string::trim(marker);
 
@@ -5469,7 +5574,7 @@ bool AppConfig::addProjectRootMarker(std::string marker)
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-bool AppConfig::addProjectRootMarkers(const std::vector<std::string> &markersList)
+bool AppConfigBase::addProjectRootMarkers(const std::vector<std::string> &markersList)
 {
     for(const auto &m : markersList)
     {
@@ -5481,7 +5586,7 @@ bool AppConfig::addProjectRootMarkers(const std::vector<std::string> &markersLis
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-bool AppConfig::addProjectRootMarkers(const std::string &markersListStr)
+bool AppConfigBase::addProjectRootMarkers(const std::string &markersListStr)
 {
     // Можно через splitPathList(name,','); // umba::filename?
     // Можно через umba::string::split(p, ',', true /* skipEmpty */ );
@@ -5491,25 +5596,25 @@ bool AppConfig::addProjectRootMarkers(const std::string &markersListStr)
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-bool AppConfig::addLocalization(const std::string &langKeyTextTriplet)
+bool AppConfigBase::addLocalization(const std::string &langKeyTextTriplet)
 {
     return localizations.addLocalization(langKeyTextTriplet);
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-std::string AppConfig::getLocalizedText(std::string lang, const std::string &key) const
+std::string AppConfigBase::getLocalizedText(std::string lang, const std::string &key) const
 {
     return localizations.getLocalizedText(lang, key);
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-std::string AppConfig::getLocalizedText(const std::string &key) const
+std::string AppConfigBase::getLocalizedText(const std::string &key) const
 {
     return localizations.getLocalizedText(curLang, key);
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-std::vector<std::string> AppConfig::getPrepromptDirs() const
+std::vector<std::string> AppConfigBase::getPrepromptDirs() const
 {
     std::vector<std::string> resVec;
 
@@ -5528,7 +5633,7 @@ std::vector<std::string> AppConfig::getPrepromptDirs() const
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-std::string AppConfig::getPrepromptPathTypeAnnotation(almai::PrepromptPathType ppt)
+std::string AppConfigBase::getPrepromptPathTypeAnnotation(almai::PrepromptPathType ppt)
 {
     switch(ppt)
     {
@@ -5544,7 +5649,7 @@ std::string AppConfig::getPrepromptPathTypeAnnotation(almai::PrepromptPathType p
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-std::vector<std::pair<almai::PrepromptPathType, std::string> > AppConfig::getPrepromptDirsAnnotated() const
+std::vector<std::pair<almai::PrepromptPathType, std::string> > AppConfigBase::getPrepromptDirsAnnotated() const
 {
     std::vector<std::pair<almai::PrepromptPathType, std::string> > resVec;
 
@@ -5567,7 +5672,7 @@ std::vector<std::pair<almai::PrepromptPathType, std::string> > AppConfig::getPre
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-void AppConfig::addPrepromptPath(almai::PrepromptPathType ppt, std::string path)
+void AppConfigBase::addPrepromptPath(almai::PrepromptPathType ppt, std::string path)
 {
     umba::string::trim(path);
 
@@ -5577,14 +5682,14 @@ void AppConfig::addPrepromptPath(almai::PrepromptPathType ppt, std::string path)
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-void AppConfig::addPrepromptPath(const std::string &path)
+void AppConfigBase::addPrepromptPath(const std::string &path)
 {
     addPrepromptPath(curPrepromptPathType, path);
 
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-void AppConfig::setAppRoot(const std::string &appRoot_, const std::string &appConfPath_)
+void AppConfigBase::setAppRoot(const std::string &appRoot_, const std::string &appConfPath_)
 {
     appRoot = appRoot_;
     appConfPath = appConfPath_;
@@ -5600,7 +5705,7 @@ void AppConfig::setAppRoot(const std::string &appRoot_, const std::string &appCo
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-void AppConfig::setProjectRoot(const std::string &projectRoot_)
+void AppConfigBase::setProjectRoot(const std::string &projectRoot_)
 {
     projectRoot = projectRoot_;
 
@@ -5620,7 +5725,7 @@ void AppConfig::setProjectRoot(const std::string &projectRoot_)
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-void AppConfig::addEnvironmentPrepromptPaths()
+void AppConfigBase::addEnvironmentPrepromptPaths()
 {
     std::string envAlmaiOverlayPrepromtsPathList;
     if (umba::env::getVar(std::string("ALMAI_OVERLAY_PREPROMPTS"), envAlmaiOverlayPrepromtsPathList) && !envAlmaiOverlayPrepromtsPathList.empty())
@@ -5636,7 +5741,7 @@ void AppConfig::addEnvironmentPrepromptPaths()
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-bool AppConfig::isPathExistOneOf(const std::string &basePath, const std::vector<std::string> &relNames)
+bool AppConfigBase::isPathExistOneOf(const std::string &basePath, const std::vector<std::string> &relNames)
 {
     for(auto &&rn : relNames)
     {
@@ -5649,7 +5754,7 @@ bool AppConfig::isPathExistOneOf(const std::string &basePath, const std::vector<
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-bool AppConfig::isPathExistOneOf(const std::string &basePath, const std::unordered_set<std::string> &relNames)
+bool AppConfigBase::isPathExistOneOf(const std::string &basePath, const std::unordered_set<std::string> &relNames)
 {
     for(auto &&rn : relNames)
     {
@@ -5662,7 +5767,7 @@ bool AppConfig::isPathExistOneOf(const std::string &basePath, const std::unorder
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-bool AppConfig::isPathExistOneOf(const std::string &basePath, const std::string &relName)
+bool AppConfigBase::isPathExistOneOf(const std::string &basePath, const std::string &relName)
 {
     auto fullName = umba::filename::makeAbsPath(relName, basePath);
     if (umba::filesys::isPathExist(fullName))
@@ -5671,7 +5776,7 @@ bool AppConfig::isPathExistOneOf(const std::string &basePath, const std::string 
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-std::vector<std::string> AppConfig::makeAlmaiFolderNames()
+std::vector<std::string> AppConfigBase::makeAlmaiFolderNames()
 {
     return std::vector<std::string>{ ".almai"
                                    , ".ALMAI"
@@ -5687,14 +5792,14 @@ std::vector<std::string> AppConfig::makeAlmaiFolderNames()
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-const std::vector<std::string>& AppConfig::getAlmaiFolderNames()
+const std::vector<std::string>& AppConfigBase::getAlmaiFolderNames()
 {
     static std::vector<std::string> names = makeAlmaiFolderNames();
     return names;
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-std::vector<std::string> AppConfig::getAlmaiFolderFullNames(const std::string &path)
+std::vector<std::string> AppConfigBase::getAlmaiFolderFullNames(const std::string &path)
 {
     const auto &almaiNames = getAlmaiFolderNames();
 
@@ -5709,7 +5814,7 @@ std::vector<std::string> AppConfig::getAlmaiFolderFullNames(const std::string &p
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-bool AppConfig::isProjectRootPath(const std::string &path, std::string *pAlmaiFolderName) const
+bool AppConfigBase::isProjectRootPath(const std::string &path, std::string *pAlmaiFolderName) const
 {
     auto almaiNames = getAlmaiFolderFullNames(path);
 
@@ -5733,7 +5838,7 @@ bool AppConfig::isProjectRootPath(const std::string &path, std::string *pAlmaiFo
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-bool AppConfig::findProjectRoot(std::string startPath)
+bool AppConfigBase::findProjectRoot(std::string startPath)
 {
     auto upLevelPath = startPath;
     auto curPath     = startPath;
@@ -5757,253 +5862,51 @@ bool AppConfig::findProjectRoot(std::string startPath)
     return false;
 }
 
-
 //--------------------------------------------------------------------------------------------------------------------
-
-
-
-//--------------------------------------------------------------------------------------------------------------------
-
-
-
-//--------------------------------------------------------------------------------------------------------------------
-
-} // namespace almai
-~~~
-
-**\_src/almai/AppConfig.h**
-~~~C/C++ Header
-/*! \file
-    \brief Конфиг главного приложения
- */
-
-#pragma once
-
-
-//
-#include "AppConfigBase.h"
-#include "PluralDatabase.h"
-#include "Localization.h"
-#include "Preprompt.h"
-#include "Project.h"
-#include "PrepromptDatabase.h"
-//
-#include "utils.h"
-
-//
-#include "umba/umba.h"
-#include "umba/env.h"
-
-//
-#include "umba/string.h"
-#include "umba/rule_of_five.h"
-#include "umba/filename.h"
-#include "umba/filesys.h"
-
-//
-#include <map>
-#include <vector>
-#include <unordered_map>
-#include <unordered_set>
-#include <memory>
-
-//--------------------------------------------------------------------------------------------------------------------
-
-
-
-//--------------------------------------------------------------------------------------------------------------------
-namespace almai {
-
-//--------------------------------------------------------------------------------------------------------------------
-
-
-
-//--------------------------------------------------------------------------------------------------------------------
-struct AppConfig : public AppConfigBase
+// template<>
+static
+void addUniqueLowerStrToVec(std::vector<std::string> &vec, std::string s)
 {
+    umba::string::trim(s);
+    if (s.empty())
+        return;
 
-    using PluralDatabaseSharedPtrType = std::shared_ptr<almai::PluralDatabase>;
-    using PrepromptDatabaseMap        = std::unordered_map<std::string, PrepromptDatabase>;
+    auto lowerS = umba::string::tolower_copy(s);
 
+    auto it = std::find_if( vec.begin(), vec.end()
+                          , [&](auto cmpTo)
+                            {
+                                umba::string::tolower(cmpTo);
+                                return lowerS==cmpTo;
+                            }
+                          );
+    if (it!=vec.end())
+        return;
 
-    std::string                       appRoot;
-    std::string                       appConfPath;
-    std::string                       projectRoot; // устанавливается только через setProjectRoot
-    std::string                       almaiDir; //
-    std::string                       projectFile; // Полное имя '.almai/project.yaml', с путём
-    std::string                       aiName; // Например, deepeek, qwen - используется для поиска кастомизированных препромптов
-
-    std::unordered_set<std::string>   projectRootStopNames; //  = { ".git", ".out", ".vscode", ".build", "build" }; // пока явно инициализируем
-    // almai.yaml
-
-    std::unordered_map<almai::PrepromptPathType, std::vector<std::string> > prepromptDirs;
-    almai::PrepromptPathType          curPrepromptPathType = almai::PrepromptPathType::builtinOptions;
-
-    PluralDatabaseSharedPtrType       pluralDb = std::make_shared<almai::PluralDatabase>();
-    almai::Localization               localizations;
-    std::string                       curLang;
-
-    //std::string                       curAiEngine; // deepseek, qwen
-    PrepromptDatabaseMap              ppDBases;
-
-    almai::Project                    almaiProject;
-
-
-
-    // UMBA_RULE_OF_FIVE_COPY_MOVE(FoundFileInfo, default, default, default, default);
-    // UMBA_RULE_OF_FIVE(FoundFileInfo, default, default, default, default, default);
-
-    //------------------------------
-    std::string normalizePrepromptId(const std::string &prepromptId) const { return almai::utils::normalizePrepromptId(*pluralDb.get(), prepromptId); }
-
-    //------------------------------
-    bool addProjectRootMarker(std::string marker); // Добавляет маркер остановки поиска корневого каталога проекта
-    bool addProjectRootMarkers(const std::vector<std::string> &markersList);
-    bool addProjectRootMarkers(const std::string &markersListStr);
-
-    //------------------------------
-    bool addLocalization(const std::string &langKeyTextTriplet);
-    std::string getLocalizedText(std::string lang, const std::string &key) const;
-    std::string getLocalizedText(const std::string &key) const;
-
-    //------------------------------
-    static
-    std::string getPrepromptPathTypeAnnotation(almai::PrepromptPathType ppt) ;
-
-    std::vector<std::string> getPrepromptDirs() const;
-    std::vector<std::pair<almai::PrepromptPathType, std::string> > getPrepromptDirsAnnotated() const;
-
-    void addPrepromptPath(almai::PrepromptPathType ppt, std::string path);
-    void addPrepromptPath(const std::string &path);
-
-    //------------------------------
-    bool roleSetupFromCli(const std::string &roleSetupStr);
-
-    //------------------------------
-    void setAppRoot(const std::string &appRoot_, const std::string &appConfPath_);
-    void setProjectRoot(const std::string &projectRoot_);
-
-    //------------------------------
-    void addEnvironmentPrepromptPaths();
-
-    //------------------------------
-    //! Проверка существования каталога или файла, одного из многих, по заданному пути
-    static bool isPathExistOneOf(const std::string &basePath, const std::vector<std::string> &relNames);
-    static bool isPathExistOneOf(const std::string &basePath, const std::unordered_set<std::string> &relNames);
-    static bool isPathExistOneOf(const std::string &basePath, const std::string &relName);
-
-    //------------------------------
-    static std::vector<std::string> makeAlmaiFolderNames();
-    static const std::vector<std::string>& getAlmaiFolderNames();
-    static std::vector<std::string> getAlmaiFolderFullNames(const std::string &path);
-
-    //------------------------------
-    bool isProjectRootPath(const std::string &path, std::string *pAlmaiYamlName) const;
-    bool findProjectRoot(std::string startPath=umba::filesys::getCurrentDirectory());
-
-    //------------------------------
-    auto makeSkillPrepareHandler() const
-    {
-        auto skillPrepareHandler = [&](std::string str)
-        {
-            umba::string::case_convert(str, umba::CaseOption::toLower);
-            return normalizePrepromptId(str);
-        };
-
-        return skillPrepareHandler;
-    }
-
-    //------------------------------
-    template<typename PrepromptReadingErrorHandler, typename PrepromptParsingErrorHandler>
-    void readProjectFile( PrepromptReadingErrorHandler   readingErrHandler
-                        , PrepromptParsingErrorHandler   parsingErrorHandler
-                        )
-    {
-        if (projectFile.empty())
-            return;
-
-        std::string projectText;
-
-        if (!almai::utils::readFile(projectFile, projectText))
-        {
-            readingErrHandler(projectFile);
-            return;
-        }
-
-        try
-        {
-            almai::Project::parse( almaiProject, projectText
-                                 , makeSkillPrepareHandler()
-                                 , true /* throwErrors */
-                                 );
-        }
-        catch(const std::exception &e)
-        {
-            parsingErrorHandler(projectFile, e);
-
-            // Пробуем игнорировать ошибки
-            // Но исключение всё равно может вылететь. Но мы его уже не ловим, пусть летит
-            almai::Project::parse( almaiProject, projectText
-                                 , makeSkillPrepareHandler()
-                                 , false /* !throwErrors */
-                                 );
-        }
-
-    }
-
-    template<typename ErrorHandler, typename WarningHandler>
-    bool projectCheckNormalize( const PrepromptDatabase &ppDb
-                              , ErrorHandler   errorHandler
-                              , WarningHandler warningHandler
-                              )
-    {
-        return almaiProject.checkNormalize(ppDb, errorHandler, warningHandler);
-    }
-
-    //------------------------------
-
-    // template<typename PrepromptReadingErrorHandler, typename PrepromptParsingErrorHandler>
-    // void scanForPreprompts( std::vector<std::string>       *pScannedFolders
-    //                       , std::vector<std::string>       aiEngines
-    //                       , std::vector<std::string>       prepromptCategoriesToScan
-    //                       , PrepromptReadingErrorHandler   readingErrHandler
-    //                       , PrepromptParsingErrorHandler   parsingErrorHandler
-    //                       )
-    // {
-    //     auto ppDirs = getPrepromptDirs();
-    //
-    //     for(const auto &aiEngine : aiEngines)
-    //     {
-    //         PrepromptDatabase ppDb = almai::PrepromptDatabase(pluralDb, ppDirs);
-    //     }
-    // }
-    //
-    //
-    //
-    // almai::PrepromptDatabase ppDb = almai::PrepromptDatabase(appConfig.pluralDb, appConfig.getPrepromptDirs());
-    // ppDb.prepromptDirs = appConfig.getPrepromptDirs();
-    // std::vector<std::string> scannedFolders;
-    //
-    // processedFileType = "preprompt";
-    //
-    // ppDb.scanForPreprompts( &scannedFolders, aiEngines
-    //                       , { "skill", "instruction", "knowledge", "format", "output" }
-    //                       , prepromptReadingErrorHandler, prepromptParsingErrorHandler
-    //                       );
-    //
-    // PrepromptDatabaseMap              ppDBases;
-
-
-
-}; // struct AppConfig
+    vec.push_back(s);
+}
 
 //--------------------------------------------------------------------------------------------------------------------
+bool AppConfigBase::addRoles(const std::string &str)
+{
+    auto list = umba::filename::splitPathList(str, ' ');
+    for(auto s: list)
+        addUniqueLowerStrToVec(roles, s);
 
-
+    return true;
+}
 
 //--------------------------------------------------------------------------------------------------------------------
+bool AppConfigBase::addSkills(const std::string &str)
+{
+    auto list = umba::filename::splitPathList(str, ' ');
+    for(auto s: list)
+        addUniqueLowerStrToVec(skills, s);
 
-} // namespace almai
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------------------------
 ~~~
 
 **\_src/almai/AppConfigBase.h**
@@ -6021,6 +5924,12 @@ struct AppConfig : public AppConfigBase
 #include "md_utils.h"
 #include "FileSystemScanInfo.h"
 #include "FoundFileInfo.h"
+#include "Preprompt.h"
+#include "PluralDatabase.h"
+#include "Localization.h"
+#include "Project.h"
+#include "PrepromptDatabase.h"
+
 //
 #include "umba/umba.h"
 #include "encoding/encoding.h"
@@ -6543,6 +6452,19 @@ struct AppConfigBase
                 return setMacroFromEnv(value, true /* bSubst */, true /* allowOverwrite */);
             }
 
+            if (nameEnum==almai::PrepromptTextCommands::roles)
+            {
+                addRoles(value);
+                return true;
+            }
+
+            if (nameEnum==almai::PrepromptTextCommands::skills)
+            {
+                addSkills(value);
+                return true;
+            }
+
+
 
             value = substMacros(value);
 
@@ -6740,6 +6662,174 @@ struct AppConfigBase
     }
 
 
+    //--------------------------------------------------------------------------------------------------------------------
+
+    using PluralDatabaseSharedPtrType = std::shared_ptr<almai::PluralDatabase>;
+    using PrepromptDatabaseMap        = std::unordered_map<std::string, almai::PrepromptDatabase>;
+
+
+    std::string                       appRoot;
+    std::string                       appConfPath;
+    std::string                       projectRoot; // устанавливается только через setProjectRoot
+    std::string                       almaiDir; //
+    std::string                       projectFile; // Полное имя '.almai/project.yaml', с путём
+    std::string                       aiName; // Например, deepeek, qwen - используется для поиска кастомизированных препромптов
+
+    std::unordered_set<std::string>   projectRootStopNames; //  = { ".git", ".out", ".vscode", ".build", "build" }; // пока явно инициализируем
+    // almai.yaml
+
+    std::unordered_map<almai::PrepromptPathType, std::vector<std::string> > prepromptDirs;
+    almai::PrepromptPathType          curPrepromptPathType = almai::PrepromptPathType::builtinOptions;
+
+    PluralDatabaseSharedPtrType       pluralDb = std::make_shared<almai::PluralDatabase>();
+    almai::Localization               localizations;
+    std::string                       curLang;
+
+    //std::string                       curAiEngine; // deepseek, qwen
+    PrepromptDatabaseMap              ppDBases;
+
+    almai::Project                    almaiProject;
+
+
+
+    // UMBA_RULE_OF_FIVE_COPY_MOVE(FoundFileInfo, default, default, default, default);
+    // UMBA_RULE_OF_FIVE(FoundFileInfo, default, default, default, default, default);
+
+    //------------------------------
+    std::string normalizePrepromptId(const std::string &prepromptId) const { return almai::utils::normalizePrepromptId(*pluralDb.get(), prepromptId); }
+
+    //------------------------------
+    bool addProjectRootMarker(std::string marker); // Добавляет маркер остановки поиска корневого каталога проекта
+    bool addProjectRootMarkers(const std::vector<std::string> &markersList);
+    bool addProjectRootMarkers(const std::string &markersListStr);
+
+    //------------------------------
+    bool addLocalization(const std::string &langKeyTextTriplet);
+    std::string getLocalizedText(std::string lang, const std::string &key) const;
+    std::string getLocalizedText(const std::string &key) const;
+
+    //------------------------------
+    static
+    std::string getPrepromptPathTypeAnnotation(almai::PrepromptPathType ppt) ;
+
+    std::vector<std::string> getPrepromptDirs() const;
+    std::vector<std::pair<almai::PrepromptPathType, std::string> > getPrepromptDirsAnnotated() const;
+
+    void addPrepromptPath(almai::PrepromptPathType ppt, std::string path);
+    void addPrepromptPath(const std::string &path);
+
+    //------------------------------
+    bool roleSetupFromCli(const std::string &roleSetupStr);
+
+    //------------------------------
+    void setAppRoot(const std::string &appRoot_, const std::string &appConfPath_);
+    void setProjectRoot(const std::string &projectRoot_);
+
+    //------------------------------
+    void addEnvironmentPrepromptPaths();
+
+    //------------------------------
+    //! Проверка существования каталога или файла, одного из многих, по заданному пути
+    static bool isPathExistOneOf(const std::string &basePath, const std::vector<std::string> &relNames);
+    static bool isPathExistOneOf(const std::string &basePath, const std::unordered_set<std::string> &relNames);
+    static bool isPathExistOneOf(const std::string &basePath, const std::string &relName);
+
+    //------------------------------
+    static std::vector<std::string> makeAlmaiFolderNames();
+    static const std::vector<std::string>& getAlmaiFolderNames();
+    static std::vector<std::string> getAlmaiFolderFullNames(const std::string &path);
+
+    //------------------------------
+    bool isProjectRootPath(const std::string &path, std::string *pAlmaiYamlName) const;
+    bool findProjectRoot(std::string startPath=umba::filesys::getCurrentDirectory());
+
+    //------------------------------
+    auto makeSkillPrepareHandler() const
+    {
+        auto skillPrepareHandler = [&](std::string str)
+        {
+            umba::string::case_convert(str, umba::CaseOption::toLower);
+            return normalizePrepromptId(str);
+        };
+
+        return skillPrepareHandler;
+    }
+
+    //------------------------------
+    template<typename PrepromptReadingErrorHandler, typename PrepromptParsingErrorHandler>
+    void readProjectFile( PrepromptReadingErrorHandler   readingErrHandler
+                        , PrepromptParsingErrorHandler   parsingErrorHandler
+                        )
+    {
+        if (projectFile.empty())
+            return;
+
+        std::string projectText;
+
+        if (!almai::utils::readFile(projectFile, projectText))
+        {
+            readingErrHandler(projectFile);
+            return;
+        }
+
+        try
+        {
+            almai::Project::parse( almaiProject, projectText
+                                 , makeSkillPrepareHandler()
+                                 , true /* throwErrors */
+                                 );
+        }
+        catch(const std::exception &e)
+        {
+            parsingErrorHandler(projectFile, e);
+
+            // Пробуем игнорировать ошибки
+            // Но исключение всё равно может вылететь. Но мы его уже не ловим, пусть летит
+            almai::Project::parse( almaiProject, projectText
+                                 , makeSkillPrepareHandler()
+                                 , false /* !throwErrors */
+                                 );
+        }
+
+    }
+
+    template<typename ErrorHandler, typename WarningHandler>
+    bool projectCheckNormalize( const almai::PrepromptDatabase &ppDb
+                              , ErrorHandler   errorHandler
+                              , WarningHandler warningHandler
+                              )
+    {
+        return almaiProject.checkNormalize(ppDb, errorHandler, warningHandler);
+    }
+
+    //------------------------------
+
+
+
+    //------------------------------
+    static
+    void addMdPartSeparator(std::vector<std::string> &lines, std::size_t sepLen=10u)
+    {
+        if (!lines.empty())
+        {
+            lines.push_back(std::string());
+            lines.push_back(std::string());
+            lines.push_back(std::string(sepLen, '-'));
+            lines.push_back(std::string());
+            lines.push_back(std::string());
+        }
+    }
+
+    //------------------------------
+
+
+
+    //------------------------------
+    std::vector<std::string>          roles;
+    std::vector<std::string>          skills;
+
+    bool addRoles(const std::string &rolesStr);
+    bool addSkills(const std::string &rolesStr);
 
 
 }; // struct AppConfigBase
@@ -7548,22 +7638,22 @@ enum class AttachFormat : std::uint32_t
 MARTY_CPP_MAKE_ENUM_IS_FLAGS_FOR_NON_FLAGS_ENUM(AttachFormat)
 
 MARTY_CPP_ENUM_CLASS_SERIALIZE_BEGIN( AttachFormat, std::map, 1 )
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( AttachFormat::invalid   , "Invalid" );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( AttachFormat::_7z       , "7Z"      );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( AttachFormat::none      , "None"    );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( AttachFormat::zip       , "Zip"     );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( AttachFormat::md        , "Md"      );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( AttachFormat::none      , "None"    );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( AttachFormat::invalid   , "Invalid" );
 MARTY_CPP_ENUM_CLASS_SERIALIZE_END( AttachFormat, std::map, 1 )
 
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_BEGIN( AttachFormat, std::map, 1 )
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( AttachFormat::invalid   , "invalid"  );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( AttachFormat::invalid   , "unknown"  );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( AttachFormat::_7z       , "7z"       );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( AttachFormat::none      , "none"     );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( AttachFormat::none      , "no"       );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( AttachFormat::zip       , "zip"      );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( AttachFormat::md        , "markdown" );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( AttachFormat::md        , "md"       );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( AttachFormat::none      , "no"       );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( AttachFormat::none      , "none"     );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( AttachFormat::invalid   , "unknown"  );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( AttachFormat::invalid   , "invalid"  );
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_END( AttachFormat, std::map, 1 )
 
 
@@ -7584,24 +7674,24 @@ enum class CodeLanguageMarker : std::uint32_t
 MARTY_CPP_MAKE_ENUM_IS_FLAGS_FOR_NON_FLAGS_ENUM(CodeLanguageMarker)
 
 MARTY_CPP_ENUM_CLASS_SERIALIZE_BEGIN( CodeLanguageMarker, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( CodeLanguageMarker::ext       , "Ext"     );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( CodeLanguageMarker::name      , "Name"    );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( CodeLanguageMarker::none      , "None"    );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( CodeLanguageMarker::invalid   , "Invalid" );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( CodeLanguageMarker::none      , "None"    );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( CodeLanguageMarker::name      , "Name"    );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( CodeLanguageMarker::ext       , "Ext"     );
 MARTY_CPP_ENUM_CLASS_SERIALIZE_END( CodeLanguageMarker, std::map, 1 )
 
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_BEGIN( CodeLanguageMarker, std::map, 1 )
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::invalid   , "invalid"   );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::invalid   , "unknown"   );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::none      , "none"      );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::name      , "langname"  );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::name      , "name"      );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::name      , "lang-name" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::name      , "lang_name" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::ext       , "ext"       );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::ext       , "file-ext"  );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::ext       , "file_ext"  );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::ext       , "fileext"   );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::ext       , "ext"       );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::name      , "lang-name" );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::name      , "langname"  );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::name      , "lang_name" );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::name      , "name"      );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::none      , "none"      );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::invalid   , "unknown"   );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( CodeLanguageMarker::invalid   , "invalid"   );
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_END( CodeLanguageMarker, std::map, 1 )
 
 
@@ -7624,30 +7714,30 @@ enum class ComparisonType : std::uint32_t
 MARTY_CPP_MAKE_ENUM_IS_FLAGS_FOR_NON_FLAGS_ENUM(ComparisonType)
 
 MARTY_CPP_ENUM_CLASS_SERIALIZE_BEGIN( ComparisonType, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::ext        , "Ext"      );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::fullName   , "FullName" );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::name       , "Name"     );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::none       , "None"     );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::nameExt    , "NameExt"  );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::invalid    , "Invalid"  );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::none       , "None"     );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::name       , "Name"     );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::nameExt    , "NameExt"  );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::fullName   , "FullName" );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ComparisonType::ext        , "Ext"      );
 MARTY_CPP_ENUM_CLASS_SERIALIZE_END( ComparisonType, std::map, 1 )
 
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_BEGIN( ComparisonType, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::ext        , "ext-name"  );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::ext        , "ext_name"  );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::ext        , "extname"   );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::ext        , "ext"       );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::fullName   , "full"      );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::fullName   , "full-name" );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::fullName   , "full_name" );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::fullName   , "fullname"  );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::name       , "name"      );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::invalid    , "invalid"   );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::invalid    , "unknown"   );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::none       , "none"      );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::name       , "name"      );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::nameExt    , "name-ext"  );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::nameExt    , "name_ext"  );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::nameExt    , "nameext"   );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::invalid    , "unknown"   );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::invalid    , "invalid"   );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::fullName   , "full-name" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::fullName   , "full_name" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::fullName   , "fullname"  );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::fullName   , "full"      );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::ext        , "ext"       );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::ext        , "ext-name"  );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::ext        , "ext_name"  );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ComparisonType::ext        , "extname"   );
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_END( ComparisonType, std::map, 1 )
 
 
@@ -7668,20 +7758,20 @@ enum class FenceStyle : std::uint32_t
 MARTY_CPP_MAKE_ENUM_IS_FLAGS_FOR_NON_FLAGS_ENUM(FenceStyle)
 
 MARTY_CPP_ENUM_CLASS_SERIALIZE_BEGIN( FenceStyle, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FenceStyle::tildes      , "Tildes"    );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FenceStyle::backticks   , "Backticks" );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FenceStyle::auto_       , "Auto"      );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FenceStyle::invalid     , "Invalid"   );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FenceStyle::auto_       , "Auto"      );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FenceStyle::backticks   , "Backticks" );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FenceStyle::tildes      , "Tildes"    );
 MARTY_CPP_ENUM_CLASS_SERIALIZE_END( FenceStyle, std::map, 1 )
 
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_BEGIN( FenceStyle, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::tildes      , "tilde"     );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::tildes      , "tildes"    );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::backticks   , "backtick"  );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::backticks   , "backticks" );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::auto_       , "auto"      );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::invalid     , "unknown"   );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::invalid     , "invalid"   );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::invalid     , "unknown"   );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::auto_       , "auto"      );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::backticks   , "backticks" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::backticks   , "backtick"  );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::tildes      , "tildes"    );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FenceStyle::tildes      , "tilde"     );
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_END( FenceStyle, std::map, 1 )
 
 
@@ -7707,34 +7797,34 @@ enum class FilenameDecorationStyle : std::uint32_t
 MARTY_CPP_MAKE_ENUM_IS_FLAGS_FOR_NON_FLAGS_ENUM(FilenameDecorationStyle)
 
 MARTY_CPP_ENUM_CLASS_SERIALIZE_BEGIN( FilenameDecorationStyle, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::underscoreItalic   , "UnderscoreItalic" );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::italic             , "Italic"           );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::quot               , "Quot"             );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::invalid            , "Invalid"          );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::none               , "None"             );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::underscoreBold     , "UnderscoreBold"   );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::bold               , "Bold"             );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::strikeout          , "Strikeout"        );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::apos               , "Apos"             );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::quot               , "Quot"             );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::none               , "None"             );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::invalid            , "Invalid"          );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::strikeout          , "Strikeout"        );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::italic             , "Italic"           );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationStyle::underscoreItalic   , "UnderscoreItalic" );
 MARTY_CPP_ENUM_CLASS_SERIALIZE_END( FilenameDecorationStyle, std::map, 1 )
 
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_BEGIN( FilenameDecorationStyle, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreItalic   , "underscore-italic" );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreItalic   , "uitalic"           );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreItalic   , "underscore_italic" );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreItalic   , "underscoreitalic"  );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::italic             , "italic"            );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::quot               , "quot"              );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::invalid            , "invalid"           );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::invalid            , "unknown"           );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::none               , "none"              );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreBold     , "ubold"             );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreBold     , "underscore-bold"   );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreBold     , "underscore_bold"   );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreBold     , "underscorebold"    );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::bold               , "bold"              );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::strikeout          , "strikeout"         );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::apos               , "apos"              );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::quot               , "quot"              );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::none               , "none"              );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::invalid            , "unknown"           );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::invalid            , "invalid"           );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::strikeout          , "strikeout"         );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::italic             , "italic"            );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreItalic   , "uitalic"           );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreItalic   , "underscore-italic" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreItalic   , "underscore_italic" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationStyle::underscoreItalic   , "underscoreitalic"  );
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_END( FilenameDecorationStyle, std::map, 1 )
 
 
@@ -7754,20 +7844,20 @@ enum class FilenameDecorationType : std::uint32_t
 MARTY_CPP_MAKE_ENUM_IS_FLAGS_FOR_NON_FLAGS_ENUM(FilenameDecorationType)
 
 MARTY_CPP_ENUM_CLASS_SERIALIZE_BEGIN( FilenameDecorationType, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationType::attr      , "Attr"    );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationType::invalid   , "Invalid" );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationType::none      , "None"    );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationType::text      , "Text"    );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationType::title     , "Title"   );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationType::none      , "None"    );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationType::invalid   , "Invalid" );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( FilenameDecorationType::attr      , "Attr"    );
 MARTY_CPP_ENUM_CLASS_SERIALIZE_END( FilenameDecorationType, std::map, 1 )
 
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_BEGIN( FilenameDecorationType, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationType::attr      , "attr"    );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationType::invalid   , "invalid" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationType::invalid   , "unknown" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationType::none      , "none"    );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationType::text      , "text"    );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationType::title     , "title"   );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationType::none      , "none"    );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationType::invalid   , "unknown" );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationType::invalid   , "invalid" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( FilenameDecorationType::attr      , "attr"    );
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_END( FilenameDecorationType, std::map, 1 )
 
 
@@ -7790,35 +7880,35 @@ enum class PrepromptPathType : std::uint32_t
 MARTY_CPP_MAKE_ENUM_IS_FLAGS_FOR_NON_FLAGS_ENUM(PrepromptPathType)
 
 MARTY_CPP_ENUM_CLASS_SERIALIZE_BEGIN( PrepromptPathType, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptPathType::end              , "End"            );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptPathType::cliOptions       , "CliOptions"     );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptPathType::projectDirs      , "ProjectDirs"    );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptPathType::envPaths         , "EnvPaths"       );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptPathType::builtinOptions   , "BuiltinOptions" );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptPathType::installDirs      , "InstallDirs"    );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptPathType::invalid          , "Invalid"        );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptPathType::installDirs      , "InstallDirs"    );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptPathType::builtinOptions   , "BuiltinOptions" );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptPathType::end              , "End"            );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptPathType::projectDirs      , "ProjectDirs"    );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptPathType::cliOptions       , "CliOptions"     );
 MARTY_CPP_ENUM_CLASS_SERIALIZE_END( PrepromptPathType, std::map, 1 )
 
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_BEGIN( PrepromptPathType, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::end              , "end"             );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::cliOptions       , "cli-options"     );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::cliOptions       , "cli_options"     );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::cliOptions       , "clioptions"      );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::projectDirs      , "project-dirs"    );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::projectDirs      , "project_dirs"    );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::projectDirs      , "projectdirs"     );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::envPaths         , "env-paths"       );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::envPaths         , "env_paths"       );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::envPaths         , "envpaths"        );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::invalid          , "invalid"         );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::invalid          , "unknown"         );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::installDirs      , "install-dirs"    );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::installDirs      , "install_dirs"    );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::installDirs      , "installdirs"     );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::installDirs      , "begin"           );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::builtinOptions   , "builtin-options" );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::builtinOptions   , "builtin_options" );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::builtinOptions   , "builtinoptions"  );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::installDirs      , "install-dirs"    );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::installDirs      , "install_dirs"    );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::installDirs      , "begin"           );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::installDirs      , "installdirs"     );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::invalid          , "unknown"         );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::invalid          , "invalid"         );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::end              , "end"             );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::projectDirs      , "project-dirs"    );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::projectDirs      , "project_dirs"    );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::projectDirs      , "projectdirs"     );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::cliOptions       , "cli-options"     );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::cliOptions       , "cli_options"     );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptPathType::cliOptions       , "clioptions"      );
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_END( PrepromptPathType, std::map, 1 )
 
 
@@ -7835,7 +7925,9 @@ enum class PrepromptTextCommands : std::uint32_t
     expandImportVar       = 0x0004 /*!<  */,
     expandSetVarFromEnv   = 0x0004 /*!<  */,
     role                  = 0x0005 /*!<  */,
+    roles                 = 0x0005 /*!<  */,
     skills                = 0x0006 /*!<  */,
+    skill                 = 0x0006 /*!<  */,
     end                   = 0x0007 /*!<  */
 
 }; // enum
@@ -7844,44 +7936,46 @@ enum class PrepromptTextCommands : std::uint32_t
 MARTY_CPP_MAKE_ENUM_IS_FLAGS_FOR_NON_FLAGS_ENUM(PrepromptTextCommands)
 
 MARTY_CPP_ENUM_CLASS_SERIALIZE_BEGIN( PrepromptTextCommands, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptTextCommands::skills            , "Skills"          );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptTextCommands::role              , "Role"            );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptTextCommands::expandImportVar   , "ExpandImportVar" );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptTextCommands::end               , "End"             );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptTextCommands::expandSetVar      , "ExpandSetVar"    );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptTextCommands::importVar         , "ImportVar"       );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptTextCommands::setVar            , "SetVar"          );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptTextCommands::scanPath          , "ScanPath"        );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptTextCommands::invalid           , "Invalid"         );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptTextCommands::skills            , "Skills"          );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptTextCommands::scanPath          , "ScanPath"        );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptTextCommands::importVar         , "ImportVar"       );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptTextCommands::expandSetVar      , "ExpandSetVar"    );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptTextCommands::expandImportVar   , "ExpandImportVar" );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptTextCommands::role              , "Role"            );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( PrepromptTextCommands::end               , "End"             );
 MARTY_CPP_ENUM_CLASS_SERIALIZE_END( PrepromptTextCommands, std::map, 1 )
 
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_BEGIN( PrepromptTextCommands, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::skills            , "skills"                  );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::role              , "role"                    );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::expandImportVar   , "expand-set-var-from-env" );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::expandImportVar   , "expand_set_var_from_env" );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::expandImportVar   , "expand-import-var"       );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::expandImportVar   , "expandsetvarfromenv"     );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::expandImportVar   , "expand_import_var"       );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::expandImportVar   , "expandimportvar"         );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::end               , "end"                     );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::expandSetVar      , "expand-set-var"          );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::expandSetVar      , "expandsetvar"            );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::expandSetVar      , "expand_set_var"          );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::importVar         , "set-var-from-env"        );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::importVar         , "set_var_from_env"        );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::importVar         , "setvarfromenv"           );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::importVar         , "import-var"              );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::importVar         , "import_var"              );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::importVar         , "importvar"               );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::setVar            , "set-var"                 );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::setVar            , "set_var"                 );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::setVar            , "setvar"                  );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::scanPath          , "scan-path"               );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::scanPath          , "scanpath"                );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::scanPath          , "scan_path"               );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::invalid           , "unknown"                 );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::invalid           , "invalid"                 );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::invalid           , "unknown"                 );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::skills            , "skills"                  );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::skills            , "skill"                   );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::scanPath          , "scan-path"               );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::scanPath          , "scan_path"               );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::scanPath          , "scanpath"                );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::importVar         , "import-var"              );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::importVar         , "set_var_from_env"        );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::importVar         , "import_var"              );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::importVar         , "importvar"               );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::importVar         , "set-var-from-env"        );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::importVar         , "setvarfromenv"           );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::expandSetVar      , "expand-set-var"          );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::expandSetVar      , "expand_set_var"          );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::expandSetVar      , "expandsetvar"            );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::expandImportVar   , "expand-set-var-from-env" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::expandImportVar   , "expand_set_var_from_env" );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::expandImportVar   , "expand-import-var"       );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::expandImportVar   , "expand_import_var"       );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::expandImportVar   , "expandimportvar"         );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::expandImportVar   , "expandsetvarfromenv"     );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::role              , "role"                    );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::role              , "roles"                   );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( PrepromptTextCommands::end               , "end"                     );
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_END( PrepromptTextCommands, std::map, 1 )
 
 
@@ -7901,23 +7995,23 @@ enum class ResultCode : std::uint32_t
 MARTY_CPP_MAKE_ENUM_IS_FLAGS_FOR_NON_FLAGS_ENUM(ResultCode)
 
 MARTY_CPP_ENUM_CLASS_SERIALIZE_BEGIN( ResultCode, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ResultCode::error              , "Error"            );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ResultCode::foundAlternative   , "FoundAlternative" );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ResultCode::ok                 , "Ok"               );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ResultCode::invalid            , "Invalid"          );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ResultCode::ok                 , "Ok"               );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ResultCode::foundAlternative   , "FoundAlternative" );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( ResultCode::error              , "Error"            );
 MARTY_CPP_ENUM_CLASS_SERIALIZE_END( ResultCode, std::map, 1 )
 
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_BEGIN( ResultCode, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ResultCode::error              , "generic-error"     );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ResultCode::error              , "generic_error"     );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ResultCode::error              , "genericerror"      );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ResultCode::error              , "error"             );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ResultCode::invalid            , "invalid"           );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ResultCode::invalid            , "unknown"           );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ResultCode::ok                 , "ok"                );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ResultCode::foundAlternative   , "found-alternative" );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ResultCode::foundAlternative   , "found_alternative" );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ResultCode::foundAlternative   , "foundalternative"  );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ResultCode::ok                 , "ok"                );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ResultCode::invalid            , "unknown"           );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ResultCode::invalid            , "invalid"           );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ResultCode::error              , "generic-error"     );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ResultCode::error              , "error"             );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ResultCode::error              , "generic_error"     );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( ResultCode::error              , "genericerror"      );
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_END( ResultCode, std::map, 1 )
 
 
@@ -7938,17 +8032,17 @@ MARTY_CPP_MAKE_ENUM_IS_FLAGS_FOR_NON_FLAGS_ENUM(SortOrder)
 
 MARTY_CPP_ENUM_CLASS_SERIALIZE_BEGIN( SortOrder, std::map, 1 )
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( SortOrder::desc      , "Desc"    );
-    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( SortOrder::asc       , "Asc"     );
     MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( SortOrder::invalid   , "Invalid" );
+    MARTY_CPP_ENUM_CLASS_SERIALIZE_ITEM( SortOrder::asc       , "Asc"     );
 MARTY_CPP_ENUM_CLASS_SERIALIZE_END( SortOrder, std::map, 1 )
 
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_BEGIN( SortOrder, std::map, 1 )
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( SortOrder::desc      , "descending" );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( SortOrder::desc      , "desc"       );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( SortOrder::asc       , "ascending"  );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( SortOrder::asc       , "asc"        );
-    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( SortOrder::invalid   , "unknown"    );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( SortOrder::desc      , "descending" );
     MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( SortOrder::invalid   , "invalid"    );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( SortOrder::invalid   , "unknown"    );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( SortOrder::asc       , "asc"        );
+    MARTY_CPP_ENUM_CLASS_DESERIALIZE_ITEM( SortOrder::asc       , "ascending"  );
 MARTY_CPP_ENUM_CLASS_DESERIALIZE_END( SortOrder, std::map, 1 )
 
 
@@ -7987,73 +8081,73 @@ enum class FileNameSortOrder : std::uint32_t
 MARTY_CPP_MAKE_ENUM_FLAGS(FileNameSortOrder)
 
 MARTY_CPP_ENUM_FLAGS_SERIALIZE_BEGIN( FileNameSortOrder, std::map, 1 )
+    MARTY_CPP_ENUM_FLAGS_SERIALIZE_ITEM( FileNameSortOrder::desc          , "Desc"        );
+    MARTY_CPP_ENUM_FLAGS_SERIALIZE_ITEM( FileNameSortOrder::invalid       , "Invalid"     );
     MARTY_CPP_ENUM_FLAGS_SERIALIZE_ITEM( FileNameSortOrder::no            , "No"          );
-    MARTY_CPP_ENUM_FLAGS_SERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "AscDirsType" );
+    MARTY_CPP_ENUM_FLAGS_SERIALIZE_ITEM( FileNameSortOrder::asc           , "Asc"         );
     MARTY_CPP_ENUM_FLAGS_SERIALIZE_ITEM( FileNameSortOrder::dirs          , "Dirs"        );
     MARTY_CPP_ENUM_FLAGS_SERIALIZE_ITEM( FileNameSortOrder::type          , "Type"        );
-    MARTY_CPP_ENUM_FLAGS_SERIALIZE_ITEM( FileNameSortOrder::desc          , "Desc"        );
-    MARTY_CPP_ENUM_FLAGS_SERIALIZE_ITEM( FileNameSortOrder::asc           , "Asc"         );
-    MARTY_CPP_ENUM_FLAGS_SERIALIZE_ITEM( FileNameSortOrder::invalid       , "Invalid"     );
+    MARTY_CPP_ENUM_FLAGS_SERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "AscDirsType" );
 MARTY_CPP_ENUM_FLAGS_SERIALIZE_END( FileNameSortOrder, std::map, 1 )
 
 MARTY_CPP_ENUM_FLAGS_DESERIALIZE_BEGIN( FileNameSortOrder, std::map, 1 )
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::no            , "no-sort"                      );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::no            , "no_sort"                      );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::desc          , "desc"                         );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::desc          , "descending"                   );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::invalid       , "invalid"                      );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::invalid       , "unknown"                      );
     MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::no            , "nosort"                       );
     MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::no            , "no"                           );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::no            , "no-sort"                      );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::no            , "no_sort"                      );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::asc           , "asc"                          );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::asc           , "ascending"                    );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "dirs"                         );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "asc-dirs"                     );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "asc-dirs-first"               );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "dirs-first"                   );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "ascdirs"                      );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "dirs_first"                   );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "dirsfirst"                    );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "asc_dirs"                     );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "ascending-dirs"               );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "ascending_dirs"               );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "ascendingdirs"                );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "asc_dirs_first"               );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "ascdirsfirst"                 );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "ascending-dirs-first"         );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "ascending_dirs_first"         );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "ascendingdirsfirst"           );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::type          , "type"                         );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::type          , "by-type"                      );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::type          , "by_type"                      );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::type          , "sort-by-type"                 );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::type          , "sort_by_type"                 );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::type          , "bytype"                       );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::type          , "sortbytype"                   );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascendingdirsbytype"          );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "asc-dirs-by-type"             );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "asc-dirs-type"                );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "asc_dirs_type"                );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "asc_dirs_by_type"             );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascdirstype"                  );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascdirsbytype"                );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascending-dirs-type"          );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascending_dirs_by_type"       );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascending_dirs_type"          );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascendingdirstype"            );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascending-dirs-by-type"       );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "asc-dirs-first-type"          );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "asc_dirs_first_by_type"       );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "asc_dirs_first_type"          );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascdirsfirsttype"             );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "asc-dirs-first-by-type"       );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascdirsfirstbytype"           );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascending-dirs-first-type"    );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascending_dirs_first_type"    );
+    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascendingdirsfirsttype"       );
     MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascending-dirs-first-by-type" );
     MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascending_dirs_first_by_type" );
     MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascendingdirsfirstbytype"     );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascendingdirsfirsttype"       );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "asc-dirs-first-by-type"       );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascending-dirs-first-type"    );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "asc_dirs_first_by_type"       );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascdirsfirstbytype"           );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "asc_dirs_first_type"          );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascdirstype"                  );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "asc_dirs_type"                );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "asc-dirs-type"                );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascending_dirs_type"          );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascending-dirs-by-type"       );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascending_dirs_first_type"    );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascdirsbytype"                );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "asc_dirs_by_type"             );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "asc-dirs-first-type"          );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascendingdirsbytype"          );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "asc-dirs-by-type"             );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascdirsfirsttype"             );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascendingdirstype"            );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascending-dirs-type"          );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::ascDirsType   , "ascending_dirs_by_type"       );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "ascending-dirs-first"         );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "ascendingdirsfirst"           );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "ascending_dirs_first"         );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "dirs"                         );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "dirsfirst"                    );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "asc_dirs"                     );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "ascendingdirs"                );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "dirs_first"                   );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "dirs-first"                   );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "asc-dirs-first"               );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "ascending_dirs"               );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "ascdirs"                      );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "asc-dirs"                     );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "ascending-dirs"               );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "ascdirsfirst"                 );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::dirs          , "asc_dirs_first"               );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::type          , "sort-by-type"                 );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::type          , "sort_by_type"                 );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::type          , "sortbytype"                   );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::type          , "by-type"                      );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::type          , "bytype"                       );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::type          , "by_type"                      );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::type          , "type"                         );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::desc          , "descending"                   );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::desc          , "desc"                         );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::asc           , "ascending"                    );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::asc           , "asc"                          );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::invalid       , "unknown"                      );
-    MARTY_CPP_ENUM_FLAGS_DESERIALIZE_ITEM( FileNameSortOrder::invalid       , "invalid"                      );
 MARTY_CPP_ENUM_FLAGS_DESERIALIZE_END( FileNameSortOrder, std::map, 1 )
 
 MARTY_CPP_ENUM_FLAGS_SERIALIZE_SET(FileNameSortOrder, std::set)
@@ -9999,6 +10093,36 @@ struct AppConfig : public AppConfigBase
     std::vector<std::string>     headerLines;
     std::vector<std::string>     footerLines;
 
+
+    std::vector<std::string> makePrepromptHeader(std::vector<std::string> lines)
+    {
+        // add skills lines
+        return stripEmptyHeadTailLines(lines);
+    }
+
+    std::vector<std::string> makePrepromptFooter(std::vector<std::string> lines)
+    {
+        // add skills lines
+        return stripEmptyHeadTailLines(lines);
+    }
+
+
+    std::vector<std::string> makePrepromptHeader()
+    {
+        auto lines = almai::utils::simpleReplaceClipboardMarkerLine(headerLines);
+        return makePrepromptHeader(lines);
+    }
+
+    std::vector<std::string> makePrepromptFooter()
+    {
+        auto lines = almai::utils::simpleReplaceClipboardMarkerLine(footerLines);
+        return makePrepromptFooter(lines);
+    }
+
+
+
+
+
 }; // struct AppConfig
 ~~~
 
@@ -10102,16 +10226,21 @@ int operator()( const StringType                                &a           //!
 
 #include "cli_opt_parsers/basic_options.h"
 #include "cli_opt_parsers/overwrite.h"
-#include "cli_opt_parsers/list.h"
+
 #include "cli_opt_parsers/dict.h"
 #include "cli_opt_parsers/output.h"
 #include "cli_opt_parsers/filename_decoration.h"
 #include "cli_opt_parsers/filename_title_level.h"
 #include "cli_opt_parsers/sort.h"
 #include "cli_opt_parsers/fence_style.h"
-#include "cli_opt_parsers/file-list.h"
 #include "cli_opt_parsers/strip_prefix.h"
 #include "cli_opt_parsers/lang_marker.h"
+#include "cli_opt_parsers/add_plural_pair.h"
+#include "cli_opt_parsers/add_translation.h"
+#include "cli_opt_parsers/add_project_root_marker.h"
+#include "cli_opt_parsers/role_setup.h"
+
+#include "cli_opt_parsers/list.h"
 #include "cli_opt_parsers/add_header_footer.h"
 #include "cli_opt_parsers/clipboard.h"
 #include "cli_opt_parsers/join_lines_limit.h"
@@ -12032,262 +12161,6 @@ StreamType& operator<<(StreamType &oss, const Project &p)
 
     return oss;
 }
-
-//----------------------------------------------------------------------------
-
-
-
-//----------------------------------------------------------------------------
-
-} // namespace almai
-
-//----------------------------------------------------------------------------
-~~~
-
-**\_src/almai/Project\_new.h**
-~~~C/C++ Header
-/*! \file
-    \brief Almai проект
- */
-#pragma once
-
-#include "enums.h"
-#include "utils.h"
-//
-#include "umba/umba.h"
-//
-#include "umba/string.h"
-#include "umba/filename.h"
-#include "umba/filesys.h"
-#include "umba/parse_utils.h"
-
-//
-
-#include <algorithm>
-#include <iterator>
-#include <string>
-#include <sstream>
-#include <vector>
-#include <unordered_map>
-//----------------------------------------------------------------------------
-
-
-
-//----------------------------------------------------------------------------
-namespace almai {
-
-//----------------------------------------------------------------------------
-
-
-
-//----------------------------------------------------------------------------
-struct Project
-{
-    std::unordered_map<std::string, std::vector<std::string> >       roles;
-
-
-
-    template<typename SkillNamePrepareHandler>
-    bool updateRoleFromRoleString(const std::string &role, const std::string &str, SkillNamePrepareHandler skillNamePrepareHandler)
-    {
-        if (role.empty())
-            return false;
-
-        auto &rolesSet = roles[role];
-
-        return umba::parse_utils::optionStringUpdateSet(str, rolesSet, skillNamePrepareHandler, umba::CaseOption::toLower);
-    }
-
-    template<typename SkillNamePrepareHandler>
-    bool updateRoleFromRoleStringList(const std::string &role, const std::string &strList, SkillNamePrepareHandler skillNamePrepareHandler)
-    {
-        if (role.empty())
-            return false;
-
-        auto &rolesSet = roles[role];
-
-        return umba::parse_utils::optionStringListUpdateSet(strList, rolesSet, skillNamePrepareHandler, umba::CaseOption::toLower);
-    }
-
-
-    template<typename SkillNamePrepareHandler>
-    static
-    marty::json parse(Project &p, const std::string &text, SkillNamePrepareHandler skillNamePrepareHandler, bool throwErrors)
-    {
-        auto j = parseToJson(text);
-
-
-        if (j.find("roles")!=j.end())
-        {
-            //d.name = j["name"].get<std::string>();
-            auto r = j["roles"];
-
-            // if (!r.is_object())
-            // {
-            //     throw std::runtime_error("'roles' is in " + marty::json_utils::nodeTypeName(r) + " format. Only object format allowed");
-            // }
-
-            // https://github.com/nlohmann/json?tab=readme-ov-file#stl-like-access
-
-            if (r.is_object())
-            {
-                for (const auto &[key, value] : r.items()) // object iteraion
-                {
-                    const std::string &role = key;
-
-                    if (value.is_array())
-                    {
-                        for (nlohmann::json::iterator it = value.begin(); it!=value.end(); ++it)
-                        {
-                            std::string skillName = it->get<std::string>();
-                            if (!p.updateRoleFromRoleString(role, skillName, skillNamePrepareHandler))
-                            {
-                                if (throwErrors)
-                                    throw std::runtime_error("failed to update role '" + role + "' with skill value '" + skillName + "'");
-                            }
-                        }
-                    }
-
-                    else if (value.is_string())
-                    {
-                            std::string skillsList = value.get<std::string>();
-                            if (!p.updateRoleFromRoleStringList(role, skillsList, skillNamePrepareHandler))
-                            {
-                                if (throwErrors)
-                                    throw std::runtime_error("failed to update role '" + role + "' with skills: '" + skillsList + "'");
-                            }
-                    }
-
-                    else
-                    {
-                        throw std::runtime_error("role '" + role + "' is in " + marty::json_utils::nodeTypeName(value) + " format. Only string/array formats allowed");
-                    }
-
-                } // for (const auto &[key, value] : r.items())
-            }
-
-            else if (r.is_array())
-            {
-
-// roles:
-//   # Можно записать и как object, но массив гарантирует порядок элементов, а object - не факт. Впрочем, другой нефакт в том, что при настройке ролей нам порядок не особо и важен
-//   - c-cpp-dev: -, skills/cpp-dev; skills/c-dev, -skills/jni-master # тут в одну строку сбросили все предыдущие скилы для роли, и добавили skills/cpp-dev и skills/c-dev
-//   - c-cpp-no-java-dev: skills/cpp-dev; skills/c-dev, -skills/jni-master # тут только добавили skills/cpp-dev и skills/c-dev
-//   - uni-tester:
-//     - - # Сбрасываем все предыдущие скилы для роли (а это будет валидно в yml?)
-//     - skills/auto-tester
-//     - skills/manual-tester
-//   - super-architect:
-//     - sw-architect # Архитектор ПО
-//     - sys-architect # Архитектор всей системы
-
-
-                // parse array here
-                for (nlohmann::json::iterator it = r.begin(); it!=r.end(); ++it) // array iteraion
-                {
-                    auto arrItem = *it;
-
-                    if (arrItem.is_string())
-                    {
-                        std::string roleDefinitionString = arrItem.get<std::string>();
-                        std::string role, skillsList;
-                        if (!umba::parse_utils::optionStringSplitToPair(roleDefinitionString, role, skillsList, ":"))
-                        {
-                            // Нужна пара: "role: role-definition"
-                            if (throwErrors)
-                               throw std::runtime_error("failed to parse role definition string: '" + roleDefinitionString + "'");
-                        }
-
-                        if (!p.updateRoleFromRoleStringList(role, skillsList, skillNamePrepareHandler))
-                        {
-                            if (throwErrors)
-                                throw std::runtime_error("failed to update role '" + role + "' with skills: '" + skillsList + "'");
-                        }
-                    }
-
-
-                    // Тут у нас могут быть объекты с одним или несколькими ключами
-                    // compact mapping in sequence
-                    // https://chat.deepseek.com/share/1gbmc561xdxi5teq79
-                    else if (arrItem.is_object())
-                    {
-                        for (const auto &[role, value] : arrItem.items())
-                        {
-                            // ==================== ИСПРАВЛЕНИЕ: поддержка массива ====================
-                            if (value.is_array())
-                            {
-                                // Каждый элемент массива — отдельная строка-спецификация скилла
-                                for (const auto &skillItem : value)
-                                {
-                                    if (!skillItem.is_string())
-                                    {
-                                        if (throwErrors)
-                                            throw std::runtime_error("Skill item must be a string, got " +
-                                                                     marty::json_utils::nodeTypeName(skillItem));
-                                    }
-                                    std::string skillSpec = skillItem.get<std::string>();
-                                    if (!p.updateRoleFromRoleString(role, skillSpec, skillNamePrepareHandler))
-                                    {
-                                        if (throwErrors)
-                                            throw std::runtime_error("Failed to update role '" + role +
-                                                                     "' with skill spec '" + skillSpec + "'");
-                                    }
-                                }
-                            }
-                            else if (value.is_string())
-                            {
-                                std::string skillsList = value.get<std::string>();
-                                if (!p.updateRoleFromRoleStringList(role, skillsList, skillNamePrepareHandler))
-                                {
-                                    if (throwErrors)
-                                        throw std::runtime_error("failed to update role '" + role +
-                                                                 "' with skills: '" + skillsList + "'");
-                                }
-                            }
-                            else
-                            {
-                                throw std::runtime_error("Value for role '" + role + "' must be string or array, got " +
-                                                         marty::json_utils::nodeTypeName(value));
-                            }
-                            // ========================================================================
-                        } // for (const auto &[role, value] : arrItem.items())
-                    } // else if (arrItem.is_object())
-
-
-                    else if (arrItem.is_array())
-                    {
-                        // std::string text = it->get<std::string>();
-                        throw std::runtime_error("UNEXPECTED ARRAY ITEM");
-                    }
-
-
-                    else
-                    {
-                        //std::string arrItemStr = arrItem.get<std::string>();
-
-                        if (throwErrors)
-                            throw std::runtime_error( /* "'" */   /* + arrItemStr + */   /* "'" */ "!!!" " is in " + marty::json_utils::nodeTypeName(arrItem) + " format.");
-
-                        // std::string altersListStr = it->get<std::string>();
-                        // std::vector<std::string> altersList = splitString(altersListStr, '|');
-                        // d.requires.emplace_back(altersList);
-
-                    }
-
-                }
-
-
-
-            }
-
-
-        } // if (j.find("roles")!=j.end())
-
-        return j;
-    }
-
-
-}; // struct Project
 
 //----------------------------------------------------------------------------
 

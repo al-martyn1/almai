@@ -332,14 +332,14 @@ int unsafeMain(int argc, char* argv[])
     // Вывести в конечный документ и записать результат
 
 
-    auto resLines = almai::utils::simpleReplaceClipboardMarkerLine(appConfig.headerLines);
+    std::vector<std::string> resLines;
 
-    if (!resLines.empty())
     {
-        resLines.push_back(std::string());
-        resLines.push_back(std::string(3u,'-'));
-        resLines.push_back(std::string());
+        auto lines = appConfig.makePrepromptHeader();
+        if (!lines.empty())
+            resLines = lines;
     }
+
 
     if (appConfig.isSourcesInline())
     {
@@ -350,9 +350,13 @@ int unsafeMain(int argc, char* argv[])
             appConfig.generateMarkdownListing(oss, ffi.displayName, ffi.fileLines);
         }
     
-        auto mdLines = marty_cpp::splitToLinesSimple(oss.str());
-    
-        resLines.insert(resLines.end(), mdLines.begin(), mdLines.end());
+        auto mdArcLines = appConfig.stripEmptyHeadTailLines(marty_cpp::splitToLinesSimple(oss.str()));
+
+        if (!mdArcLines.empty())
+        {
+            appConfig.addMdPartSeparator(resLines);
+            resLines.insert(resLines.end(), mdArcLines.begin(), mdArcLines.end());
+        }
     }
     else
     {
@@ -367,15 +371,37 @@ int unsafeMain(int argc, char* argv[])
         }
     }
 
-    if (!appConfig.footerLines.empty())
+
+
+    // std::vector<std::string> makePrepromptHeader()
+    // std::vector<std::string> makePrepromptFooter()
+    // addMdPartSeparator(std::vector<std::string> &lines, std::size_t sepLen=3u)
+
+
+    // auto resLines = almai::utils::simpleReplaceClipboardMarkerLine(appConfig.headerLines);
+
+
+
+    // if (!appConfig.footerLines.empty())
+    // {
+    //     resLines.push_back(std::string());
+    //     resLines.push_back(std::string(3u,'-'));
+    //     resLines.push_back(std::string());
+    // }
+    //  
+    // auto footerLines = almai::utils::simpleReplaceClipboardMarkerLine(appConfig.footerLines);
+    // resLines.insert(resLines.end(), footerLines.begin(), footerLines.end());
+
     {
-        resLines.push_back(std::string());
-        resLines.push_back(std::string(3u,'-'));
-        resLines.push_back(std::string());
+        auto lines = appConfig.makePrepromptFooter();
+        if (!lines.empty())
+        {
+            appConfig.addMdPartSeparator(resLines);
+            resLines.insert(resLines.end(), lines.begin(), lines.end());
+        }
     }
 
-    auto footerLines = almai::utils::simpleReplaceClipboardMarkerLine(appConfig.footerLines);
-    resLines.insert(resLines.end(), footerLines.begin(), footerLines.end());
+
 
     bool printToStdOut = appConfig.output.empty();
     if (appConfig.useClipboard)

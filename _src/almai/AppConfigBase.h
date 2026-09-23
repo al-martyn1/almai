@@ -539,6 +539,19 @@ struct AppConfigBase
                 return setMacroFromEnv(value, true /* bSubst */, true /* allowOverwrite */);
             }
 
+            if (nameEnum==almai::PrepromptTextCommands::roles)
+            {
+                addRoles(value);
+                return true;
+            }
+
+            if (nameEnum==almai::PrepromptTextCommands::skills)
+            {
+                addSkills(value);
+                return true;
+            }
+
+
 
             value = substMacros(value);
 
@@ -878,6 +891,32 @@ struct AppConfigBase
 
     //------------------------------
 
+
+
+    //------------------------------
+    static
+    void addMdPartSeparator(std::vector<std::string> &lines, std::size_t sepLen=10u)
+    {
+        if (!lines.empty())
+        {
+            lines.push_back(std::string());
+            lines.push_back(std::string());
+            lines.push_back(std::string(sepLen, '-'));
+            lines.push_back(std::string());
+            lines.push_back(std::string());
+        }
+    }
+
+    //------------------------------
+
+
+    
+    //------------------------------
+    std::vector<std::string>          roles;
+    std::vector<std::string>          skills;
+
+    bool addRoles(const std::string &rolesStr);
+    bool addSkills(const std::string &rolesStr);
 
 
 }; // struct AppConfigBase

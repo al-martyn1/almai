@@ -9,6 +9,7 @@
 #include "umba/parse_utils.h"
 
 //
+#include <algorithm>
 #include <utility>
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -351,8 +352,49 @@ bool AppConfigBase::findProjectRoot(std::string startPath)
     return false;
 }
 
+//--------------------------------------------------------------------------------------------------------------------
+// template<>
+static
+void addUniqueLowerStrToVec(std::vector<std::string> &vec, std::string s)
+{
+    umba::string::trim(s);
+    if (s.empty())
+        return;
+
+    auto lowerS = umba::string::tolower_copy(s);
+
+    auto it = std::find_if( vec.begin(), vec.end()
+                          , [&](auto cmpTo)
+                            {
+                                umba::string::tolower(cmpTo);
+                                return lowerS==cmpTo;
+                            }
+                          );
+    if (it!=vec.end())
+        return;
+
+    vec.push_back(s);
+}
 
 //--------------------------------------------------------------------------------------------------------------------
+bool AppConfigBase::addRoles(const std::string &str)
+{
+    auto list = umba::filename::splitPathList(str, ' ');
+    for(auto s: list)
+        addUniqueLowerStrToVec(roles, s);
+    
+    return true;
+}
 
+//--------------------------------------------------------------------------------------------------------------------
+bool AppConfigBase::addSkills(const std::string &str)
+{
+    auto list = umba::filename::splitPathList(str, ' ');
+    for(auto s: list)
+        addUniqueLowerStrToVec(skills, s);
+    
+    return true;
+}
 
+//--------------------------------------------------------------------------------------------------------------------
 

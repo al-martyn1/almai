@@ -186,6 +186,34 @@ int unsafeMain(int argc, char* argv[])
         return 1;
     }
 
+    //!!! --------------
+    appConfig.setAppRoot(argsParser.getAppRoot(), argsParser.getAppConfPath()); // to find prompts
+
+    if (!appConfig.findProjectRoot()) // Также устанавливает ProjectRoot
+    {
+        LOG_WARN("prj-root") << "project root not found\n";
+    }
+    else
+    {
+        if (!argsParser.quet)
+        {
+            LOG_MSG << "\n";
+
+            LOG_MSG << "found project root: '" << appConfig.projectRoot << "'\n";
+            if (appConfig.projectFile.empty())
+                LOG_MSG << "project file not found\n";
+            else
+                LOG_MSG << "found project file: '" << appConfig.projectFile << "'\n";
+
+            LOG_MSG << "\n";
+        }
+    }
+
+    appConfig.addEnvironmentPrepromptPaths();
+    appConfig.curPrepromptPathType = almai::PrepromptPathType::cliOptions;
+
+    //!!! --------------
+
     if (argsParser.mustExit)
         return 0;
 
@@ -199,6 +227,43 @@ int unsafeMain(int argc, char* argv[])
 
 
     appConfig.checkUpdateOutput();
+
+    if (!argsParser.quet)
+    //if (1)
+    {
+        LOG_MSG << "Preprompt dirs:\n";
+
+        auto ppDirsAnnotated = appConfig.getPrepromptDirsAnnotated();
+        for(auto &&ppdp : ppDirsAnnotated)
+        {
+            LOG_MSG << "  " << appConfig.getPrepromptPathTypeAnnotation(ppdp.first) << ": " << ppdp.second << "\n";
+        }
+
+        LOG_MSG << "\n";
+    }
+
+
+    std::string processedFileType = "project";
+
+    auto prepromptReadingErrorHandler = [&](const std::string &ppFilename)
+    {
+        LOG_WARN("read-error") << "failed to read " << processedFileType << " file: '" << ppFilename << "'\n";
+    };
+
+    auto prepromptParsingErrorHandler = [&](const std::string &ppFilename, const std::exception &e)
+    {
+        LOG_WARN("parsing-error") << "failed to parsing " << processedFileType << " file: " << e.what() << ", file: '" << ppFilename << "'\n";
+    };
+
+    appConfig.readProjectFile(prepromptReadingErrorHandler, prepromptParsingErrorHandler);
+
+    LOG_MSG << "Project: " << appConfig.almaiProject <<"\n";
+
+    if (appConfig.aiName.empty())
+        appConfig.aiName = "deepseek";
+
+
+
 
 
 
@@ -373,25 +438,6 @@ int unsafeMain(int argc, char* argv[])
 
 
 
-    // std::vector<std::string> makePrepromptHeader()
-    // std::vector<std::string> makePrepromptFooter()
-    // addMdPartSeparator(std::vector<std::string> &lines, std::size_t sepLen=3u)
-
-
-    // auto resLines = almai::utils::simpleReplaceClipboardMarkerLine(appConfig.headerLines);
-
-
-
-    // if (!appConfig.footerLines.empty())
-    // {
-    //     resLines.push_back(std::string());
-    //     resLines.push_back(std::string(3u,'-'));
-    //     resLines.push_back(std::string());
-    // }
-    //  
-    // auto footerLines = almai::utils::simpleReplaceClipboardMarkerLine(appConfig.footerLines);
-    // resLines.insert(resLines.end(), footerLines.begin(), footerLines.end());
-
     {
         auto lines = appConfig.makePrepromptFooter();
         if (!lines.empty())
@@ -409,12 +455,6 @@ int unsafeMain(int argc, char* argv[])
 
     bool writeToFile = !appConfig.output.empty();
 
-    // if (appConfig.output.empty())
-    // {
-    //     std::cout << oss.str() << "\n";
-    //     return 0;
-    // }
-    //  
 
     std::string fullName;
     std::size_t sizeTotal = 0;

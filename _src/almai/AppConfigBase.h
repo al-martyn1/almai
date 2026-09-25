@@ -918,6 +918,9 @@ struct AppConfigBase
     bool addRoles(const std::string &rolesStr);
     bool addSkills(const std::string &rolesStr);
 
+    std::vector<std::string> resolveSkillList(const almai::PrepromptDatabase &ppDb) const;
+    std::string resolveSingleSkillId(const almai::PrepromptDatabase &ppDb, const std::string &skillId) const;
+
 
 }; // struct AppConfigBase
 

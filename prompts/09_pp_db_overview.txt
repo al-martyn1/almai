@@ -1,0 +1,22 @@
+!import-var: TESTS_ROOT
+!import-var: PROMPTS_DIR
+!import-var: LIBS
+; same as import-var
+!set-var-from-env: SRC
+!set-var-from-env: ALMAI_SRC
+
+!scan-path: "$(ALMAI_SRC)/**/*.c*,*.h*"
+!scan-path: "$(PROMPTS_DIR)/07_what_to_do.txt"
+!scan-path: "$(PROMPTS_DIR)/07_what_to_do.bat"
+!scan-path: "$(PROMPTS_DIR)/07_what_to_do_reply.bat"
+
+
+Я пишу что-то типа системы "агентского" программирования при помощи публичных ИИ-чатов.
+
+У меня реализована база препромптов (по ролям/скилам), и в AppConfig (AppConfigBase) (или где-то рядом) она вычитывается.
+
+Но, честно говоря, я написал её уже достаточно давно, и многое позабыл. Документации я не оставил, тогда всё было очевидно,
+а по прошествии времени всё выглядит не так и просто. Надо с этим разобраться.
+
+
+Нужна полная документация по API этой базы.

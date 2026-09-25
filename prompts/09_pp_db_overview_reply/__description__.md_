@@ -1,0 +1,771 @@
+# Документация по API базы препромптов, ролей и скилов
+
+Ниже — справочник по API, собранный по файлам `PrepromptDatabase.h`, `Preprompt.h`, `Project.h`, `AppConfigBase.*`, `PluralDatabase.h`, `utils.h`, `enums.h` и связанным местам.
+
+---
+
+## 1. Общая модель
+
+### 1.1. Препромпт
+
+Препромпт описывается парой:
+
+```
+<category>/<name>
+```
+
+- `category` — категория/тип препромпта. Обычно во множественном числе: `skills`, `instructions`, `knowledges`, `formats`, `outputs`.
+- `name` — имя препромпта внутри категории.
+
+Если категория не указана, система пытается найти препромпт по имени среди всех категорий. Если он найден ровно в одной категории — подставляется полное имя. Если в нескольких — возвращается ошибка неоднозначности.
+
+### 1.2. AI-движок
+
+Препромпты могут быть:
+
+- общими (`aiEngine == ""`);
+- специфичными для движка (`deepseek`, `qwen` и т.п.).
+
+При сканировании для конкретного `aiEngine` в базу попадают и общие, и специфичные препромпты. Специфичные перекрывают общие при совпадении `category/name`.
+
+### 1.3. PluralDatabase
+
+Категории нормализуются через `PluralDatabase`: `skill` → `skills`, `instruction` → `instructions` и т.п.
+
+---
+
+## 2. Основные типы
+
+### 2.1. `PrepromptCategorySetType`
+
+```cpp
+using PrepromptCategorySetType = std::unordered_set<std::string>;
+```
+
+Множество категорий, в которых найден препромпт. Используется для диагностики неоднозначности.
+
+---
+
+### 2.2. `PrepromptProps`
+
+```cpp
+struct PrepromptProps
+{
+    std::string type;      // категория: skill, instruction, knowledge, format, output
+    std::string name;      // имя препромпта
+    std::string file;      // полный путь к .md-файлу
+    bool        bExtended; // true — расширенный препромпт (каталог с .md/SKILL.md)
+};
+```
+
+#### `scanPath`
+
+```cpp
+template<typename MessageHandler>
+static std::vector<PrepromptProps> scanPath(
+    const std::string &path,
+    const std::string &scanForType,
+    MessageHandler msgHandler
+);
+
+static std::vector<PrepromptProps> scanPath(
+    const std::string &path,
+    const std::string &scanForType
+);
+```
+
+Сканирует один каталог `path` без рекурсии. Ищет:
+
+1. `.md`-файлы → простой препромпт (`bExtended = false`).
+2. Каталоги, внутри которых есть:
+   - `<каталог>/.md`
+   - `<каталог>/SKILL.md`
+   → расширенный препромпт (`bExtended = true`).
+
+Имя препромпта берётся из имени файла без расширения или из имени каталога.
+
+---
+
+### 2.3. `CommonDescription`
+
+```cpp
+struct CommonDescription
+{
+    std::string name;
+    std::string description;
+
+    static marty::json parse(CommonDescription &d, const std::string &text);
+    static marty::json parse(CommonDescription &d, const std::vector<std::string> &lines);
+    static CommonDescription parse(const std::string &text);
+    static CommonDescription parse(const std::vector<std::string> &lines);
+};
+```
+
+Читает YAML/JSON-поля `name`, `description`.
+
+---
+
+### 2.4. `PrepromptDescription`
+
+```cpp
+struct PrepromptDescription : public CommonDescription
+{
+    std::vector< std::vector<std::string> > requiresList;
+
+    static marty::json parse(PrepromptDescription &d, const std::string &text);
+    static marty::json parse(PrepromptDescription &d, const std::vector<std::string> &lines);
+    static PrepromptDescription parse(const std::string &text);
+    static PrepromptDescription parse(const std::vector<std::string> &lines);
+};
+```
+
+Дополнительно читает `requires`.
+
+Формат `requires`:
+
+- строка: `"a|b, c"` → `requiresList = { {"a","b"}, {"c"} }`
+- массив: `["a|b", "c"]` → `requiresList = { {"a","b"}, {"c"} }`
+
+Внешний вектор — это конъюнкция, внутренний — альтернативы (дизъюнкция). На текущий момент список только парсится и нормализуется, но не раскрывается автоматически.
+
+---
+
+### 2.5. `Preprompt`
+
+```cpp
+struct Preprompt
+{
+    PrepromptDescription description;
+    PrepromptProps       props;
+    mdxml::XmlTag        doc;
+
+    static Preprompt parse(const std::vector<std::string> &lines, bool throwErrors);
+    static Preprompt parse(const std::string &text, bool throwErrors);
+
+    std::size_t findSections(std::vector<std::string> &secTagNames) const;
+    std::size_t findSections(std::set<std::string> &secTagNames) const;
+    std::set<std::string> findSections() const;
+};
+```
+
+#### `parse`
+
+- Если первый непустой trimmed-линия равен `---`, читается frontmatter до следующего `---`.
+- Frontmatter парсится как `PrepromptDescription`.
+- Остальное тело парсится как Markdown XML (`mdxml::parseMarkdownXml`).
+- Если текста нет — ошибка при `throwErrors == true`.
+
+#### `findSections`
+
+Возвращает имена top-level XML-тегов тела препромпта. Используется для понимания структуры документа.
+
+---
+
+## 3. `PluralDatabase`
+
+```cpp
+struct PluralDatabase
+{
+    bool addWordForms(std::string singular, std::string plural);
+    bool addWordForms(const std::string &singularPluralPair);
+
+    std::string findPlural(std::string word) const;
+    std::string findSingular(std::string word) const;
+};
+```
+
+- `addWordForms("skill", "skills")` — добавляет пару.
+- `addWordForms("skill:skills")` — то же через строку.
+- `findPlural("skill")` → `"skills"`.
+- `findSingular("skills")` → `"skill"`.
+
+Если пары нет, работает простое правило: добавляет/убирает `s` на конце.
+
+---
+
+## 4. `AiPreprompts`
+
+```cpp
+struct AiPreprompts
+{
+    std::unordered_map< std::string, PrepromptMapType >         preprompts;
+    std::unordered_map< std::string, PrepromptPropsMapType >    prepromptProps;
+    std::unordered_map< std::string, PrepromptCategorySetType > prepromptCategories;
+
+    const Preprompt* findPreprompt(
+        const PluralDatabase* pPluralDb,
+        const std::string &prepromptId,
+        std::string *pPrepromptFullName = 0,
+        PrepromptCategorySetType *ppCategories = 0
+    ) const;
+
+    std::string makeCompletePpId(
+        const PluralDatabase *pPluralDb,
+        std::string prepromptId,
+        PrepromptCategorySetType *ppCategories = 0
+    ) const;
+
+    std::string makeCompletePpIdErrorMsg(
+        const std::string &requestedPrepromptId,
+        const std::string &foundPrepromptId,
+        const PrepromptCategorySetType &ppCategories,
+        bool *pGood = 0
+    ) const;
+
+    static bool splitPrepromptId(
+        const std::string prepromptId,
+        std::string &category,
+        std::string &id
+    );
+
+    static std::string mergePrepromptId(
+        const std::string &category,
+        const std::string &id
+    );
+};
+```
+
+### 4.1. `makeCompletePpId`
+
+Делает полный ID:
+
+1. Нормализует `prepromptId` через `utils::normalizePrepromptId`.
+2. Если есть разделитель `/` или `\` — проверяет, что категория и имя существуют.
+3. Если разделителя нет — ищет имя по всем категориям.
+   - Найдено ровно в одной → возвращает `category/name`.
+   - Найдено в нескольких → возвращает пустую строку, а `ppCategories` заполняется всеми категориями.
+   - Не найдено → пустая строка.
+
+### 4.2. `findPreprompt`
+
+Возвращает указатель на `Preprompt` или `nullptr`.
+
+Побочно заполняет:
+
+- `pPrepromptFullName` — полный ID;
+- `ppCategories` — категории, где найден.
+
+### 4.3. `makeCompletePpIdErrorMsg`
+
+Формирует человекочитаемое сообщение:
+
+- `"Complete name of 'tester': 'skills/tester'"`
+- `"Preprompt 'tester' not found"`
+- `"Preprompt 'tester' found in multiple categories: 'skills', 'instructions'"`
+
+`pGood` выставляется в `true`, если препромпт найден однозначно.
+
+### 4.4. `splitPrepromptId` / `mergePrepromptId`
+
+- `splitPrepromptId("skills/tester", cat, id)` → `cat="skills"`, `id="tester"`, возвращает `true`.
+- `splitPrepromptId("tester", cat, id)` → `cat=""`, `id="tester"`, возвращает `false`.
+- `mergePrepromptId("skills", "tester")` → `"skills/tester"`.
+
+---
+
+## 5. `PrepromptDatabase`
+
+```cpp
+struct PrepromptDatabase
+{
+    using PluralDatabaseSharedPtrType = std::shared_ptr<PluralDatabase>;
+
+    PluralDatabaseSharedPtrType                    pluralDb;
+    std::vector<std::string>                       prepromptDirs;
+    std::unordered_map< std::string, AiPreprompts> preprompts; // aiEngine -> AiPreprompts
+
+    PrepromptDatabase(
+        PluralDatabaseSharedPtrType pluralDb_,
+        const std::vector<std::string> &prepromptDirs_
+    );
+
+    const Preprompt* findPreprompt(
+        const std::string &aiEngine,
+        const std::string &prepromptId,
+        std::string *pPrepromptFullName = 0,
+        PrepromptCategorySetType *ppCategories = 0
+    ) const;
+
+    std::string makeCompletePpId(
+        const std::string &aiEngine,
+        const std::string &prepromptId,
+        PrepromptCategorySetType *ppCategories = 0
+    ) const;
+
+    std::string makeCompletePpIdErrorMsg(
+        const std::string &aiEngine,
+        const std::string &requestedPrepromptId,
+        const std::string &foundPrepromptId,
+        const PrepromptCategorySetType &ppCategories,
+        bool *pGood = 0
+    ) const;
+
+    static bool splitPrepromptId(
+        const std::string prepromptId,
+        std::string &category,
+        std::string &id
+    );
+
+    static std::string mergePrepromptId(
+        const std::string &category,
+        const std::string &id
+    );
+
+    static void scanForPrepromptsProps(
+        std::vector<std::string> *pScannedFolders,
+        std::unordered_map< std::string, std::unordered_map<std::string, PrepromptProps> > &scannedPrepromptProps,
+        std::unordered_map< std::string, std::unordered_set<std::string> > &scannedPrepromptCategories,
+        const PluralDatabase &pluralDb_,
+        const std::string &aiEngine_,
+        const std::vector<std::string> &ppDirs,
+        std::vector<std::string> prepromptCategoriesToScan
+    );
+
+    template<typename PrepromptReadingErrorHandler, typename PrepromptParsingErrorHandler>
+    void scanForPreprompts(
+        std::vector<std::string> *pScannedFolders,
+        std::vector<std::string> aiEngines,
+        std::vector<std::string> prepromptCategoriesToScan,
+        PrepromptReadingErrorHandler readingErrHandler,
+        PrepromptParsingErrorHandler parsingErrorHandler
+    );
+};
+```
+
+### 5.1. Конструктор
+
+```cpp
+PrepromptDatabase(pluralDb, prepromptDirs)
+```
+
+Сохраняет `pluralDb` и список каталогов поиска.
+
+### 5.2. `scanForPrepromptsProps`
+
+Статический метод. Сканирует каталоги и заполняет «сырые» props без чтения содержимого `.md`.
+
+Алгоритм:
+
+1. Формирует список AI-движков: `""` и `aiEngine_` (если не пустой).
+2. Для каждого движка:
+   - для каждого `ppDir`:
+     - если движок не пустой, добавляет подкаталог `.<aiEngine>`;
+     - для каждой категории из `prepromptCategoriesToScan`:
+       - каталог `ppDir/<category>`;
+       - `PrepromptProps::scanPath`.
+3. Заполняет:
+   - `scannedPrepromptProps[type][name] = props`;
+   - `scannedPrepromptCategories[name].insert(type)`.
+
+Категории предварительно переводятся во множественное число через `pluralDb_.findPlural`.
+
+### 5.3. `scanForPreprompts`
+
+Основной метод сканирования и загрузки препромптов.
+
+Параметры:
+
+- `pScannedFolders` — сюда складываются просканированные каталоги (может быть `nullptr`).
+- `aiEngines` — список движков. Внутрь всегда добавляется `""`.
+- `prepromptCategoriesToScan` — категории, например `{ "skill", "instruction", "knowledge", "format", "output" }`.
+- `readingErrHandler(filename)` — вызывается, если файл не прочитан.
+- `parsingErrorHandler(filename, exception)` — вызывается при ошибке парсинга.
+
+Алгоритм:
+
+1. Для каждого `aiEngine` (включая `""`):
+   - создаёт `AiPreprompts`;
+   - вызывает `scanForPrepromptsProps`;
+   - для каждого найденного `PrepromptProps`:
+     - читает файл;
+     - парсит `Preprompt::parse(lines, true)`;
+     - при ошибке вызывает `parsingErrorHandler` и пробует `parse(lines, false)`;
+     - присваивает `preprompt.props = ppProps`;
+     - нормализует `requiresList` через `utils::normalizePrepromptId`;
+     - сохраняет в `aiPrepromptsItem.preprompts[type][name]`.
+   - сохраняет `AiPreprompts` в `preprompts[aiEngine]`.
+
+Важно: для конкретного движка в его `AiPreprompts` попадают и общие препромпты, и специфичные. Специфичные перекрывают общие.
+
+---
+
+## 6. Роли и скилы
+
+### 6.1. `Project`
+
+```cpp
+struct Project
+{
+    std::unordered_map<std::string, std::vector<std::string>> roles;
+
+    template<typename WarningHandler>
+    void normalizeRoles(
+        const PrepromptDatabase &ppDb,
+        WarningHandler warningHandler
+    );
+
+    template<typename ErrorHandler, typename WarningHandler>
+    bool checkNormalize(
+        const PrepromptDatabase &ppDb,
+        ErrorHandler errorHandler,
+        WarningHandler warningHandler
+    );
+
+    template<typename SkillNamePrepareHandler>
+    bool updateRoleFromRoleString(
+        const std::string &role,
+        const std::string &str,
+        SkillNamePrepareHandler skillNamePrepareHandler
+    );
+
+    template<typename SkillNamePrepareHandler>
+    bool updateRoleFromRoleStringList(
+        const std::string &role,
+        const std::string &strList,
+        SkillNamePrepareHandler skillNamePrepareHandler
+    );
+
+    template<typename SkillNamePrepareHandler>
+    static marty::json parse(
+        Project &p,
+        const std::string &text,
+        SkillNamePrepareHandler skillNamePrepareHandler,
+        bool throwErrors
+    );
+};
+```
+
+`roles` — это отображение:
+
+```
+роль -> список скилов
+```
+
+Например:
+
+```yaml
+roles:
+  c-cpp-dev:
+    - skills/cpp-dev
+    - skills/c-dev
+  uni-tester: skills/auto-tester, skills/manual-tester
+```
+
+#### `normalizeRoles`
+
+Для каждого скила в каждой роли вызывает `ppDb.makeCompletePpId("", skill, &skillCategories)`. Если найден однозначно — заменяет на полный ID. Иначе вызывает `warningHandler`.
+
+#### `checkNormalize`
+
+Вызывает `normalizeRoles`. `errorHandler` сейчас не используется.
+
+#### `updateRoleFromRoleString` / `updateRoleFromRoleStringList`
+
+Добавляют/убирают скилы в роли. Используют `umba::parse_utils::optionStringUpdateSet` / `optionStringListUpdateSet`. Поддерживают префиксы `+` и `-`, разделители `;`, `,` и т.п.
+
+#### `parse`
+
+Читает YAML/JSON. Поддерживает два формата `roles`:
+
+1. Объект:
+
+```yaml
+roles:
+  role1: skill1, skill2
+  role2:
+    - skill3
+    - skill4
+```
+
+2. Массив:
+
+```yaml
+roles:
+  - role1: skill1, skill2
+  - role2:
+      - skill3
+      - skill4
+  - "role3: skill5; skill6"
+```
+
+### 6.2. `AppConfigBase`: роли и скилы
+
+Поля:
+
+```cpp
+std::vector<std::string> roles;
+std::vector<std::string> skills;
+```
+
+Методы:
+
+```cpp
+bool addRoles(const std::string &rolesStr);
+bool addSkills(const std::string &skillsStr);
+
+std::vector<std::string> resolveSkillList(
+    const almai::PrepromptDatabase &ppDb
+) const;
+
+std::string resolveSingleSkillId(
+    const almai::PrepromptDatabase &ppDb,
+    const std::string &skillId
+) const;
+
+bool roleSetupFromCli(const std::string &roleSetupStr);
+```
+
+#### `addRoles` / `addSkills`
+
+Разбивают строку по пробелам, тримят, приводят к нижнему регистру и добавляют уникальные значения.
+
+#### `resolveSkillList`
+
+Алгоритм:
+
+1. Для каждой роли из `roles`:
+   - ищет роль в `almaiProject.roles`;
+   - для каждого скила роли вызывает `resolveSingleSkillId`;
+   - добавляет результат без дубликатов.
+2. Для каждого модификатора из `skills`:
+   - если начинается с `+` или `-`, запоминает префикс;
+   - вызывает `resolveSingleSkillId`;
+   - `+` — добавить, если нет;
+   - `-` — удалить, если есть.
+
+Пример:
+
+```cpp
+roles  = { "c-cpp-dev" };
+skills = { "+skills/jni-master", "-skills/c-dev" };
+
+almaiProject.roles["c-cpp-dev"] = { "skills/cpp-dev", "skills/c-dev" };
+```
+
+Результат:
+
+```
+skills/cpp-dev
+skills/jni-master
+```
+
+#### `resolveSingleSkillId`
+
+```cpp
+PrepromptCategorySetType ppCatSet;
+std::string complete = ppDb.makeCompletePpId(aiName, skillId, &ppCatSet);
+if (!complete.empty())
+    return complete;
+return skillId;
+```
+
+Если найден полный ID — возвращает его. Иначе возвращает исходную строку (для диагностики).
+
+#### `roleSetupFromCli`
+
+Разбирает строку вида `ROLE:skill[,skill2...]` и вызывает `almaiProject.updateRoleFromRoleStringList`.
+
+#### `makeSkillPrepareHandler`
+
+Возвращает лямбду, которая:
+
+- приводит строку к нижнему регистру;
+- нормализует ID препромпта через `normalizePrepromptId`.
+
+---
+
+## 7. Пути поиска препромптов
+
+### 7.1. `PrepromptPathType`
+
+```cpp
+enum class PrepromptPathType : std::uint32_t
+{
+    invalid          = (std::uint32_t)(-1),
+    unknown          = (std::uint32_t)(-1),
+    installDirs      = 0x0000,
+    begin            = 0x0000,
+    builtinOptions   = 0x0001,
+    envPaths         = 0x0002,
+    projectDirs      = 0x0003,
+    cliOptions       = 0x0004,
+    end              = 0x0005
+};
+```
+
+Порядок в `getPrepromptDirs()`:
+
+```
+installDirs → builtinOptions → envPaths → projectDirs → cliOptions
+```
+
+Фактически при сканировании побеждает тот путь, который обработан позже. Поэтому `cliOptions` имеет наивысший приоритет, `installDirs` — наименьший. Комментарий в enum про «наивысший приоритет» у `installDirs` не соответствует фактическому поведению.
+
+### 7.2. Поля и методы `AppConfigBase`
+
+```cpp
+std::unordered_map<PrepromptPathType, std::vector<std::string>> prepromptDirs;
+PrepromptPathType curPrepromptPathType = PrepromptPathType::builtinOptions;
+
+std::vector<std::string> getPrepromptDirs() const;
+std::vector<std::pair<PrepromptPathType, std::string>> getPrepromptDirsAnnotated() const;
+
+void addPrepromptPath(PrepromptPathType ppt, std::string path);
+void addPrepromptPath(const std::string &path);
+
+void setAppRoot(const std::string &appRoot_, const std::string &appConfPath_);
+void setProjectRoot(const std::string &projectRoot_);
+void addEnvironmentPrepromptPaths();
+
+bool findProjectRoot(std::string startPath = umba::filesys::getCurrentDirectory());
+bool isProjectRootPath(const std::string &path, std::string *pAlmaiFolderName) const;
+```
+
+#### `addPrepromptPath`
+
+Добавляет путь в конец вектора для указанного типа. Позже добавленный путь имеет более высокий приоритет.
+
+#### `getPrepromptDirs`
+
+Возвращает плоский список путей в порядке типов. Именно этот список передаётся в `PrepromptDatabase`.
+
+#### `getPrepromptDirsAnnotated`
+
+То же, но с указанием типа пути.
+
+#### `setAppRoot`
+
+Добавляет в `installDirs`:
+
+- `<appConfPath>/preprompts.almai`
+- `<appConfPath>/preprompts.almai.custom`
+
+если они существуют.
+
+#### `setProjectRoot`
+
+Добавляет в `projectDirs`:
+
+- `<projectRoot>/<almaiDir>/.preprompts`
+- или `<projectRoot>/.preprompts`
+
+если каталог существует.
+
+#### `addEnvironmentPrepromptPaths`
+
+Читает переменную окружения `ALMAI_OVERLAY_PREPROMPTS`, разбирает список путей и добавляет их в `envPaths`.
+
+#### `findProjectRoot`
+
+Ищет вверх по дереву каталог, содержащий `.almai`/`.ALMAI` или один из `projectRootStopNames`. Если найден `.almai/PROJECT.yaml` — сохраняет его в `projectFile`.
+
+---
+
+## 8. Чтение проектного файла
+
+```cpp
+template<typename PrepromptReadingErrorHandler, typename PrepromptParsingErrorHandler>
+void readProjectFile(
+    PrepromptReadingErrorHandler readingErrHandler,
+    PrepromptParsingErrorHandler parsingErrorHandler
+);
+
+template<typename ErrorHandler, typename WarningHandler>
+bool projectCheckNormalize(
+    const PrepromptDatabase &ppDb,
+    ErrorHandler errorHandler,
+    WarningHandler warningHandler
+);
+```
+
+- `readProjectFile` читает `projectFile`, парсит через `Project::parse`.
+- `projectCheckNormalize` вызывает `almaiProject.checkNormalize`.
+
+---
+
+## 9. Пример использования
+
+```cpp
+// 1. Создаём PluralDatabase
+auto pluralDb = std::make_shared<almai::PluralDatabase>();
+pluralDb->addWordForms("skill", "skills");
+pluralDb->addWordForms("instruction", "instructions");
+pluralDb->addWordForms("knowledge", "knowledges");
+pluralDb->addWordForms("format", "formats");
+pluralDb->addWordForms("output", "outputs");
+
+// 2. Создаём базу препромптов
+almai::PrepromptDatabase ppDb(pluralDb, appConfig.getPrepromptDirs());
+
+// 3. Сканируем
+std::vector<std::string> scannedFolders;
+std::vector<std::string> aiEngines = { "deepseek", "qwen" };
+std::vector<std::string> categories = {
+    "skill", "instruction", "knowledge", "format", "output"
+};
+
+ppDb.scanForPreprompts(
+    &scannedFolders,
+    aiEngines,
+    categories,
+    [](const std::string &file) {
+        LOG_WARN("read-error") << "failed to read: " << file << "\n";
+    },
+    [](const std::string &file, const std::exception &e) {
+        LOG_WARN("parse-error") << file << ": " << e.what() << "\n";
+    }
+);
+
+// 4. Поиск препромпта
+almai::PrepromptCategorySetType cats;
+std::string fullId = ppDb.makeCompletePpId("deepseek", "tester", &cats);
+if (!fullId.empty()) {
+    const almai::Preprompt *pp = ppDb.findPreprompt("deepseek", "tester");
+    if (pp) {
+        // используем pp
+    }
+} else {
+    bool good = false;
+    std::string msg = ppDb.makeCompletePpIdErrorMsg(
+        "deepseek", "tester", fullId, cats, &good
+    );
+    LOG_WARN("pp") << msg << "\n";
+}
+
+// 5. Роли и скилы
+appConfig.roles  = { "c-cpp-dev" };
+appConfig.skills = { "+skills/jni-master", "-skills/c-dev" };
+appConfig.aiName = "deepseek";
+
+auto skillIds = appConfig.resolveSkillList(ppDb);
+for (const auto &id : skillIds) {
+    LOG_MSG << "skill: " << id << "\n";
+}
+```
+
+---
+
+## 10. Ограничения и важные замечания
+
+1. **Раскрытие зависимостей не реализовано.**
+   `AiPreprompts::expandPrepromptDependenciesImpl` — заглушка. `requiresList` парсится и нормализуется, но автоматическое подключение зависимостей отсутствует.
+
+2. **Приоритет путей.**
+   Фактически побеждает путь, добавленный позже. `getPrepromptDirs()` возвращает `installDirs` первым, `cliOptions` последним. Поэтому `cliOptions` перекрывает остальные.
+
+3. **Неоднозначность имён.**
+   Если имя препромпта встречается в нескольких категориях, `makeCompletePpId` вернёт пустую строку, а `ppCategories` будет содержать все категории. Нужно явно указывать `category/name`.
+
+4. **AI-движок.**
+   Для конкретного движка в базу попадают общие и специфичные препромпты. Специфичные перекрывают общие. Для пустого `aiEngine` доступны только общие.
+
+5. **Расширенные препромпты.**
+   Поддерживаются каталоги с `.md` или `SKILL.md`. Имя берётся из имени каталога.
+
+6. **`PrepromptProps::scanPath` не рекурсивен.**
+   Сканируется только один уровень каталога.
+
+7. **`projectRootStopNames`**
+   В `AppConfigBase` — это поле-множество. Его можно пополнять через `addProjectRootMarker`. В утилитах `findProjectRoot` есть свой набор по умолчанию.
+
+---

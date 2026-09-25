@@ -397,4 +397,81 @@ bool AppConfigBase::addSkills(const std::string &str)
 }
 
 //--------------------------------------------------------------------------------------------------------------------
+std::vector<std::string> AppConfigBase::resolveSkillList(const almai::PrepromptDatabase &ppDb) const
+{
+    std::vector<std::string> result;
 
+    auto findInResult = [&](const std::string &id) -> std::vector<std::string>::iterator
+    {
+        return std::find(result.begin(), result.end(), id);
+    };
+
+    // --- Шаг 1. Скилы по ролям ---
+    for(const auto &roleRaw : roles)
+    {
+        std::string role = roleRaw;
+        umba::string::tolower(role);
+
+        auto itRole = almaiProject.roles.find(role);
+        if (itRole==almaiProject.roles.end())
+        {
+            // Роль не найдена — игнорируем молча (или логировать через warning-хендлер)
+            continue;
+        }
+
+        for(const auto &skillRaw : itRole->second)
+        {
+            std::string id = resolveSingleSkillId(ppDb, skillRaw);
+
+            // Добавляем без дубликатов, сохраняя порядок
+            if (findInResult(id)==result.end())
+                result.push_back(id);
+        }
+    }
+
+    // --- Шаг 2. Модификаторы из массива skills ---
+    for(const auto &mod : skills)
+    {
+        if (mod.empty())
+            continue;
+
+        char        prefix = '+';
+        std::string name   = mod;
+
+        if (mod[0]=='+' || mod[0]=='-')
+        {
+            prefix = mod[0];
+            name   = mod.substr(1);
+        }
+
+        std::string id = resolveSingleSkillId(ppDb, name);
+
+        auto it = findInResult(id);
+
+        if (prefix=='-')
+        {
+            if (it!=result.end())
+                result.erase(it);
+        }
+        else
+        {
+            if (it==result.end())
+                result.push_back(id);
+        }
+    }
+
+    return result;
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+std::string AppConfigBase::resolveSingleSkillId(const almai::PrepromptDatabase &ppDb, const std::string &skillId) const
+{
+    PrepromptCategorySetType ppCatSet;
+
+    std::string complete = ppDb.makeCompletePpId(aiName, skillId, &ppCatSet);
+    if (!complete.empty())
+        return complete;
+
+    // Не нашли — возвращаем как есть (пригодится для диагностики выше по стеку)
+    return skillId;
+}

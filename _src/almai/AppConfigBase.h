@@ -752,7 +752,7 @@ struct AppConfigBase
     //--------------------------------------------------------------------------------------------------------------------
 
     using PluralDatabaseSharedPtrType = std::shared_ptr<almai::PluralDatabase>;
-    using PrepromptDatabaseMap        = std::unordered_map<std::string, almai::PrepromptDatabase>;
+    //using PrepromptDatabaseMap        = std::unordered_map<std::string, almai::PrepromptDatabase>;
 
 
     std::string                       appRoot;
@@ -773,10 +773,17 @@ struct AppConfigBase
     std::string                       curLang;
 
     //std::string                       curAiEngine; // deepseek, qwen
-    PrepromptDatabaseMap              ppDBases;
+    PrepromptDatabase                 ppDBase;
 
     almai::Project                    almaiProject;
 
+    std::vector<std::string>          prepromptTypes; // = { "skill", "instruction", "knowledge", "format", "output" };
+    std::vector<std::string>          knownAiEngines; // = { "skill", "instruction", "knowledge", "format", "output" };
+
+
+    bool isKnownEngine(const std::string &name) const;
+    std::string getEngineName() const;
+    std::string getUserLang() const;
 
 
     // UMBA_RULE_OF_FIVE_COPY_MOVE(FoundFileInfo, default, default, default, default);
@@ -889,6 +896,25 @@ struct AppConfigBase
         return almaiProject.checkNormalize(ppDb, errorHandler, warningHandler);
     }
 
+    // template<typename PrepromptReadingErrorHandler, typename PrepromptParsingErrorHandler>
+    // void scanForPreprompts( std::vector<std::string>       *pScannedFolders
+    //                       , std::vector<std::string>       aiEngines
+    //                       , std::vector<std::string>       prepromptCategoriesToScan
+    //                       , PrepromptReadingErrorHandler   readingErrHandler
+    //                       , PrepromptParsingErrorHandler   parsingErrorHandler
+    //                       )
+    // {
+    // }
+
+    // void scanForPrepromptsProps( std::vector<std::string> *pScannedFolders
+    //                            , std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > &scannedPrepromptProps
+    //                            , std::unordered_map< std::string, std::unordered_set<std::string> > &scannedPrepromptCategories
+    //                            , const almai::PluralDatabase    &pluralDb_
+    //                            //, std::vector<std::string>       aiEngines
+    //                            , const std::string              &aiEngine_
+    //                            , const std::vector<std::string> &ppDirs
+    //                            , std::vector<std::string>       prepromptCategoriesToScan
+    //                            );
     //------------------------------
 
 

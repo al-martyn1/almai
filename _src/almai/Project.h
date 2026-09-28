@@ -38,6 +38,8 @@ namespace almai {
 struct Project
 {
     std::unordered_map<std::string, std::vector<std::string> >       roles;
+    std::string                                                      aiEngine;
+    std::string                                                      prefferedLang;
 
 
     template<typename WarningHandler>
@@ -241,6 +243,27 @@ struct Project
 
 
         } // if (j.find("roles")!=j.end())
+
+        else if (j.find("ai-engine")!=j.end())
+        {
+            p.aiEngine = j["ai-engine"].get<std::string>();
+        }
+        else if (j.find("aiEngine")!=j.end())
+        {
+            p.aiEngine = j["aiEngine"].get<std::string>();
+        }
+        else if (j.find("ai")!=j.end())
+        {
+            p.aiEngine = j["ai"].get<std::string>();
+        }
+
+        else if (j.find("lang")!=j.end())
+        {
+            p.prefferedLang = j["lang"].get<std::string>();
+        }
+
+
+
 
         return j;
     }

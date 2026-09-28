@@ -353,6 +353,58 @@ bool AppConfigBase::findProjectRoot(std::string startPath)
 }
 
 //--------------------------------------------------------------------------------------------------------------------
+// void AppConfigBase::scanForPrepromptsProps( std::vector<std::string> *pScannedFolders
+//                            , std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > &scannedPrepromptProps
+//                            , std::unordered_map< std::string, std::unordered_set<std::string> > &scannedPrepromptCategories
+//                            , const almai::PluralDatabase    &pluralDb_
+//                            //, std::vector<std::string>       aiEngines
+//                            , const std::string              &aiEngine_
+//                            , const std::vector<std::string> &ppDirs
+//                            , std::vector<std::string>       prepromptCategoriesToScan
+//                            )
+// {
+//     almai::PrepromptDatabase::scanForPrepromptsProps( pScannedFolders, scannedPrepromptProps, scannedPrepromptCategories
+//                                                     , pluralDb, getEngineName(), 
+//                                                     , 
+//                                                     )
+//     
+// pluralDb
+//     PrepromptDatabaseMap              ppDBases;
+//  
+//     almai::Project                    almaiProject;
+//  
+//     std::vector<std::string>          prepromptTypes = { "skill", "instruction", "knowledge", "format", "output" };
+//  
+// }
+
+//--------------------------------------------------------------------------------------------------------------------
+bool AppConfigBase::isKnownEngine(const std::string &name) const
+{
+    return ppDBases.find(name)!=ppDBases.end();
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+std::string AppConfigBase::getEngineName() const
+{
+    if (!aiName.empty() && isKnownEngine(aiName))
+        return aiName;
+
+    if (!almaiProject.aiEngine.empty() && isKnownEngine(almaiProject.aiEngine))
+        return almaiProject.aiEngine;
+
+    return std::string();
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+std::string AppConfigBase::getUserLang() const
+{
+    if (!almaiProject.prefferedLang.empty())
+        return almaiProject.prefferedLang;
+
+    return "en";
+}
+
+//--------------------------------------------------------------------------------------------------------------------
 // template<>
 static
 void addUniqueLowerStrToVec(std::vector<std::string> &vec, std::string s)
@@ -397,6 +449,7 @@ bool AppConfigBase::addSkills(const std::string &str)
 }
 
 //--------------------------------------------------------------------------------------------------------------------
+#if 0
 std::vector<std::string> AppConfigBase::resolveSkillList(const almai::PrepromptDatabase &ppDb) const
 {
     std::vector<std::string> result;
@@ -475,3 +528,4 @@ std::string AppConfigBase::resolveSingleSkillId(const almai::PrepromptDatabase &
     // Не нашли — возвращаем как есть (пригодится для диагностики выше по стеку)
     return skillId;
 }
+#endif

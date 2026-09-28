@@ -81,6 +81,9 @@ int operator()( const StringType                                &a           //!
 #include "cli_opt_parsers/basic_options.h"
 #include "cli_opt_parsers/overwrite.h"
 // #include "cli_opt_parsers/list.h"
+//
+#include "cli_opt_parsers/ai-opts.h"
+//
 #include "cli_opt_parsers/dict.h"
 #include "cli_opt_parsers/output.h"
 #include "cli_opt_parsers/filename_decoration.h"

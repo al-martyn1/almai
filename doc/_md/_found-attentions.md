@@ -11,20 +11,20 @@ Generator: Umba Brief Scanner
 
 # _libs/marty_cpp
 
-- `[_libs/marty_cpp/marty_cpp.h:3284]`
+- `[_libs/marty_cpp/marty_cpp.h:3289]`
   название? UPD: чего я тут хотел, уже не помню, надо бы коменты более развёрнуто
   делать
 
-- `[_libs/marty_cpp/marty_cpp.h:4240]`
+- `[_libs/marty_cpp/marty_cpp.h:4245]`
   Тут получить локализацию
 
-- `[_libs/marty_cpp/marty_cpp.h:4415]`
+- `[_libs/marty_cpp/marty_cpp.h:4420]`
   Тут получить локализацию
 
-- `[_libs/marty_cpp/marty_cpp.h:5372]`
+- `[_libs/marty_cpp/marty_cpp.h:5377]`
   std::make_tuple - что тут сказать хотел, непонятно, забыл уже
 
-- `[_libs/marty_cpp/marty_cpp.h:5557]`
+- `[_libs/marty_cpp/marty_cpp.h:5562]`
   заменить std::stoll, чтоб умело парсить двоичные константы и разделители try
 
 
@@ -176,7 +176,13 @@ Generator: Umba Brief Scanner
 
 # _src/almai
 
-- `[_src/almai/almai.cpp:162]`
+- `[_src/almai/almai-md-join.cpp:189]`
+  --------------
+
+- `[_src/almai/almai-md-join.cpp:215]`
+  --------------
+
+- `[_src/almai/almai.cpp:163]`
   --------------
 
 - `[_src/almai/md_utils.h:963]`
@@ -190,9 +196,9 @@ Generator: Umba Brief Scanner
   setDescription обязателеь, он "финализирует" опцию. Может быть пустым. if
   (opt.isOption("recursive") || opt.setDescription(""))
 
-- `[_src/almai/_test08.cpp:194]`
+- `[_src/almai/_test08.cpp:195]`
   --------------
 
-- `[_src/almai/_test09.cpp:162]`
+- `[_src/almai/_test09.cpp:163]`
   --------------
 

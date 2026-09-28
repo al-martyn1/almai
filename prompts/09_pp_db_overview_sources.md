@@ -4713,10 +4713,80 @@ int unsafeMain(int argc, char* argv[])
 
     appConfig.readProjectFile(prepromptReadingErrorHandler, prepromptParsingErrorHandler);
 
-    LOG_MSG << "Project: " << appConfig.almaiProject <<"\n";
+    if (!argsParser.quet)
+    {
+        LOG_MSG << "Project: " << appConfig.almaiProject <<"\n";
+    }
 
-    if (appConfig.aiName.empty())
-        appConfig.aiName = "deepseek";
+    // if (appConfig.aiName.empty())
+    //     appConfig.aiName = "deepseek";
+
+
+    processedFileType = "preprompt";
+
+    ppDb.scanForPreprompts( &scannedFolders, {} // aiEngines
+                          , appConfig.prepromptTypes
+                          , prepromptReadingErrorHandler, prepromptParsingErrorHandler
+                          );
+
+    // std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > scannedPrepromptProps;
+    // std::unordered_map< std::string, std::unordered_set<std::string> > scannedPrepromptTypes;
+    //
+    // appConfig.scanForPreprompts(&scannedFolders, scannedPrepromptProps, scannedPrepromptTypes);
+    //
+    // processedFileType = "preprompt";
+    // std::unordered_map< std::string, std::unordered_map<std::string, almai::Preprompt> > scannedPreprompts;
+    // appConfig.scanForPreprompts(scannedPreprompts, scannedPrepromptProps, prepromptReadingErrorHandler, prepromptParsingErrorHandler);
+
+    if (!argsParser.quet)
+    {
+        LOG_MSG << "Scanned folders:\n";
+
+        for(const auto &fldr: scannedFolders)
+        {
+            LOG_MSG << "  " << fldr << "\n";
+        }
+
+        LOG_MSG << "\n";
+
+        for(const auto &[aiEngine, aiPreprompts] : ppDb.preprompts)
+        {
+            LOG_MSG << "\n";
+            LOG_MSG << "AiEngine: " << (!aiEngine.empty() ? aiEngine : std::string("<NONAME>")) << "\n";
+
+            LOG_MSG << "\n  Found preprompts:\n";
+
+            for(const auto &[ppTypeStr, ppNameMap] : aiPreprompts.prepromptProps)
+            {
+                LOG_MSG << "    " << ppTypeStr << ":\n";
+
+                for(const auto &[ppName, ppProps] : ppNameMap)
+                {
+                    LOG_MSG << "      " << ppProps << "\n";
+                }
+            }
+
+            LOG_MSG << "\n";
+
+
+            LOG_MSG << "  Found preprompt types:\n";
+
+            for(const auto &[ppId, ppTypeSet] : aiPreprompts.prepromptCategories)
+            {
+                std::size_t cnt = 0;
+                LOG_MSG << "    " << ppId; // << ""
+                for(const auto ppType: ppTypeSet)
+                {
+                    LOG_MSG << (cnt ? ", " : ": ") << ppType;
+                    ++cnt;
+                }
+                LOG_MSG << "\n";
+            }
+
+            LOG_MSG << "\n";
+        }
+
+    }
 
 
 
@@ -4778,6 +4848,7 @@ int unsafeMain(int argc, char* argv[])
         for(const auto& [k, v] : macros)
             LOG_MSG << "  " << k << ": " << v << "\n";
     }
+
 
 
     for( auto &&f: foundFiles)
@@ -5903,6 +5974,58 @@ bool AppConfigBase::findProjectRoot(std::string startPath)
 }
 
 //--------------------------------------------------------------------------------------------------------------------
+// void AppConfigBase::scanForPrepromptsProps( std::vector<std::string> *pScannedFolders
+//                            , std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > &scannedPrepromptProps
+//                            , std::unordered_map< std::string, std::unordered_set<std::string> > &scannedPrepromptCategories
+//                            , const almai::PluralDatabase    &pluralDb_
+//                            //, std::vector<std::string>       aiEngines
+//                            , const std::string              &aiEngine_
+//                            , const std::vector<std::string> &ppDirs
+//                            , std::vector<std::string>       prepromptCategoriesToScan
+//                            )
+// {
+//     almai::PrepromptDatabase::scanForPrepromptsProps( pScannedFolders, scannedPrepromptProps, scannedPrepromptCategories
+//                                                     , pluralDb, getEngineName(),
+//                                                     ,
+//                                                     )
+//
+// pluralDb
+//     PrepromptDatabaseMap              ppDBases;
+//
+//     almai::Project                    almaiProject;
+//
+//     std::vector<std::string>          prepromptTypes = { "skill", "instruction", "knowledge", "format", "output" };
+//
+// }
+
+//--------------------------------------------------------------------------------------------------------------------
+bool AppConfigBase::isKnownEngine(const std::string &name) const
+{
+    return ppDBases.find(name)!=ppDBases.end();
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+std::string AppConfigBase::getEngineName() const
+{
+    if (!aiName.empty() && isKnownEngine(aiName))
+        return aiName;
+
+    if (!almaiProject.aiEngine.empty() && isKnownEngine(almaiProject.aiEngine))
+        return almaiProject.aiEngine;
+
+    return std::string();
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+std::string AppConfigBase::getUserLang() const
+{
+    if (!almaiProject.prefferedLang.empty())
+        return almaiProject.prefferedLang;
+
+    return "en";
+}
+
+//--------------------------------------------------------------------------------------------------------------------
 // template<>
 static
 void addUniqueLowerStrToVec(std::vector<std::string> &vec, std::string s)
@@ -5947,6 +6070,7 @@ bool AppConfigBase::addSkills(const std::string &str)
 }
 
 //--------------------------------------------------------------------------------------------------------------------
+#if 0
 std::vector<std::string> AppConfigBase::resolveSkillList(const almai::PrepromptDatabase &ppDb) const
 {
     std::vector<std::string> result;
@@ -6025,6 +6149,7 @@ std::string AppConfigBase::resolveSingleSkillId(const almai::PrepromptDatabase &
     // Не нашли — возвращаем как есть (пригодится для диагностики выше по стеку)
     return skillId;
 }
+#endif
 ~~~
 
 **\_src/almai/AppConfigBase.h**
@@ -6808,6 +6933,12 @@ struct AppConfigBase
 
     almai::Project                    almaiProject;
 
+    std::vector<std::string>          prepromptTypes = { "skill", "instruction", "knowledge", "format", "output" };
+
+
+    bool isKnownEngine(const std::string &name) const;
+    std::string getEngineName() const;
+    std::string getUserLang() const;
 
 
     // UMBA_RULE_OF_FIVE_COPY_MOVE(FoundFileInfo, default, default, default, default);
@@ -6920,6 +7051,25 @@ struct AppConfigBase
         return almaiProject.checkNormalize(ppDb, errorHandler, warningHandler);
     }
 
+    // template<typename PrepromptReadingErrorHandler, typename PrepromptParsingErrorHandler>
+    // void scanForPreprompts( std::vector<std::string>       *pScannedFolders
+    //                       , std::vector<std::string>       aiEngines
+    //                       , std::vector<std::string>       prepromptCategoriesToScan
+    //                       , PrepromptReadingErrorHandler   readingErrHandler
+    //                       , PrepromptParsingErrorHandler   parsingErrorHandler
+    //                       )
+    // {
+    // }
+
+    // void scanForPrepromptsProps( std::vector<std::string> *pScannedFolders
+    //                            , std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > &scannedPrepromptProps
+    //                            , std::unordered_map< std::string, std::unordered_set<std::string> > &scannedPrepromptCategories
+    //                            , const almai::PluralDatabase    &pluralDb_
+    //                            //, std::vector<std::string>       aiEngines
+    //                            , const std::string              &aiEngine_
+    //                            , const std::vector<std::string> &ppDirs
+    //                            , std::vector<std::string>       prepromptCategoriesToScan
+    //                            );
     //------------------------------
 
 
@@ -7056,6 +7206,9 @@ int operator()( const StringType                                &a           //!
 #include "cli_opt_parsers/basic_options.h"
 #include "cli_opt_parsers/overwrite.h"
 // #include "cli_opt_parsers/list.h"
+//
+#include "cli_opt_parsers/ai-opts.h"
+//
 #include "cli_opt_parsers/dict.h"
 #include "cli_opt_parsers/output.h"
 #include "cli_opt_parsers/filename_decoration.h"
@@ -10347,7 +10500,9 @@ int operator()( const StringType                                &a           //!
 
 #include "cli_opt_parsers/basic_options.h"
 #include "cli_opt_parsers/overwrite.h"
-
+//
+#include "cli_opt_parsers/ai-opts.h"
+//
 #include "cli_opt_parsers/dict.h"
 #include "cli_opt_parsers/output.h"
 #include "cli_opt_parsers/filename_decoration.h"
@@ -10360,7 +10515,7 @@ int operator()( const StringType                                &a           //!
 #include "cli_opt_parsers/add_translation.h"
 #include "cli_opt_parsers/add_project_root_marker.h"
 #include "cli_opt_parsers/role_setup.h"
-
+//
 #include "cli_opt_parsers/list.h"
 #include "cli_opt_parsers/add_header_footer.h"
 #include "cli_opt_parsers/clipboard.h"
@@ -12045,6 +12200,8 @@ namespace almai {
 struct Project
 {
     std::unordered_map<std::string, std::vector<std::string> >       roles;
+    std::string                                                      aiEngine;
+    std::string                                                      prefferedLang;
 
 
     template<typename WarningHandler>
@@ -12249,6 +12406,27 @@ struct Project
 
         } // if (j.find("roles")!=j.end())
 
+        else if (j.find("ai-engine")!=j.end())
+        {
+            p.aiEngine = j["ai-engine"].get<std::string>();
+        }
+        else if (j.find("aiEngine")!=j.end())
+        {
+            p.aiEngine = j["aiEngine"].get<std::string>();
+        }
+        else if (j.find("ai")!=j.end())
+        {
+            p.aiEngine = j["ai"].get<std::string>();
+        }
+
+        else if (j.find("lang")!=j.end())
+        {
+            p.prefferedLang = j["lang"].get<std::string>();
+        }
+
+
+
+
         return j;
     }
 
@@ -12282,262 +12460,6 @@ StreamType& operator<<(StreamType &oss, const Project &p)
 
     return oss;
 }
-
-//----------------------------------------------------------------------------
-
-
-
-//----------------------------------------------------------------------------
-
-} // namespace almai
-
-//----------------------------------------------------------------------------
-~~~
-
-**\_src/almai/Project\_new.h**
-~~~C/C++ Header
-/*! \file
-    \brief Almai проект
- */
-#pragma once
-
-#include "enums.h"
-#include "utils.h"
-//
-#include "umba/umba.h"
-//
-#include "umba/string.h"
-#include "umba/filename.h"
-#include "umba/filesys.h"
-#include "umba/parse_utils.h"
-
-//
-
-#include <algorithm>
-#include <iterator>
-#include <string>
-#include <sstream>
-#include <vector>
-#include <unordered_map>
-//----------------------------------------------------------------------------
-
-
-
-//----------------------------------------------------------------------------
-namespace almai {
-
-//----------------------------------------------------------------------------
-
-
-
-//----------------------------------------------------------------------------
-struct Project
-{
-    std::unordered_map<std::string, std::vector<std::string> >       roles;
-
-
-
-    template<typename SkillNamePrepareHandler>
-    bool updateRoleFromRoleString(const std::string &role, const std::string &str, SkillNamePrepareHandler skillNamePrepareHandler)
-    {
-        if (role.empty())
-            return false;
-
-        auto &rolesSet = roles[role];
-
-        return umba::parse_utils::optionStringUpdateSet(str, rolesSet, skillNamePrepareHandler, umba::CaseOption::toLower);
-    }
-
-    template<typename SkillNamePrepareHandler>
-    bool updateRoleFromRoleStringList(const std::string &role, const std::string &strList, SkillNamePrepareHandler skillNamePrepareHandler)
-    {
-        if (role.empty())
-            return false;
-
-        auto &rolesSet = roles[role];
-
-        return umba::parse_utils::optionStringListUpdateSet(strList, rolesSet, skillNamePrepareHandler, umba::CaseOption::toLower);
-    }
-
-
-    template<typename SkillNamePrepareHandler>
-    static
-    marty::json parse(Project &p, const std::string &text, SkillNamePrepareHandler skillNamePrepareHandler, bool throwErrors)
-    {
-        auto j = parseToJson(text);
-
-
-        if (j.find("roles")!=j.end())
-        {
-            //d.name = j["name"].get<std::string>();
-            auto r = j["roles"];
-
-            // if (!r.is_object())
-            // {
-            //     throw std::runtime_error("'roles' is in " + marty::json_utils::nodeTypeName(r) + " format. Only object format allowed");
-            // }
-
-            // https://github.com/nlohmann/json?tab=readme-ov-file#stl-like-access
-
-            if (r.is_object())
-            {
-                for (const auto &[key, value] : r.items()) // object iteraion
-                {
-                    const std::string &role = key;
-
-                    if (value.is_array())
-                    {
-                        for (nlohmann::json::iterator it = value.begin(); it!=value.end(); ++it)
-                        {
-                            std::string skillName = it->get<std::string>();
-                            if (!p.updateRoleFromRoleString(role, skillName, skillNamePrepareHandler))
-                            {
-                                if (throwErrors)
-                                    throw std::runtime_error("failed to update role '" + role + "' with skill value '" + skillName + "'");
-                            }
-                        }
-                    }
-
-                    else if (value.is_string())
-                    {
-                            std::string skillsList = value.get<std::string>();
-                            if (!p.updateRoleFromRoleStringList(role, skillsList, skillNamePrepareHandler))
-                            {
-                                if (throwErrors)
-                                    throw std::runtime_error("failed to update role '" + role + "' with skills: '" + skillsList + "'");
-                            }
-                    }
-
-                    else
-                    {
-                        throw std::runtime_error("role '" + role + "' is in " + marty::json_utils::nodeTypeName(value) + " format. Only string/array formats allowed");
-                    }
-
-                } // for (const auto &[key, value] : r.items())
-            }
-
-            else if (r.is_array())
-            {
-
-// roles:
-//   # Можно записать и как object, но массив гарантирует порядок элементов, а object - не факт. Впрочем, другой нефакт в том, что при настройке ролей нам порядок не особо и важен
-//   - c-cpp-dev: -, skills/cpp-dev; skills/c-dev, -skills/jni-master # тут в одну строку сбросили все предыдущие скилы для роли, и добавили skills/cpp-dev и skills/c-dev
-//   - c-cpp-no-java-dev: skills/cpp-dev; skills/c-dev, -skills/jni-master # тут только добавили skills/cpp-dev и skills/c-dev
-//   - uni-tester:
-//     - - # Сбрасываем все предыдущие скилы для роли (а это будет валидно в yml?)
-//     - skills/auto-tester
-//     - skills/manual-tester
-//   - super-architect:
-//     - sw-architect # Архитектор ПО
-//     - sys-architect # Архитектор всей системы
-
-
-                // parse array here
-                for (nlohmann::json::iterator it = r.begin(); it!=r.end(); ++it) // array iteraion
-                {
-                    auto arrItem = *it;
-
-                    if (arrItem.is_string())
-                    {
-                        std::string roleDefinitionString = arrItem.get<std::string>();
-                        std::string role, skillsList;
-                        if (!umba::parse_utils::optionStringSplitToPair(roleDefinitionString, role, skillsList, ":"))
-                        {
-                            // Нужна пара: "role: role-definition"
-                            if (throwErrors)
-                               throw std::runtime_error("failed to parse role definition string: '" + roleDefinitionString + "'");
-                        }
-
-                        if (!p.updateRoleFromRoleStringList(role, skillsList, skillNamePrepareHandler))
-                        {
-                            if (throwErrors)
-                                throw std::runtime_error("failed to update role '" + role + "' with skills: '" + skillsList + "'");
-                        }
-                    }
-
-
-                    // Тут у нас могут быть объекты с одним или несколькими ключами
-                    // compact mapping in sequence
-                    // https://chat.deepseek.com/share/1gbmc561xdxi5teq79
-                    else if (arrItem.is_object())
-                    {
-                        for (const auto &[role, value] : arrItem.items())
-                        {
-                            // ==================== ИСПРАВЛЕНИЕ: поддержка массива ====================
-                            if (value.is_array())
-                            {
-                                // Каждый элемент массива — отдельная строка-спецификация скилла
-                                for (const auto &skillItem : value)
-                                {
-                                    if (!skillItem.is_string())
-                                    {
-                                        if (throwErrors)
-                                            throw std::runtime_error("Skill item must be a string, got " +
-                                                                     marty::json_utils::nodeTypeName(skillItem));
-                                    }
-                                    std::string skillSpec = skillItem.get<std::string>();
-                                    if (!p.updateRoleFromRoleString(role, skillSpec, skillNamePrepareHandler))
-                                    {
-                                        if (throwErrors)
-                                            throw std::runtime_error("Failed to update role '" + role +
-                                                                     "' with skill spec '" + skillSpec + "'");
-                                    }
-                                }
-                            }
-                            else if (value.is_string())
-                            {
-                                std::string skillsList = value.get<std::string>();
-                                if (!p.updateRoleFromRoleStringList(role, skillsList, skillNamePrepareHandler))
-                                {
-                                    if (throwErrors)
-                                        throw std::runtime_error("failed to update role '" + role +
-                                                                 "' with skills: '" + skillsList + "'");
-                                }
-                            }
-                            else
-                            {
-                                throw std::runtime_error("Value for role '" + role + "' must be string or array, got " +
-                                                         marty::json_utils::nodeTypeName(value));
-                            }
-                            // ========================================================================
-                        } // for (const auto &[role, value] : arrItem.items())
-                    } // else if (arrItem.is_object())
-
-
-                    else if (arrItem.is_array())
-                    {
-                        // std::string text = it->get<std::string>();
-                        throw std::runtime_error("UNEXPECTED ARRAY ITEM");
-                    }
-
-
-                    else
-                    {
-                        //std::string arrItemStr = arrItem.get<std::string>();
-
-                        if (throwErrors)
-                            throw std::runtime_error( /* "'" */   /* + arrItemStr + */   /* "'" */ "!!!" " is in " + marty::json_utils::nodeTypeName(arrItem) + " format.");
-
-                        // std::string altersListStr = it->get<std::string>();
-                        // std::vector<std::string> altersList = splitString(altersListStr, '|');
-                        // d.requires.emplace_back(altersList);
-
-                    }
-
-                }
-
-
-
-            }
-
-
-        } // if (j.find("roles")!=j.end())
-
-        return j;
-    }
-
-
-}; // struct Project
 
 //----------------------------------------------------------------------------
 
@@ -14085,6 +14007,27 @@ bool parseJsonKeyValueArrayOrString( marty::json j
             // auto optNames = opt.getOptionNamesVector();
             // for(auto optName : optNames)
             //     std::cout << optName << "\n";
+
+            return 0;
+        }
+~~~
+
+**\_src/almai/cli\_opt\_parsers/ai-opts.h**
+~~~C/C++ Header
+        if (   opt.setParam("NAME", umba::command_line::OptionType::optString)
+            || opt.isOption("engine") || opt.isOption("ai-engine")
+            || opt.setDescription("Set AI engine.")
+           )
+        {
+            if (argsParser.hasHelpOption) return 0;
+
+            if (!opt.getParamValue(strVal,errMsg))
+            {
+                LOG_ERR<<errMsg<<"\n";
+                return -1;
+            }
+
+            appConfig.aiName = strVal;
 
             return 0;
         }

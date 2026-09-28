@@ -142,11 +142,11 @@ Generator: Umba Brief Scanner
 - [ ] `[_libs/marty_cpp/marty_cpp.h:2303]`
   Надо подумать, править баг и как его править
 
-- [ ] `[_libs/marty_cpp/marty_cpp.h:3666]`
+- [ ] `[_libs/marty_cpp/marty_cpp.h:3671]`
   Нужен каст к underlaying типу, если он задан. Сюда надо будет передавать
   шаблоны и строку underlaying типа
 
-- [ ] `[_libs/marty_cpp/marty_cpp.h:4706]`
+- [ ] `[_libs/marty_cpp/marty_cpp.h:4711]`
   Нужен каст к underlaying типу, если он задан. Сюда надо будет передавать
   шаблоны и строку underlaying типа
 

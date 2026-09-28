@@ -1653,6 +1653,7 @@ Generator: Umba Brief Scanner
 
 - `AppConfig.cpp` - Конфиг главного приложения - реализация
 - `AppConfig.h` - Конфиг главного приложения
+- `AppConfigBase.cpp` - Конфиг главного приложения - реализация
 - `AppConfigBase.h` - Базовый конфиг
 - `AppVerConfig.h` - 
 - `ArgParser.h` - 
@@ -1705,6 +1706,7 @@ Generator: Umba Brief Scanner
 - `add_plural_pair.h` - 
 - `add_project_root_marker.h` - 
 - `add_translation.h` - 
+- `ai-opts.h` - 
 - `attach.h` - 
 - `basic_options.h` - 
 - `cdt-eval-opts.h` - 

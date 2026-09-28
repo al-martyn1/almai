@@ -257,10 +257,80 @@ int unsafeMain(int argc, char* argv[])
 
     appConfig.readProjectFile(prepromptReadingErrorHandler, prepromptParsingErrorHandler);
 
-    LOG_MSG << "Project: " << appConfig.almaiProject <<"\n";
+    if (!argsParser.quet)
+    {
+        LOG_MSG << "Project: " << appConfig.almaiProject <<"\n";
+    }
 
-    if (appConfig.aiName.empty())
-        appConfig.aiName = "deepseek";
+    // if (appConfig.aiName.empty())
+    //     appConfig.aiName = "deepseek";
+
+
+    processedFileType = "preprompt";
+
+    ppDb.scanForPreprompts( &scannedFolders, {} // aiEngines
+                          , appConfig.prepromptTypes
+                          , prepromptReadingErrorHandler, prepromptParsingErrorHandler
+                          );
+
+    // std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > scannedPrepromptProps;
+    // std::unordered_map< std::string, std::unordered_set<std::string> > scannedPrepromptTypes;
+    //  
+    // appConfig.scanForPreprompts(&scannedFolders, scannedPrepromptProps, scannedPrepromptTypes);
+    //  
+    // processedFileType = "preprompt";
+    // std::unordered_map< std::string, std::unordered_map<std::string, almai::Preprompt> > scannedPreprompts;
+    // appConfig.scanForPreprompts(scannedPreprompts, scannedPrepromptProps, prepromptReadingErrorHandler, prepromptParsingErrorHandler);
+
+    if (!argsParser.quet)
+    {
+        LOG_MSG << "Scanned folders:\n";
+
+        for(const auto &fldr: scannedFolders)
+        {
+            LOG_MSG << "  " << fldr << "\n";
+        }
+
+        LOG_MSG << "\n";
+
+        for(const auto &[aiEngine, aiPreprompts] : ppDb.preprompts)
+        {
+            LOG_MSG << "\n";
+            LOG_MSG << "AiEngine: " << (!aiEngine.empty() ? aiEngine : std::string("<NONAME>")) << "\n";
+
+            LOG_MSG << "\n  Found preprompts:\n";
+    
+            for(const auto &[ppTypeStr, ppNameMap] : aiPreprompts.prepromptProps)
+            {
+                LOG_MSG << "    " << ppTypeStr << ":\n";
+    
+                for(const auto &[ppName, ppProps] : ppNameMap)
+                {
+                    LOG_MSG << "      " << ppProps << "\n";
+                }
+            }
+    
+            LOG_MSG << "\n";
+    
+            
+            LOG_MSG << "  Found preprompt types:\n";
+    
+            for(const auto &[ppId, ppTypeSet] : aiPreprompts.prepromptCategories)
+            {
+                std::size_t cnt = 0;
+                LOG_MSG << "    " << ppId; // << ""
+                for(const auto ppType: ppTypeSet)
+                {
+                    LOG_MSG << (cnt ? ", " : ": ") << ppType;
+                    ++cnt;
+                }
+                LOG_MSG << "\n";
+            }
+
+            LOG_MSG << "\n";
+        }
+
+    }
 
 
 
@@ -322,6 +392,7 @@ int unsafeMain(int argc, char* argv[])
         for(const auto& [k, v] : macros)
             LOG_MSG << "  " << k << ": " << v << "\n";
     }
+
 
 
     for( auto &&f: foundFiles)

@@ -81,7 +81,9 @@ int operator()( const StringType                                &a           //!
 
 #include "cli_opt_parsers/basic_options.h"
 #include "cli_opt_parsers/overwrite.h"
-
+//
+#include "cli_opt_parsers/ai-opts.h"
+//
 #include "cli_opt_parsers/dict.h"
 #include "cli_opt_parsers/output.h"
 #include "cli_opt_parsers/filename_decoration.h"
@@ -94,7 +96,7 @@ int operator()( const StringType                                &a           //!
 #include "cli_opt_parsers/add_translation.h"
 #include "cli_opt_parsers/add_project_root_marker.h"
 #include "cli_opt_parsers/role_setup.h"
-
+//
 #include "cli_opt_parsers/list.h"
 #include "cli_opt_parsers/add_header_footer.h"
 #include "cli_opt_parsers/clipboard.h"

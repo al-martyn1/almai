@@ -1,3 +1,9 @@
+@plural.options
+@translation.options
+@known-engine.options
+@preprompt-type.options
+
 --overwrite
 --dict=.cpp:C++
 --dict-file=lang-ext-dict.txt
+

@@ -1,10 +1,7 @@
---add-plural-pair=analysis:analyses
-
---add-translation=ru:roles:Твои роли
---add-translation=en:roles:Your roles
-
---add-translation=ru:constraints:Ограничения
---add-translation=en:constraints:Constraints
+@plural.options
+@translation.options
+@known-engine.options
+@preprompt-type.options
 
 # .git,.vscode - могут быть в подмодулях. Или мы никогда не вызываем нашу тулзу из папок подмодулей? Ока, пока так
 --project-root-marker=-,.git,.almai,.ALMAI,.vscode,.PVS-Studio,.out,out,.build,build,.build_all,build_all

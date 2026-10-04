@@ -244,7 +244,8 @@ struct Project
 
         } // if (j.find("roles")!=j.end())
 
-        else if (j.find("ai-engine")!=j.end())
+
+        if (j.find("ai-engine")!=j.end())
         {
             p.aiEngine = j["ai-engine"].get<std::string>();
         }
@@ -257,12 +258,11 @@ struct Project
             p.aiEngine = j["ai"].get<std::string>();
         }
 
-        else if (j.find("lang")!=j.end())
+        
+        if (j.find("lang")!=j.end())
         {
             p.prefferedLang = j["lang"].get<std::string>();
         }
-
-
 
 
         return j;

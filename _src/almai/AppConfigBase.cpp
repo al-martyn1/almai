@@ -378,21 +378,118 @@ bool AppConfigBase::findProjectRoot(std::string startPath)
 // }
 
 //--------------------------------------------------------------------------------------------------------------------
-bool AppConfigBase::isKnownEngine(const std::string &name) const
+bool AppConfigBase::addPrepromtType(std::string name)
 {
-    return ppDBases.find(name)!=ppDBases.end();
+    umba::string::trim(name);
+
+    if (name.empty())
+        return false;
+
+    name = pluralDb->findPlural(name);
+
+    if (std::find(prepromptTypes.begin(), prepromptTypes.end(), name)==prepromptTypes.end())
+       prepromptTypes.push_back(name); 
+
+    return true;
+}
+
+bool AppConfigBase::addKnownEngine(const std::string &nameAndBase)
+{
+    std::string name, base;
+
+    if (!umba::parse_utils::optionStringSplitToPair(nameAndBase, name, base /* , const std::string &seps=":=" */ ))
+    {
+        // Добавляем без базы
+        umba::string::trim(name);
+
+        if (name.empty())
+            return false;
+
+        knownAiEngines[name] = std::string();
+
+        return true;
+    }
+
+
+    umba::string::trim(name);
+    umba::string::trim(base);
+
+    if (name==base)
+        return false; // предотвращаем короткий цикл, с замыканием на себя же. Длинный цикл не возможен, так как не можем добавить неизвестную базу для замыкания цикла
+
+    if (name.empty())
+        return false;
+
+    if (base.empty())
+        return false;
+
+    if (knownAiEngines.find(base)==knownAiEngines.end()) // база не найдена
+        return false;
+
+    knownAiEngines[name] = base;
+
+    return true;
 }
 
 //--------------------------------------------------------------------------------------------------------------------
-std::string AppConfigBase::getEngineName() const
+bool AppConfigBase::isKnownEngine(const std::string &name) const
 {
-    if (!aiName.empty() && isKnownEngine(aiName))
-        return aiName;
+    return knownAiEngines.find(name)!=knownAiEngines.end();
+}
 
-    if (!almaiProject.aiEngine.empty() && isKnownEngine(almaiProject.aiEngine))
-        return almaiProject.aiEngine;
+//--------------------------------------------------------------------------------------------------------------------
+// std::string AppConfigBase::getEngineName() const
+// {
+//     if (!aiName.empty() && isKnownEngine(aiName))
+//         return aiName;
+//  
+//     if (!almaiProject.aiEngine.empty() && isKnownEngine(almaiProject.aiEngine))
+//         return almaiProject.aiEngine;
+//  
+//     return std::string();
+// }
 
-    return std::string();
+//--------------------------------------------------------------------------------------------------------------------
+std::string AppConfigBase::getAiEngine() const
+{
+    auto engineName = aiName; // берём из командной строки - оно не должно быть в файлах опций по дефолту, предназначено для переопределения непосредственно из ком. строки
+
+    if (engineName.empty() || !isKnownEngine(engineName)) // если не задано и невалидно - берём из проекта
+        engineName = almaiProject.aiEngine;
+
+    if (engineName.empty() || !isKnownEngine(engineName))
+        engineName = std::string();
+
+    return engineName;
+}
+
+//--------------------------------------------------------------------------------------------------------------------
+std::vector<std::string> AppConfigBase::getAiEnginesList() const
+{
+    auto engineName = getAiEngine();
+
+    if (engineName.empty())
+        return std::vector<std::string>{engineName};
+
+    std::vector<std::string> resVec; // = {std::string()};
+
+    while( true /* !engineName.empty() */ )
+    {
+        if (std::find(resVec.begin(), resVec.end(), engineName)!=resVec.end())
+            break; // уже есть такое имя, цикл?
+
+        resVec.push_back(engineName);
+
+        std::map<std::string, std::string>::const_iterator it = knownAiEngines.find(engineName);
+        if (it==knownAiEngines.end() || engineName.empty())
+            break;
+
+        engineName = it->second;
+    }
+
+    // Сначала более общие имена, затем - более частные
+    std::reverse(resVec.begin(), resVec.end());
+    return resVec;
 }
 
 //--------------------------------------------------------------------------------------------------------------------

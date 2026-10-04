@@ -244,7 +244,7 @@ struct PrepromptDatabase
 
 
     //--------------------------------------------------------------------------------------------------------------------
-    PluralDatabaseSharedPtrType                       pluralDb;
+    PluralDatabaseSharedPtrType                       pPluralDb;
     std::vector<std::string>                          prepromptDirs;
     std::unordered_map< std::string, AiPreprompts>    preprompts;  // aiEngine -> aiPreprompts
     
@@ -255,15 +255,34 @@ struct PrepromptDatabase
     //--------------------------------------------------------------------------------------------------------------------
     UMBA_RULE_OF_FIVE_DEFAULT(PrepromptDatabase);
 
-    PrepromptDatabase( PluralDatabaseSharedPtrType pluralDb_
+    PrepromptDatabase( PluralDatabaseSharedPtrType pPluralDb_ )
+    : pPluralDb(pPluralDb_)
+    {}
+
+    PrepromptDatabase( PluralDatabaseSharedPtrType pPluralDb_
                      , const std::vector<std::string> &prepromptDirs_
                      )
-    : pluralDb(pluralDb_)
+    : pPluralDb(pPluralDb_)
     , prepromptDirs(prepromptDirs_)
     {}
 
     //--------------------------------------------------------------------------------------------------------------------
     
+
+
+    //--------------------------------------------------------------------------------------------------------------------
+    void setPluralDb(PluralDatabaseSharedPtrType pDb)
+    {
+        pPluralDb = pDb;
+    }
+
+    void setPrepromptDirs(const std::vector<std::string> &prepromptDirs_)
+    {
+        prepromptDirs = prepromptDirs_;
+    }
+    
+    //--------------------------------------------------------------------------------------------------------------------
+
 
 
     //--------------------------------------------------------------------------------------------------------------------
@@ -301,7 +320,7 @@ struct PrepromptDatabase
         if (it==preprompts.end())
             return 0;
 
-        return it->second.findPreprompt(pluralDb.get(), prepromptId, pPrepromptFullName, ppCategories);
+        return it->second.findPreprompt(pPluralDb.get(), prepromptId, pPrepromptFullName, ppCategories);
     }
 
     //--------------------------------------------------------------------------------------------------------------------
@@ -315,7 +334,7 @@ struct PrepromptDatabase
         if (it==preprompts.end())
             return std::string();
 
-        return it->second.makeCompletePpId(pluralDb.get(), prepromptId, ppCategories);
+        return it->second.makeCompletePpId(pPluralDb.get(), prepromptId, ppCategories);
     }
 
     //--------------------------------------------------------------------------------------------------------------------
@@ -375,23 +394,28 @@ struct PrepromptDatabase
     void scanForPrepromptsProps( std::vector<std::string> *pScannedFolders
                                , std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > &scannedPrepromptProps
                                , std::unordered_map< std::string, std::unordered_set<std::string> > &scannedPrepromptCategories
-                               , const almai::PluralDatabase    &pluralDb_
-                               //, std::vector<std::string>       aiEngines
-                               , const std::string              &aiEngine_
+                               , const almai::PluralDatabase    &pPluralDb_
+                               , std::vector<std::string>       aiEngines_
+                               // , const std::string              &aiEngine_
                                , const std::vector<std::string> &ppDirs
                                , std::vector<std::string>       prepromptCategoriesToScan
                                )
     {
-        std::vector<std::string> aiEngines;
-        aiEngines.push_back(std::string());
-        if (!aiEngine_.empty())
-            aiEngines.push_back(aiEngine_);
+        // std::vector<std::string> aiEngines;
+        // aiEngines.push_back(std::string());
+        // if (!aiEngine_.empty())
+        //     aiEngines.push_back(aiEngine_);
+
+        std::vector<std::string> aiEngines = aiEngines_;
+        if (std::find(aiEngines.begin(), aiEngines.end(), std::string())==aiEngines.end())
+            aiEngines.insert(aiEngines.begin(), std::string());
+
 
         {
             std::vector<std::string> pptsTmp; pptsTmp.reserve(prepromptCategoriesToScan.size());
             for(const auto &ppt: prepromptCategoriesToScan)
             {
-                pptsTmp.push_back(pluralDb_.findPlural(ppt));
+                pptsTmp.push_back(pPluralDb_.findPlural(ppt));
             }
     
             using std::swap;
@@ -451,7 +475,8 @@ struct PrepromptDatabase
         // prepromptProps.clear();
         // prepromptCategories.clear();
 
-        aiEngines.insert(aiEngines.begin(), std::string());
+        if (std::find(aiEngines.begin(), aiEngines.end(), std::string())==aiEngines.end())
+            aiEngines.insert(aiEngines.begin(), std::string());
 
         for(const auto &aiEngine: aiEngines)
         {
@@ -460,8 +485,8 @@ struct PrepromptDatabase
             scanForPrepromptsProps( pScannedFolders
                                   , aiPrepromptsItem.prepromptProps
                                   , aiPrepromptsItem.prepromptCategories
-                                  , *pluralDb.get()
-                                  , aiEngine
+                                  , *pPluralDb.get()
+                                  , aiEngines // aiEngine
                                   , prepromptDirs
                                   , prepromptCategoriesToScan
                                   );
@@ -502,7 +527,7 @@ struct PrepromptDatabase
                     {
                         for(auto &r: require)
                         {
-                            r = utils::normalizePrepromptId(*pluralDb.get(), r);
+                            r = utils::normalizePrepromptId(*pPluralDb.get(), r);
                         }
                     }
     

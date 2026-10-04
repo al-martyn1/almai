@@ -1,0 +1,3 @@
+--add-known-engine=deepseek
+--add-known-engine=deepseek-R1:deepseek
+--add-known-engine=deepseek-4:deepseek

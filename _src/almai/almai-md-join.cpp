@@ -266,12 +266,13 @@ int unsafeMain(int argc, char* argv[])
     //     appConfig.aiName = "deepseek";
 
 
+    std::vector<std::string> scannedFolders;
     processedFileType = "preprompt";
 
-    ppDb.scanForPreprompts( &scannedFolders, {} // aiEngines
-                          , appConfig.prepromptTypes
-                          , prepromptReadingErrorHandler, prepromptParsingErrorHandler
-                          );
+    appConfig.prepromptsDb.scanForPreprompts( &scannedFolders, appConfig.getAiEnginesList() // aiEngines
+                                            , appConfig.prepromptTypes
+                                            , prepromptReadingErrorHandler, prepromptParsingErrorHandler
+                                            );
 
     // std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > scannedPrepromptProps;
     // std::unordered_map< std::string, std::unordered_set<std::string> > scannedPrepromptTypes;
@@ -293,7 +294,7 @@ int unsafeMain(int argc, char* argv[])
 
         LOG_MSG << "\n";
 
-        for(const auto &[aiEngine, aiPreprompts] : ppDb.preprompts)
+        for(const auto &[aiEngine, aiPreprompts] : appConfig.prepromptsDb.preprompts)
         {
             LOG_MSG << "\n";
             LOG_MSG << "AiEngine: " << (!aiEngine.empty() ? aiEngine : std::string("<NONAME>")) << "\n";

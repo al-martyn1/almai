@@ -1,0 +1,58 @@
+# skill — процедурное умение: способность решать класс задач.
+--add-preprompt-type=skill
+
+# instruction — инструкции: шаги, порядок действий, правила выполнения.
+--add-preprompt-type=instruction
+
+# knowledge — декларативные знания: факты, определения, предметная область.
+--add-preprompt-type=knowledge
+
+# template / format — шаблон ответа, структура документа, формат.
+--add-preprompt-type=template
+
+# Выходной формат документа?
+#--add-preprompt-type=output
+
+# tool / function — вызов API, кода, внешнего сервиса.
+--add-preprompt-type=tool
+--add-preprompt-type=function
+
+# workflow / process — последовательность шагов или оркестрация нескольких скилов.
+--add-preprompt-type=workflow
+
+# policy / rule / constraint — правила, запреты, ограничения, safety, compliance.
+--add-preprompt-type=policy
+
+# heuristic / strategy — эвристика, стратегия действий в неопределённости.
+--add-preprompt-type=strategy
+
+# pattern / anti-pattern — типовое хорошее или плохое решение.
+--add-preprompt-type=pattern
+--add-preprompt-type=anti-pattern
+
+# example / few-shot — примеры входа-выхода.
+--add-preprompt-type=example
+
+# checklist / validator / test — проверка качества, критерии, тесты.
+--add-preprompt-type=checklist
+
+# memory / context — память, профиль, предпочтения, история.
+--add-preprompt-type=context
+--add-preprompt-type=history
+
+# goal / intent — цель, намерение, критерии успеха.
+--add-preprompt-type=goal 
+
+# resource / asset — файлы, данные, ссылки, скрипты, изображения.
+--add-preprompt-type=asset
+
+# feedback / metric — обратная связь, метрики, оценка результата.
+--add-preprompt-type=feedback
+--add-preprompt-type=metric
+--add-preprompt-type=kpi
+
+
+# --add-preprompt-type=
+
+
+

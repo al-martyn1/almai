@@ -755,36 +755,38 @@ struct AppConfigBase
     //using PrepromptDatabaseMap        = std::unordered_map<std::string, almai::PrepromptDatabase>;
 
 
-    std::string                       appRoot;
-    std::string                       appConfPath;
-    std::string                       projectRoot; // устанавливается только через setProjectRoot
-    std::string                       almaiDir; // 
-    std::string                       projectFile; // Полное имя '.almai/project.yaml', с путём
-    std::string                       aiName; // Например, deepeek, qwen - используется для поиска кастомизированных препромптов
+    std::string                         appRoot;
+    std::string                         appConfPath;
+    std::string                         projectRoot; // устанавливается только через setProjectRoot
+    std::string                         almaiDir; // 
+    std::string                         projectFile; // Полное имя '.almai/project.yaml', с путём
+    std::string                         aiName; // Например, deepeek, qwen - используется для поиска кастомизированных препромптов
 
-    std::unordered_set<std::string>   projectRootStopNames; //  = { ".git", ".out", ".vscode", ".build", "build" }; // пока явно инициализируем
+    std::unordered_set<std::string>     projectRootStopNames; //  = { ".git", ".out", ".vscode", ".build", "build" }; // пока явно инициализируем
     // almai.yaml
 
     std::unordered_map<almai::PrepromptPathType, std::vector<std::string> > prepromptDirs;
-    almai::PrepromptPathType          curPrepromptPathType = almai::PrepromptPathType::builtinOptions;
+    almai::PrepromptPathType            curPrepromptPathType = almai::PrepromptPathType::builtinOptions;
 
-    PluralDatabaseSharedPtrType       pluralDb = std::make_shared<almai::PluralDatabase>();
-    almai::Localization               localizations;
-    std::string                       curLang;
+    PluralDatabaseSharedPtrType         pluralDb = std::make_shared<almai::PluralDatabase>();
+    almai::Localization                 localizations;
+    std::string                         curLang;
 
     //std::string                       curAiEngine; // deepseek, qwen
-    PrepromptDatabase                 ppDBase;
+    almai::PrepromptDatabase            prepromptsDb = pluralDb;
 
-    almai::Project                    almaiProject;
+    almai::Project                      almaiProject;
 
-    std::vector<std::string>          prepromptTypes; // = { "skill", "instruction", "knowledge", "format", "output" };
-    std::vector<std::string>          knownAiEngines; // = { "skill", "instruction", "knowledge", "format", "output" };
+    std::vector<std::string>            prepromptTypes; // = { "skill", "instruction", "knowledge", "format", "output" };
+    std::map<std::string, std::string>  knownAiEngines; // = { {"deepseek", ""}, {"qwen", ""} };
 
-
+    bool addPrepromtType(std::string name);
+    bool addKnownEngine(const std::string &name);
     bool isKnownEngine(const std::string &name) const;
-    std::string getEngineName() const;
+    //std::string getEngineName() const;
     std::string getUserLang() const;
-
+    std::string getAiEngine() const;
+    std::vector<std::string> getAiEnginesList() const;
 
     // UMBA_RULE_OF_FIVE_COPY_MOVE(FoundFileInfo, default, default, default, default);
     // UMBA_RULE_OF_FIVE(FoundFileInfo, default, default, default, default, default);
@@ -944,8 +946,8 @@ struct AppConfigBase
     bool addRoles(const std::string &rolesStr);
     bool addSkills(const std::string &rolesStr);
 
-    std::vector<std::string> resolveSkillList(const almai::PrepromptDatabase &ppDb) const;
-    std::string resolveSingleSkillId(const almai::PrepromptDatabase &ppDb, const std::string &skillId) const;
+    // std::vector<std::string> resolveSkillList(const almai::PrepromptDatabase &ppDb) const;
+    // std::string resolveSingleSkillId(const almai::PrepromptDatabase &ppDb, const std::string &skillId) const;
 
 
 }; // struct AppConfigBase

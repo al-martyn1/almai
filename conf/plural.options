@@ -1,0 +1,12 @@
+# https://chat.deepseek.com/share/yitcm1ynjt7unex24k
+
+# Обычное +s — большинство исчисляемых:
+
+# +es, если слово оканчивается на -s/-x/-ch/-sh и т.п.:
+# -y → -ies после согласной:
+--add-plural-pair=analysis:analyses
+--add-plural-pair=strategy:strategies
+--add-plural-pair=policy:policies
+--add-plural-pair=history:history
+--add-plural-pair=kpi:kpi
+

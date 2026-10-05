@@ -467,7 +467,7 @@ struct PrepromptDatabase
                           , std::vector<std::string>       aiEngines
                           , std::vector<std::string>       prepromptCategoriesToScan
                           , PrepromptReadingErrorHandler   readingErrHandler
-                          , PrepromptParsingErrorHandler   parsingErrorHandler
+                          , PrepromptParsingErrorHandler   parsingErrHandler
                           )
     {
         // prepromptDirs.clear();
@@ -511,7 +511,7 @@ struct PrepromptDatabase
                     }
                     catch(const std::exception &e)
                     {
-                        parsingErrorHandler(ppProps.file, e);
+                        parsingErrHandler(ppProps.file, e);
     
                         // Пробуем игнорировать ошибки
                         // Но исключение всё равно может вылететь. Но мы его уже не ловим, пусть летит

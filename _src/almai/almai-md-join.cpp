@@ -269,10 +269,7 @@ int unsafeMain(int argc, char* argv[])
     std::vector<std::string> scannedFolders;
     processedFileType = "preprompt";
 
-    appConfig.prepromptsDb.scanForPreprompts( &scannedFolders, appConfig.getAiEnginesList() // aiEngines
-                                            , appConfig.prepromptTypes
-                                            , prepromptReadingErrorHandler, prepromptParsingErrorHandler
-                                            );
+    appConfig.scanForPreprompts(&scannedFolders, prepromptReadingErrorHandler, prepromptParsingErrorHandler);
 
     // std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > scannedPrepromptProps;
     // std::unordered_map< std::string, std::unordered_set<std::string> > scannedPrepromptTypes;

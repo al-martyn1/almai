@@ -854,7 +854,7 @@ struct AppConfigBase
     //------------------------------
     template<typename PrepromptReadingErrorHandler, typename PrepromptParsingErrorHandler>
     void readProjectFile( PrepromptReadingErrorHandler   readingErrHandler
-                        , PrepromptParsingErrorHandler   parsingErrorHandler
+                        , PrepromptParsingErrorHandler   parsingErrHandler
                         )
     {
         if (projectFile.empty())
@@ -877,7 +877,7 @@ struct AppConfigBase
         }
         catch(const std::exception &e)
         {
-            parsingErrorHandler(projectFile, e);
+            parsingErrHandler(projectFile, e);
 
             // Пробуем игнорировать ошибки
             // Но исключение всё равно может вылететь. Но мы его уже не ловим, пусть летит
@@ -898,12 +898,26 @@ struct AppConfigBase
         return almaiProject.checkNormalize(ppDb, errorHandler, warningHandler);
     }
 
+    template<typename PrepromptReadingErrorHandler, typename PrepromptParsingErrorHandler>
+    void scanForPreprompts( std::vector<std::string>       *pScannedFolders
+                          , PrepromptReadingErrorHandler   readingErrHandler
+                          , PrepromptParsingErrorHandler   parsingErrHandler
+                          )
+    {
+        prepromptsDb.setPrepromptDirs(getPrepromptDirs());
+    
+        prepromptsDb.scanForPreprompts( pScannedFolders, getAiEnginesList(), prepromptTypes
+                                      , readingErrHandler, parsingErrHandler
+                                      );
+    }
+
+
     // template<typename PrepromptReadingErrorHandler, typename PrepromptParsingErrorHandler>
     // void scanForPreprompts( std::vector<std::string>       *pScannedFolders
     //                       , std::vector<std::string>       aiEngines
     //                       , std::vector<std::string>       prepromptCategoriesToScan
     //                       , PrepromptReadingErrorHandler   readingErrHandler
-    //                       , PrepromptParsingErrorHandler   parsingErrorHandler
+    //                       , PrepromptParsingErrorHandler   parsingErrHandler
     //                       )
     // {
     // }

@@ -271,6 +271,10 @@ int unsafeMain(int argc, char* argv[])
 
     appConfig.scanForPreprompts(&scannedFolders, prepromptReadingErrorHandler, prepromptParsingErrorHandler);
 
+
+    // https://chat.deepseek.com/share/32410uvr3tid2p9brx
+
+
     // std::unordered_map< std::string, std::unordered_map<std::string, almai::PrepromptProps> > scannedPrepromptProps;
     // std::unordered_map< std::string, std::unordered_set<std::string> > scannedPrepromptTypes;
     //  

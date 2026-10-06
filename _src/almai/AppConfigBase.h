@@ -777,8 +777,11 @@ struct AppConfigBase
 
     almai::Project                      almaiProject;
 
-    std::vector<std::string>            prepromptTypes; // = { "skill", "instruction", "knowledge", "format", "output" };
+    // Задаются из командной строки, потом процессятся - singular/plural etc
+    // role(s) - предопределённый тип препромпта 
+    std::vector<std::string>            prepromptTypes = { "role" }; // = { "skill", "instruction", "knowledge", "format", "output" };
     std::map<std::string, std::string>  knownAiEngines; // = { {"deepseek", ""}, {"qwen", ""} };
+
 
     bool addPrepromtType(std::string name);
     bool addKnownEngine(const std::string &name);

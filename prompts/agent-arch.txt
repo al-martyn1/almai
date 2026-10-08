@@ -332,4 +332,38 @@ present in the provided context or returned by tools.
 -------
 https://chat.deepseek.com/share/06030n25xh5igbw90v
 ------------------------------------------------------------------
+node - https://nodejs.org/en/download
+
+GitNexus - https://chat.deepseek.com/share/28b47hpl31g7wijuk0
+
+git clone https://github.com/abhigyanpatwari/GitNexus.git
+cd gitnexus
+npm install
+npm run build
+
+cd gitnexus-shared
+npm install
+npm run build
+
+cd ../gitnexus
+npm install
+npm run build
+
+cd ../gitnexus-web
+npm install
+npm run dev
+
+npx gitnexus --version
+npx gitnexus analyze
+npx gitnexus serve
+По умолчанию сервер запустится на локальном адресе http://127.0.0.1:4747
+
+npx gitnexus analyze --skip-agents-md (пропускает CLAUDE.md/AGENTS.md)
+npx gitnexus analyze --index-only (создает только индекс в .gitnexus/, без дополнительных файлов)
+
+------------------------------------------------------------------
+Эмбеддинги кода - https://chat.deepseek.com/share/8od96mho3tl0h3bdb4
+
+------------------------------------------------------------------
+
 

@@ -366,4 +366,5 @@ npx gitnexus analyze --index-only (создает только индекс в .
 
 ------------------------------------------------------------------
 
+RAG и эмбеддинг - https://chat.deepseek.com/share/qg6kiqdzwpxz34i86s
 
